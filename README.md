@@ -13,19 +13,16 @@ STDIN | STDOUT
 And a simple FizzBuzz will look like this:
 
 ```
-seq(100) | {|x|
- if x % 15 == 0 {
-   "FizzBuzz"
- }
- else if x % 3 == 0 {
-   "Fizz"
- }
- else if x % 5 == 0 {
-   "Buzz"
- }
- else {
-   x
- }
+seq(100) | { |x|
+  if x % 15 == 0 {
+    "FizzBuzz"
+  } else if x % 3 == 0 {
+    "Fizz"
+  } else if x % 5 == 0 {
+    "Buzz"
+  } else {
+    x
+  }
 } | STDOUT
 ```
 
