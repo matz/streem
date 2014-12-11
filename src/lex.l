@@ -26,8 +26,9 @@ if{TRAIL}	return keyword_if;
 break{TRAIL}	return keyword_break;
 emit{TRAIL}	return keyword_emit;
 return{TRAIL}	return keyword_return;
-nil{TRAIL}	return keyword_if;
-true{TRAIL}	return keyword_false;
+nil{TRAIL}	return keyword_nil;
+true{TRAIL}	return keyword_true;
+false{TRAIL}	return keyword_false;
 
 [A-Za-z_][A-Za-z0-9_]* {
   yylval->str = strdup(yytext);
