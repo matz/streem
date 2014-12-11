@@ -1,0 +1,21 @@
+# /
+*.bak
+*.d
+*.o
+*.orig
+*.pdb
+*.rej
+*.sav
+*.swp
+*.tmp
+*~
+.DS_Store
+.ccmalloc
+.svn
+/.git
+cscope.out
+/src/y.tab.c
+/src/lex.yy.c
+/bin
+/build
+/lib
