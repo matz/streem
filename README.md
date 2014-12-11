@@ -6,7 +6,9 @@ functional programming languages.
 
 In Streem, simple `cat` program is like this:
 
+   ```
    STDIN | STDOUT
+   ```
 
 And simple FizzBuzz will be like this:
 
