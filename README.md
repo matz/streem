@@ -1,16 +1,16 @@
 # Streem - stream based concurrent scripting language
 
-Streem is a concurrent scripting language based on programming model
-similar to shell, with influence from Ruby, Erlang and other
+Streem is a concurrent scripting language based on a programming model
+similar to shell, with influences from Ruby, Erlang and other
 functional programming languages.
 
-In Streem, simple `cat` program is like this:
+In Streem, a simple `cat` program looks like this:
 
 ```
 STDIN | STDOUT
 ```
 
-And simple FizzBuzz will be like this:
+And a simple FizzBuzz will look like this:
 
 ```
 seq(100) | {|x|
@@ -31,7 +31,7 @@ seq(100) | {|x|
 
 # Note
 
-Streem is still under design stage. It's not working yet.  Stay tuned.
+Streem is still in the design stage. It's not working yet.  Stay tuned.
 
 # How to compile
 
