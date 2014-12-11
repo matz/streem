@@ -10,6 +10,7 @@ In Streem, simple `cat` program is like this:
 
 And simple FizzBuzz will be like this:
 
+   ```
    seq(100) | {|x|
     if x % 15 == 0 {
       "FizzBuzz"
@@ -24,6 +25,7 @@ And simple FizzBuzz will be like this:
       x
     }
    } | STDOUT
+   ```
 
 # Note
 
