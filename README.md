@@ -6,28 +6,28 @@ functional programming languages.
 
 In Streem, simple `cat` program is like this:
 
-   ```
-   STDIN | STDOUT
-   ```
+```
+STDIN | STDOUT
+```
 
 And simple FizzBuzz will be like this:
 
-   ```
-   seq(100) | {|x|
-    if x % 15 == 0 {
-      "FizzBuzz"
-    }
-    else if x % 3 == 0 {
-      "Fizz"
-    }
-    else if x % 5 == 0 {
-      "Buzz"
-    }
-    else {
-      x
-    }
-   } | STDOUT
-   ```
+```
+seq(100) | {|x|
+ if x % 15 == 0 {
+   "FizzBuzz"
+ }
+ else if x % 3 == 0 {
+   "Fizz"
+ }
+ else if x % 5 == 0 {
+   "Buzz"
+ }
+ else {
+   x
+ }
+} | STDOUT
+```
 
 # Note
 
@@ -35,10 +35,10 @@ Streem is still under design stage. It's not working yet.  Stay tuned.
 
 # How to compile
 
-  ```
-  cd src
-  make
-  ```
+```
+cd src
+make
+```
 
 # License
 
