@@ -2,6 +2,8 @@
 # We provide a minimalistic version called minirake inside of our
 # codebase.
 
+YACC = yacc
+LEX = flex
 CC = gcc
 
 all : streem
@@ -13,10 +15,10 @@ test : all
 .PHONY : test
 
 y.tab.c : parse.y
-	yacc parse.y
+	$(YACC) parse.y
 
 lex.yy.c : lex.l
-	flex lex.l
+	$(LEX) lex.l
 
 parse.o : y.tab.c lex.yy.c
 	$(CC) -g -c y.tab.c -o parse.o
