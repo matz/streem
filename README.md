@@ -33,6 +33,12 @@ seq(100) | {|x|
 
 Streem is still in the design stage. It's not working yet.  Stay tuned.
 
+# Requirement
+
+* bison
+* flex
+* gcc / clang
+
 # How to compile
 
 ```
