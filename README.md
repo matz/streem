@@ -29,7 +29,7 @@ And simple FizzBuzz will be like this:
 
 # Note
 
-Stream is still under design stage. It's not working yet.  Stay tuned.
+Streem is still under design stage. It's not working yet.  Stay tuned.
 
 # How to compile
 
@@ -40,7 +40,7 @@ Stream is still under design stage. It's not working yet.  Stay tuned.
 
 # License
 
-Stream is distributed under MIT license.
+Streem is distributed under MIT license.
 
 Copyright (c) 2015 Yukihiro Matsumoto
 
