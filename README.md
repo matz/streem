@@ -31,6 +31,13 @@ And simple FizzBuzz will be like this:
 
 Stream is still under design stage. It's not working yet.  Stay tuned.
 
+# How to compile
+
+  ```
+  cd src
+  make
+  ```
+
 # License
 
 Stream is distributed under MIT license.
