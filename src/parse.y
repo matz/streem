@@ -1,7 +1,7 @@
 /*
-** parse.y - stream parser
+** parse.y - streem parser
 **
-** See Copyright Notice in stream.h
+** See Copyright Notice in LICENSE file.
 */
 
 %{

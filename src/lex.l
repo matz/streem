@@ -1,3 +1,9 @@
+/*
+** lex.l - streem lexer
+**
+** See Copyright Notice in LICENSE file.
+*/
+
 %option bison-bridge
 %option noyywrap
 
