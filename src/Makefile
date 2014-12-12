@@ -20,7 +20,7 @@ parse.o : y.tab.c lex.yy.c
 	$(CC) -g -c y.tab.c -o parse.o
 
 $(TARGET) : parse.o
-	mkdir `dirname $(TARGET)`
+	mkdir -p `dirname $(TARGET)`
 	$(CC) -g parse.o -o $(TARGET)
 
 clean :
