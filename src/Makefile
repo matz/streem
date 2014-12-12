@@ -1,6 +1,5 @@
 YACC = yacc
 LEX = flex
-CC = gcc
 
 all : streem
 
