@@ -1,4 +1,4 @@
-YACC = yacc
+YACC = bison -y
 LEX = flex
 
 all : streem
