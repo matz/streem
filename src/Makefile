@@ -1,7 +1,8 @@
 YACC = bison -y
 LEX = flex
+TARGET = ../bin/streem
 
-all : streem
+all : $(TARGET)
 
 .PHONY : all
 
@@ -18,11 +19,12 @@ lex.yy.c : lex.l
 parse.o : y.tab.c lex.yy.c
 	$(CC) -g -c y.tab.c -o parse.o
 
-streem : parse.o
-	$(CC) -g parse.o -o streem
+$(TARGET) : parse.o
+	mkdir `dirname $(TARGET)`
+	$(CC) -g parse.o -o $(TARGET)
 
 clean :
 	rm -f y.output y.tab.c
 	rm -f lex.yy.c
-	rm -f *.o streem
+	rm -f *.o $(TARGET)
 .PHONY : clean
