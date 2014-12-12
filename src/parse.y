@@ -152,6 +152,9 @@ primary         : lit_number
                 | primary '.' identifier '(' opt_args ')'
                 | primary '.' identifier
                 | keyword_if expr '{' compstmt '}' opt_else
+		| keyword_nil
+		| keyword_true
+		| keyword_false
                 ;
 
 map             : expr ':' expr
