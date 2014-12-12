@@ -33,7 +33,7 @@ seq(100) | {|x|
 
 Streem is still in the design stage. It's not working yet.  Stay tuned.
 
-# Requirement
+# Requirements
 
 * bison
 * flex
