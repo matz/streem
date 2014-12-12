@@ -46,6 +46,13 @@ cd src
 make
 ```
 
+# How to contribute
+
+Send a pull request to <http://github.com/matz/streem>.  We consider
+you have granted non-exclusive right to your contributed code under
+MIT license.  Use <http://github.com/matz/streem/issues> for
+discussion.
+
 # License
 
 Streem is distributed under MIT license.
