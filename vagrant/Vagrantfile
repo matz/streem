@@ -1,0 +1,17 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+VAGRANTFILE_API_VERSION = "2"
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  config.vm.provision :shell, path: "bootstrap.sh"
+  config.vm.synced_folder "..", "/streem"
+
+  config.vm.provider :virtualbox do |vb|
+    vb.customize ["modifyvm", :id, "--memory", "256"]
+  end
+
+  config.vm.define "streem", autostart: false do |streem|
+    streem.vm.box = "ubuntu/trusty64"
+  end
+end
