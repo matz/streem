@@ -1,0 +1,13 @@
+- hosts: all
+  sudo: True
+  tasks:
+    - name: ensure build tools are installed
+      apt: name={{ item }} state=present update_cache=yes
+      with_items:
+        - flex
+        - bison
+        - build-essential
+    - name: build Streem
+      command: make
+      args:
+        chdir: /streem/src

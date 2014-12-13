@@ -19,3 +19,4 @@ cscope.out
 /bin
 /build
 /lib
+/vagrant/.vagrant
