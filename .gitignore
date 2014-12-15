@@ -17,6 +17,7 @@ cscope.out
 /src/y.tab.c
 /src/lex.yy.c
 /src/parse.tab.c
+/src/y.output
 /bin
 /build
 /lib
