@@ -42,7 +42,7 @@ false{TRAIL}	return keyword_false;
 };
 
 {TRAIL}\.{TRAIL} return '.';
-[(\[{,;]{TRAIL}	return yytext[0];
+[(\[{,;:]{TRAIL} return yytext[0];
 [)\]}]		return yytext[0];
 "\n"		return '\n';
 
