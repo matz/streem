@@ -157,7 +157,8 @@ primary         : lit_number
 		| keyword_false
                 ;
 
-map             : expr ':' expr
+map             : lit_string ':' expr
+		| identifier ':' expr
                 ;
 
 map_args        : map
