@@ -1,5 +1,7 @@
 # Streem - stream based concurrent scripting language
 
+[![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/matz/streem?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Streem is a concurrent scripting language based on a programming model
 similar to shell, with influences from Ruby, Erlang and other
 functional programming languages.
