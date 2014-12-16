@@ -4,7 +4,10 @@
 ** See Copyright Notice in LICENSE file.
 */
 
-%option bison-bridge
+%{
+#define YY_DECL    int yylex(YYSTYPE *yylval)
+%}
+
 %option noyywrap
 
 TRAIL  [\t \n]*
