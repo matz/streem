@@ -27,8 +27,6 @@ TRAIL  [\t \n]*
 "||"{TRAIL}	return op_or;
 "|"{TRAIL}	return op_bar;
 "&"{TRAIL}	return op_amper;
-"<-"{TRAIL}	return op_lasgn;
-"->"{TRAIL}	return op_rasgn;
 
 if{TRAIL}	return keyword_if;
 {TRAIL}else{TRAIL}	return keyword_else;

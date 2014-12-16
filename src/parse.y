@@ -35,8 +35,6 @@ static void yyerror(parser_state *p, const char *s);
         keyword_nil
         keyword_true
         keyword_false
-	op_lasgn
-	op_rasgn
         op_plus
         op_minus
         op_mult
@@ -90,8 +88,6 @@ stmts           : /* none */
                 ;
 
 stmt            : var '=' expr
-                | var op_lasgn expr
-                | expr op_rasgn var
                 | keyword_emit opt_args
                 | keyword_return opt_args
                 | keyword_break
