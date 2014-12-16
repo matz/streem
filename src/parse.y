@@ -35,8 +35,8 @@ static void yyerror(parser_state *p, const char *s);
         keyword_nil
         keyword_true
         keyword_false
-	op_lasgn
-	op_rasgn
+        op_lasgn
+        op_rasgn
         op_plus
         op_minus
         op_mult
@@ -54,9 +54,9 @@ static void yyerror(parser_state *p, const char *s);
         op_amper
 
 %token
-	lit_number
-	lit_string
-	identifier
+        lit_number
+        lit_string
+        identifier
 
 /*
  * precedence table
@@ -152,13 +152,13 @@ primary         : lit_number
                 | primary '.' identifier '(' opt_args ')'
                 | primary '.' identifier
                 | keyword_if expr '{' compstmt '}' opt_else
-		| keyword_nil
-		| keyword_true
-		| keyword_false
+                | keyword_nil
+                | keyword_true
+                | keyword_false
                 ;
 
 map             : lit_string ':' expr
-		| identifier ':' expr
+                | identifier ':' expr
                 ;
 
 map_args        : map
