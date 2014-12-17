@@ -38,6 +38,8 @@ Streem is still in the design stage. It's not working yet.  Stay tuned.
 * bison
 * flex
 * gcc / clang
+* cram
+* python
 
 # How to compile
 
@@ -52,6 +54,20 @@ Send a pull request to <http://github.com/matz/streem>.  We consider
 you have granted non-exclusive right to your contributed code under
 MIT license.  Use <http://github.com/matz/streem/issues> for
 discussion.
+
+# How to test
+
+## Install Cram Testing Framework
+
+```
+$ sudo pip install cram
+```
+
+## Running tests
+
+```
+$ cram *.t -Ei
+```
 
 # License
 
