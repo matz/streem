@@ -38,8 +38,7 @@ Streem is still in the design stage. It's not working yet.  Stay tuned.
 * bison
 * flex
 * gcc / clang
-* cram
-* python
+* cram (python, pip)
 
 # How to compile
 
@@ -56,6 +55,12 @@ MIT license.  Use <http://github.com/matz/streem/issues> for
 discussion.
 
 # How to test
+
+## Cram
+
+[Cram](https://bitheap.org/cram/) is a testing framework for testing command line applications.
+
+Cram tests look like snippets of interactive shell sessions. Cram runs each command and compares the command output in the test with the command's actual output.
 
 ## Install Cram Testing Framework
 
