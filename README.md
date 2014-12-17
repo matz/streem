@@ -71,7 +71,7 @@ $ sudo pip install cram
 ## Running tests
 
 ```
-$ cram *.t -Ei
+$ cram tests/*.t -E
 ```
 
 # License
