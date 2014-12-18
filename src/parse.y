@@ -205,6 +205,10 @@ main(int argc, const char**argv)
 {
   int n;
 
+  if (argc > 1) {
+    yyin = fopen(argv[1], "r");
+  }
+
   //  yydebug = 1;
   n = yyparse(NULL);
   if (n == 0) {
