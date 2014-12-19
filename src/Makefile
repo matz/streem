@@ -7,7 +7,7 @@ all : $(TARGET)
 .PHONY : all
 
 test : all
-	$(TARGET) < example.strm
+	$(TARGET) ../example/fizzbuzz.strm
 .PHONY : test
 
 y.tab.c : parse.y
