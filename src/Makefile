@@ -7,7 +7,7 @@ all : $(TARGET)
 .PHONY : all
 
 test : all
-	streem example.stm
+	$(TARGET) < example.strm
 .PHONY : test
 
 y.tab.c : parse.y
