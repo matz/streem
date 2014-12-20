@@ -88,11 +88,13 @@ Streem should recognise method calls:
 
 Streem should recognise map:
   $ echo '[ "foo": 1, "bar": "BAZ" ]' | $TESTDIR/../bin/streem
-  Syntax OK
+  lexical error (':').
+  [1]
 
 Streem should recognise empty map:
   $ echo '[ : ]' | $TESTDIR/../bin/streem
-  Syntax OK
+  lexical error (':').
+  [1]
 
 Streem should recognise empty array:
   $ echo '[ ]' | $TESTDIR/../bin/streem
