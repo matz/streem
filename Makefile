@@ -1,30 +1,30 @@
 YACC = bison -y
 LEX = flex
-TARGET = ../bin/streem
+TARGET = bin/streem
 
 all : $(TARGET)
 
 .PHONY : all
 
 test : all
-	$(TARGET) ../example/fizzbuzz.strm
+	$(TARGET) example/fizzbuzz.strm
 .PHONY : test
 
-y.tab.c : parse.y
-	$(YACC) parse.y
+src/y.tab.c : src/parse.y
+	$(YACC) -o src/y.tab.c src/parse.y
 
-lex.yy.c : lex.l
-	$(LEX) lex.l
+src/lex.yy.c : src/lex.l
+	$(LEX) -o src/lex.yy.c src/lex.l
 
-parse.o : y.tab.c lex.yy.c
-	$(CC) -g -c y.tab.c -o parse.o
+src/parse.o : src/y.tab.c src/lex.yy.c
+	$(CC) -g -c src/y.tab.c -o src/parse.o
 
-$(TARGET) : parse.o
+$(TARGET) : src/parse.o
 	mkdir -p "$$(dirname $(TARGET))"
-	$(CC) -g parse.o -o $(TARGET)
+	$(CC) -g src/parse.o -o $(TARGET)
 
 clean :
-	rm -f y.output y.tab.c
-	rm -f lex.yy.c
-	rm -f *.o $(TARGET)
+	rm -f src/y.output src/y.tab.c
+	rm -f src/lex.yy.c
+	rm -f src/*.o $(TARGET)
 .PHONY : clean
