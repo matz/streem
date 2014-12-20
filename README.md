@@ -54,7 +54,6 @@ Streem is still in the design stage. It's not working yet.  Stay tuned.
 # How to compile
 
 ```
-cd src
 make
 ```
 
