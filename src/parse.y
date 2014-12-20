@@ -209,7 +209,7 @@ main(int argc, const char**argv)
     yyin = fopen(argv[1], "r");
   }
 
-  //  yydebug = 1;
+  yydebug = 1;
   n = yyparse(NULL);
   if (n == 0) {
     printf("Syntax OK\n");

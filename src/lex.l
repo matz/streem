@@ -59,6 +59,7 @@ TRAIL  [\t \n]*
 "&"{TRAIL}  return op_amper;
 "<-"{TRAIL} return op_lasgn;
 "->"{TRAIL} return op_rasgn;
+"="{TRAIL}  return '=';
 
 if{TRAIL}           return keyword_if;
 {TRAIL}else{TRAIL}  return keyword_else;
