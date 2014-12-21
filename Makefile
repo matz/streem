@@ -2,12 +2,15 @@ YACC = bison -y
 LEX = flex
 TARGET = bin/streem
 
+TESTS=$(wildcard example/*.strm)
+
 all : $(TARGET)
 
 .PHONY : all
 
 test : all
-	$(TARGET) example/fizzbuzz.strm
+	$(TARGET) $(TESTS)
+
 .PHONY : test
 
 src/y.tab.c : src/parse.y
