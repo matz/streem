@@ -50,6 +50,7 @@ Streem is still in the design stage. It's not working yet.  Stay tuned.
 * bison
 * flex
 * gcc / clang
+* cram (python, pip)
 
 # How to compile
 
@@ -63,6 +64,26 @@ Send a pull request to <http://github.com/matz/streem>.  We consider
 you have granted non-exclusive right to your contributed code under
 MIT license.  Use <http://github.com/matz/streem/issues> for
 discussion.
+
+# How to test
+
+## Cram
+
+[Cram](https://bitheap.org/cram/) is a testing framework for testing command line applications.
+
+Cram tests look like snippets of interactive shell sessions. Cram runs each command and compares the command output in the test with the command's actual output.
+
+## Install Cram Testing Framework
+
+```
+$ sudo pip install cram
+```
+
+## Running tests
+
+```
+$ cram tests/*.t -E
+```
 
 # License
 
