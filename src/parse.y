@@ -214,11 +214,12 @@ syntax_check(const char* fname)
   fclose(yyin);
   if (n == 0 && state.nerr == 0) {
     printf("%s: Syntax OK\n", fname);
+    return 0;
   }
   else {
     printf("%s: Syntax NG\n", fname);
+    return 1;
   }
-  return n;
 }
 
 int
