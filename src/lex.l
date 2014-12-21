@@ -92,6 +92,8 @@ false{TRAIL}        return keyword_false;
   return lit_string;
 };
 
+"#"[^\n]*"\n" ;
+
 [ \t] ; 
 
 . { 
