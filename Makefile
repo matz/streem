@@ -2,7 +2,7 @@ YACC = bison -y
 LEX = flex
 TARGET = bin/streem
 
-TESTS=$(wildcard example/*.strm)
+TESTS=$(wildcard examples/*.strm)
 
 all : $(TARGET)
 
