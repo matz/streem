@@ -1,0 +1,8 @@
+# repeat twice
+seq(100) | {|x| emit x, x} | STDOUT
+# output:
+#  1
+#  1
+#  2
+#  2
+#  :
