@@ -1,0 +1,4962 @@
+Streem should recognise the sequence funciton:
+  $ echo 'seq(100)' | $TESTDIR/../bin/streem
+  Starting parse
+  Entering state 0
+  Reading a token: Next token is token identifier ()
+  Shifting token identifier ()
+  Entering state 13
+  Reading a token: Next token is token '(' ()
+  Shifting token '(' ()
+  Entering state 36
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0 13 36
+  Entering state 25
+  Reading a token: Next token is token ')' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 13 36
+  Entering state 30
+  Next token is token ')' ()
+  Reducing stack by rule 41 (line 138):
+     $1 = nterm expr ()
+  -> $$ = nterm args ()
+  Stack now 0 13 36
+  Entering state 32
+  Next token is token ')' ()
+  Reducing stack by rule 40 (line 135):
+     $1 = nterm args ()
+  -> $$ = nterm opt_args ()
+  Stack now 0 13 36
+  Entering state 77
+  Next token is token ')' ()
+  Shifting token ')' ()
+  Entering state 113
+  Reducing stack by rule 52 (line 151):
+     $1 = token identifier ()
+     $2 = token '(' ()
+     $3 = nterm opt_args ()
+     $4 = token ')' ()
+  -> $$ = nterm primary ()
+  Stack now 0
+  Entering state 25
+  Reading a token: Next token is token '\n' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0
+  Entering state 24
+  Next token is token '\n' ()
+  Reducing stack by rule 13 (line 98):
+     $1 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0
+  Entering state 21
+  Next token is token '\n' ()
+  Shifting token '\n' ()
+  Entering state 52
+  Reducing stack by rule 75 (line 190):
+     $1 = token '\n' ()
+  -> $$ = nterm term ()
+  Stack now 0 21
+  Entering state 55
+  Reducing stack by rule 72 (line 185):
+     $1 = nterm term ()
+  -> $$ = nterm terms ()
+  Stack now 0 21
+  Entering state 54
+  Reading a token: Now at end of input.
+  Reducing stack by rule 71 (line 182):
+     $1 = nterm terms ()
+  -> $$ = nterm opt_terms ()
+  Stack now 0 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0
+  Entering state 20
+  Reducing stack by rule 1 (line 80):
+     $1 = nterm compstmt ()
+  -> $$ = nterm program ()
+  Stack now 0
+  Entering state 19
+  Now at end of input.
+  Stack now 0 19
+  Cleanup: popping nterm program ()
+  Syntax OK
+
+Streem should recognise an if statement:
+  $ echo 'if true {}' | $TESTDIR/../bin/streem
+  Starting parse
+  Entering state 0
+  Reading a token: Next token is token keyword_if ()
+  Shifting token keyword_if ()
+  Entering state 2
+  Reading a token: Next token is token keyword_true ()
+  Shifting token keyword_true ()
+  Entering state 7
+  Reducing stack by rule 57 (line 156):
+     $1 = token keyword_true ()
+  -> $$ = nterm primary ()
+  Stack now 0 2
+  Entering state 25
+  Reading a token: Next token is token '{' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 2
+  Entering state 29
+  Next token is token '{' ()
+  Shifting token '{' ()
+  Entering state 75
+  Reading a token: Next token is token '}' ()
+  Reducing stack by rule 3 (line 86):
+  -> $$ = nterm stmts ()
+  Stack now 0 2 29 75
+  Entering state 21
+  Next token is token '}' ()
+  Reducing stack by rule 70 (line 181):
+  -> $$ = nterm opt_terms ()
+  Stack now 0 2 29 75 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0 2 29 75
+  Entering state 111
+  Next token is token '}' ()
+  Shifting token '}' ()
+  Entering state 123
+  Reducing stack by rule 35 (line 126):
+  -> $$ = nterm opt_elsif ()
+  Stack now 0 2 29 75 111 123
+  Entering state 126
+  Reading a token: Next token is token '\n' ()
+  Reducing stack by rule 37 (line 130):
+     $1 = nterm opt_elsif ()
+  -> $$ = nterm opt_else ()
+  Stack now 0 2 29 75 111 123
+  Entering state 127
+  Reducing stack by rule 55 (line 154):
+     $1 = token keyword_if ()
+     $2 = nterm expr ()
+     $3 = token '{' ()
+     $4 = nterm compstmt ()
+     $5 = token '}' ()
+     $6 = nterm opt_else ()
+  -> $$ = nterm primary ()
+  Stack now 0
+  Entering state 25
+  Next token is token '\n' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0
+  Entering state 24
+  Next token is token '\n' ()
+  Reducing stack by rule 13 (line 98):
+     $1 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0
+  Entering state 21
+  Next token is token '\n' ()
+  Shifting token '\n' ()
+  Entering state 52
+  Reducing stack by rule 75 (line 190):
+     $1 = token '\n' ()
+  -> $$ = nterm term ()
+  Stack now 0 21
+  Entering state 55
+  Reducing stack by rule 72 (line 185):
+     $1 = nterm term ()
+  -> $$ = nterm terms ()
+  Stack now 0 21
+  Entering state 54
+  Reading a token: Now at end of input.
+  Reducing stack by rule 71 (line 182):
+     $1 = nterm terms ()
+  -> $$ = nterm opt_terms ()
+  Stack now 0 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0
+  Entering state 20
+  Reducing stack by rule 1 (line 80):
+     $1 = nterm compstmt ()
+  -> $$ = nterm program ()
+  Stack now 0
+  Entering state 19
+  Now at end of input.
+  Stack now 0 19
+  Cleanup: popping nterm program ()
+  Syntax OK
+
+Streem should recognise an if-else statement:
+  $ echo 'if true {} else {}' | $TESTDIR/../bin/streem
+  Starting parse
+  Entering state 0
+  Reading a token: Next token is token keyword_if ()
+  Shifting token keyword_if ()
+  Entering state 2
+  Reading a token: Next token is token keyword_true ()
+  Shifting token keyword_true ()
+  Entering state 7
+  Reducing stack by rule 57 (line 156):
+     $1 = token keyword_true ()
+  -> $$ = nterm primary ()
+  Stack now 0 2
+  Entering state 25
+  Reading a token: Next token is token '{' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 2
+  Entering state 29
+  Next token is token '{' ()
+  Shifting token '{' ()
+  Entering state 75
+  Reading a token: Next token is token '}' ()
+  Reducing stack by rule 3 (line 86):
+  -> $$ = nterm stmts ()
+  Stack now 0 2 29 75
+  Entering state 21
+  Next token is token '}' ()
+  Reducing stack by rule 70 (line 181):
+  -> $$ = nterm opt_terms ()
+  Stack now 0 2 29 75 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0 2 29 75
+  Entering state 111
+  Next token is token '}' ()
+  Shifting token '}' ()
+  Entering state 123
+  Reducing stack by rule 35 (line 126):
+  -> $$ = nterm opt_elsif ()
+  Stack now 0 2 29 75 111 123
+  Entering state 126
+  Reading a token: Next token is token keyword_else ()
+  Shifting token keyword_else ()
+  Entering state 129
+  Reading a token: Next token is token '{' ()
+  Shifting token '{' ()
+  Entering state 131
+  Reading a token: Next token is token '}' ()
+  Reducing stack by rule 3 (line 86):
+  -> $$ = nterm stmts ()
+  Stack now 0 2 29 75 111 123 126 129 131
+  Entering state 21
+  Next token is token '}' ()
+  Reducing stack by rule 70 (line 181):
+  -> $$ = nterm opt_terms ()
+  Stack now 0 2 29 75 111 123 126 129 131 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0 2 29 75 111 123 126 129 131
+  Entering state 133
+  Next token is token '}' ()
+  Shifting token '}' ()
+  Entering state 135
+  Reducing stack by rule 38 (line 131):
+     $1 = nterm opt_elsif ()
+     $2 = token keyword_else ()
+     $3 = token '{' ()
+     $4 = nterm compstmt ()
+     $5 = token '}' ()
+  -> $$ = nterm opt_else ()
+  Stack now 0 2 29 75 111 123
+  Entering state 127
+  Reducing stack by rule 55 (line 154):
+     $1 = token keyword_if ()
+     $2 = nterm expr ()
+     $3 = token '{' ()
+     $4 = nterm compstmt ()
+     $5 = token '}' ()
+     $6 = nterm opt_else ()
+  -> $$ = nterm primary ()
+  Stack now 0
+  Entering state 25
+  Reading a token: Next token is token '\n' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0
+  Entering state 24
+  Next token is token '\n' ()
+  Reducing stack by rule 13 (line 98):
+     $1 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0
+  Entering state 21
+  Next token is token '\n' ()
+  Shifting token '\n' ()
+  Entering state 52
+  Reducing stack by rule 75 (line 190):
+     $1 = token '\n' ()
+  -> $$ = nterm term ()
+  Stack now 0 21
+  Entering state 55
+  Reducing stack by rule 72 (line 185):
+     $1 = nterm term ()
+  -> $$ = nterm terms ()
+  Stack now 0 21
+  Entering state 54
+  Reading a token: Now at end of input.
+  Reducing stack by rule 71 (line 182):
+     $1 = nterm terms ()
+  -> $$ = nterm opt_terms ()
+  Stack now 0 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0
+  Entering state 20
+  Reducing stack by rule 1 (line 80):
+     $1 = nterm compstmt ()
+  -> $$ = nterm program ()
+  Stack now 0
+  Entering state 19
+  Now at end of input.
+  Stack now 0 19
+  Cleanup: popping nterm program ()
+  Syntax OK
+
+Streem should recognise a mathimatical expression:
+  $ echo '((1 + 1) * (99 / 3)) % 33' | $TESTDIR/../bin/streem
+  Starting parse
+  Entering state 0
+  Reading a token: Next token is token '(' ()
+  Shifting token '(' ()
+  Entering state 17
+  Reading a token: Next token is token '(' ()
+  Shifting token '(' ()
+  Entering state 17
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0 17 17
+  Entering state 25
+  Reading a token: Next token is token op_plus ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 17 17
+  Entering state 24
+  Next token is token op_plus ()
+  Shifting token op_plus ()
+  Entering state 59
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0 17 17 24 59
+  Entering state 25
+  Reading a token: Next token is token ')' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 17 17 24 59
+  Entering state 95
+  Next token is token ')' ()
+  Reducing stack by rule 15 (line 104):
+     $1 = nterm expr ()
+     $2 = token op_plus ()
+     $3 = nterm expr ()
+  -> $$ = nterm expr ()
+  Stack now 0 17 17
+  Entering state 24
+  Next token is token ')' ()
+  Reducing stack by rule 13 (line 98):
+     $1 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0 17 17
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0 17 17
+  Entering state 21
+  Next token is token ')' ()
+  Reducing stack by rule 70 (line 181):
+  -> $$ = nterm opt_terms ()
+  Stack now 0 17 17 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0 17 17
+  Entering state 42
+  Next token is token ')' ()
+  Shifting token ')' ()
+  Entering state 82
+  Reducing stack by rule 46 (line 145):
+     $1 = token '(' ()
+     $2 = nterm compstmt ()
+     $3 = token ')' ()
+  -> $$ = nterm primary ()
+  Stack now 0 17
+  Entering state 25
+  Reading a token: Next token is token op_mult ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 17
+  Entering state 24
+  Next token is token op_mult ()
+  Shifting token op_mult ()
+  Entering state 61
+  Reading a token: Next token is token '(' ()
+  Shifting token '(' ()
+  Entering state 17
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0 17 24 61 17
+  Entering state 25
+  Reading a token: Next token is token op_div ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 17 24 61 17
+  Entering state 24
+  Next token is token op_div ()
+  Shifting token op_div ()
+  Entering state 62
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0 17 24 61 17 24 62
+  Entering state 25
+  Reading a token: Next token is token ')' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 17 24 61 17 24 62
+  Entering state 98
+  Reducing stack by rule 18 (line 107):
+     $1 = nterm expr ()
+     $2 = token op_div ()
+     $3 = nterm expr ()
+  -> $$ = nterm expr ()
+  Stack now 0 17 24 61 17
+  Entering state 24
+  Next token is token ')' ()
+  Reducing stack by rule 13 (line 98):
+     $1 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0 17 24 61 17
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0 17 24 61 17
+  Entering state 21
+  Next token is token ')' ()
+  Reducing stack by rule 70 (line 181):
+  -> $$ = nterm opt_terms ()
+  Stack now 0 17 24 61 17 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0 17 24 61 17
+  Entering state 42
+  Next token is token ')' ()
+  Shifting token ')' ()
+  Entering state 82
+  Reducing stack by rule 46 (line 145):
+     $1 = token '(' ()
+     $2 = nterm compstmt ()
+     $3 = token ')' ()
+  -> $$ = nterm primary ()
+  Stack now 0 17 24 61
+  Entering state 25
+  Reading a token: Next token is token ')' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 17 24 61
+  Entering state 97
+  Reducing stack by rule 17 (line 106):
+     $1 = nterm expr ()
+     $2 = token op_mult ()
+     $3 = nterm expr ()
+  -> $$ = nterm expr ()
+  Stack now 0 17
+  Entering state 24
+  Next token is token ')' ()
+  Reducing stack by rule 13 (line 98):
+     $1 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0 17
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0 17
+  Entering state 21
+  Next token is token ')' ()
+  Reducing stack by rule 70 (line 181):
+  -> $$ = nterm opt_terms ()
+  Stack now 0 17 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0 17
+  Entering state 42
+  Next token is token ')' ()
+  Shifting token ')' ()
+  Entering state 82
+  Reducing stack by rule 46 (line 145):
+     $1 = token '(' ()
+     $2 = nterm compstmt ()
+     $3 = token ')' ()
+  -> $$ = nterm primary ()
+  Stack now 0
+  Entering state 25
+  Reading a token: Next token is token op_mod ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0
+  Entering state 24
+  Next token is token op_mod ()
+  Shifting token op_mod ()
+  Entering state 63
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 63
+  Entering state 25
+  Reading a token: Next token is token '\n' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 63
+  Entering state 99
+  Reducing stack by rule 19 (line 108):
+     $1 = nterm expr ()
+     $2 = token op_mod ()
+     $3 = nterm expr ()
+  -> $$ = nterm expr ()
+  Stack now 0
+  Entering state 24
+  Next token is token '\n' ()
+  Reducing stack by rule 13 (line 98):
+     $1 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0
+  Entering state 21
+  Next token is token '\n' ()
+  Shifting token '\n' ()
+  Entering state 52
+  Reducing stack by rule 75 (line 190):
+     $1 = token '\n' ()
+  -> $$ = nterm term ()
+  Stack now 0 21
+  Entering state 55
+  Reducing stack by rule 72 (line 185):
+     $1 = nterm term ()
+  -> $$ = nterm terms ()
+  Stack now 0 21
+  Entering state 54
+  Reading a token: Now at end of input.
+  Reducing stack by rule 71 (line 182):
+     $1 = nterm terms ()
+  -> $$ = nterm opt_terms ()
+  Stack now 0 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0
+  Entering state 20
+  Reducing stack by rule 1 (line 80):
+     $1 = nterm compstmt ()
+  -> $$ = nterm program ()
+  Stack now 0
+  Entering state 19
+  Now at end of input.
+  Stack now 0 19
+  Cleanup: popping nterm program ()
+  Syntax OK
+
+Streem should recognise a boolean expression:
+  $ echo '1 < 2 && 2 <= 3 && (4 >= 5) || ((3 + 3) > 8) && 1 == 1' | $TESTDIR/../bin/streem
+  Starting parse
+  Entering state 0
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0
+  Entering state 25
+  Reading a token: Next token is token op_lt ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0
+  Entering state 24
+  Next token is token op_lt ()
+  Shifting token op_lt ()
+  Entering state 66
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 66
+  Entering state 25
+  Reading a token: Next token is token op_and ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 66
+  Entering state 102
+  Next token is token op_and ()
+  Reducing stack by rule 24 (line 113):
+     $1 = nterm expr ()
+     $2 = token op_lt ()
+     $3 = nterm expr ()
+  -> $$ = nterm expr ()
+  Stack now 0
+  Entering state 24
+  Next token is token op_and ()
+  Shifting token op_and ()
+  Entering state 70
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 70
+  Entering state 25
+  Reading a token: Next token is token op_le ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 70
+  Entering state 106
+  Next token is token op_le ()
+  Shifting token op_le ()
+  Entering state 67
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 70 106 67
+  Entering state 25
+  Reading a token: Next token is token op_and ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 70 106 67
+  Entering state 103
+  Next token is token op_and ()
+  Reducing stack by rule 25 (line 114):
+     $1 = nterm expr ()
+     $2 = token op_le ()
+     $3 = nterm expr ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 70
+  Entering state 106
+  Next token is token op_and ()
+  Reducing stack by rule 32 (line 121):
+     $1 = nterm expr ()
+     $2 = token op_and ()
+     $3 = nterm expr ()
+  -> $$ = nterm expr ()
+  Stack now 0
+  Entering state 24
+  Next token is token op_and ()
+  Shifting token op_and ()
+  Entering state 70
+  Reading a token: Next token is token '(' ()
+  Shifting token '(' ()
+  Entering state 17
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 70 17
+  Entering state 25
+  Reading a token: Next token is token op_ge ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 70 17
+  Entering state 24
+  Next token is token op_ge ()
+  Shifting token op_ge ()
+  Entering state 69
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 70 17 24 69
+  Entering state 25
+  Reading a token: Next token is token ')' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 70 17 24 69
+  Entering state 105
+  Next token is token ')' ()
+  Reducing stack by rule 23 (line 112):
+     $1 = nterm expr ()
+     $2 = token op_ge ()
+     $3 = nterm expr ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 70 17
+  Entering state 24
+  Next token is token ')' ()
+  Reducing stack by rule 13 (line 98):
+     $1 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0 24 70 17
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0 24 70 17
+  Entering state 21
+  Next token is token ')' ()
+  Reducing stack by rule 70 (line 181):
+  -> $$ = nterm opt_terms ()
+  Stack now 0 24 70 17 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0 24 70 17
+  Entering state 42
+  Next token is token ')' ()
+  Shifting token ')' ()
+  Entering state 82
+  Reducing stack by rule 46 (line 145):
+     $1 = token '(' ()
+     $2 = nterm compstmt ()
+     $3 = token ')' ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 70
+  Entering state 25
+  Reading a token: Next token is token op_or ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 70
+  Entering state 106
+  Next token is token op_or ()
+  Reducing stack by rule 32 (line 121):
+     $1 = nterm expr ()
+     $2 = token op_and ()
+     $3 = nterm expr ()
+  -> $$ = nterm expr ()
+  Stack now 0
+  Entering state 24
+  Next token is token op_or ()
+  Shifting token op_or ()
+  Entering state 71
+  Reading a token: Next token is token '(' ()
+  Shifting token '(' ()
+  Entering state 17
+  Reading a token: Next token is token '(' ()
+  Shifting token '(' ()
+  Entering state 17
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 71 17 17
+  Entering state 25
+  Reading a token: Next token is token op_plus ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 71 17 17
+  Entering state 24
+  Next token is token op_plus ()
+  Shifting token op_plus ()
+  Entering state 59
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 71 17 17 24 59
+  Entering state 25
+  Reading a token: Next token is token ')' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 71 17 17 24 59
+  Entering state 95
+  Next token is token ')' ()
+  Reducing stack by rule 15 (line 104):
+     $1 = nterm expr ()
+     $2 = token op_plus ()
+     $3 = nterm expr ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 71 17 17
+  Entering state 24
+  Next token is token ')' ()
+  Reducing stack by rule 13 (line 98):
+     $1 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0 24 71 17 17
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0 24 71 17 17
+  Entering state 21
+  Next token is token ')' ()
+  Reducing stack by rule 70 (line 181):
+  -> $$ = nterm opt_terms ()
+  Stack now 0 24 71 17 17 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0 24 71 17 17
+  Entering state 42
+  Next token is token ')' ()
+  Shifting token ')' ()
+  Entering state 82
+  Reducing stack by rule 46 (line 145):
+     $1 = token '(' ()
+     $2 = nterm compstmt ()
+     $3 = token ')' ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 71 17
+  Entering state 25
+  Reading a token: Next token is token op_gt ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 71 17
+  Entering state 24
+  Next token is token op_gt ()
+  Shifting token op_gt ()
+  Entering state 68
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 71 17 24 68
+  Entering state 25
+  Reading a token: Next token is token ')' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 71 17 24 68
+  Entering state 104
+  Next token is token ')' ()
+  Reducing stack by rule 22 (line 111):
+     $1 = nterm expr ()
+     $2 = token op_gt ()
+     $3 = nterm expr ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 71 17
+  Entering state 24
+  Next token is token ')' ()
+  Reducing stack by rule 13 (line 98):
+     $1 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0 24 71 17
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0 24 71 17
+  Entering state 21
+  Next token is token ')' ()
+  Reducing stack by rule 70 (line 181):
+  -> $$ = nterm opt_terms ()
+  Stack now 0 24 71 17 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0 24 71 17
+  Entering state 42
+  Next token is token ')' ()
+  Shifting token ')' ()
+  Entering state 82
+  Reducing stack by rule 46 (line 145):
+     $1 = token '(' ()
+     $2 = nterm compstmt ()
+     $3 = token ')' ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 71
+  Entering state 25
+  Reading a token: Next token is token op_and ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 71
+  Entering state 107
+  Next token is token op_and ()
+  Shifting token op_and ()
+  Entering state 70
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 71 107 70
+  Entering state 25
+  Reading a token: Next token is token op_eq ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 71 107 70
+  Entering state 106
+  Next token is token op_eq ()
+  Shifting token op_eq ()
+  Entering state 64
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 71 107 70 106 64
+  Entering state 25
+  Reading a token: Next token is token '\n' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 71 107 70 106 64
+  Entering state 100
+  Next token is token '\n' ()
+  Reducing stack by rule 26 (line 115):
+     $1 = nterm expr ()
+     $2 = token op_eq ()
+     $3 = nterm expr ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 71 107 70
+  Entering state 106
+  Next token is token '\n' ()
+  Reducing stack by rule 32 (line 121):
+     $1 = nterm expr ()
+     $2 = token op_and ()
+     $3 = nterm expr ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 71
+  Entering state 107
+  Next token is token '\n' ()
+  Reducing stack by rule 33 (line 122):
+     $1 = nterm expr ()
+     $2 = token op_or ()
+     $3 = nterm expr ()
+  -> $$ = nterm expr ()
+  Stack now 0
+  Entering state 24
+  Next token is token '\n' ()
+  Reducing stack by rule 13 (line 98):
+     $1 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0
+  Entering state 21
+  Next token is token '\n' ()
+  Shifting token '\n' ()
+  Entering state 52
+  Reducing stack by rule 75 (line 190):
+     $1 = token '\n' ()
+  -> $$ = nterm term ()
+  Stack now 0 21
+  Entering state 55
+  Reducing stack by rule 72 (line 185):
+     $1 = nterm term ()
+  -> $$ = nterm terms ()
+  Stack now 0 21
+  Entering state 54
+  Reading a token: Now at end of input.
+  Reducing stack by rule 71 (line 182):
+     $1 = nterm terms ()
+  -> $$ = nterm opt_terms ()
+  Stack now 0 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0
+  Entering state 20
+  Reducing stack by rule 1 (line 80):
+     $1 = nterm compstmt ()
+  -> $$ = nterm program ()
+  Stack now 0
+  Entering state 19
+  Now at end of input.
+  Stack now 0 19
+  Cleanup: popping nterm program ()
+  Syntax OK
+
+Streem should recognise a stream expression:
+  $ echo 'STDIN | STDOUT' | $TESTDIR/../bin/streem
+  Starting parse
+  Entering state 0
+  Reading a token: Next token is token identifier ()
+  Shifting token identifier ()
+  Entering state 13
+  Reading a token: Next token is token op_bar ()
+  Reducing stack by rule 45 (line 144):
+     $1 = token identifier ()
+  -> $$ = nterm primary ()
+  Stack now 0
+  Entering state 25
+  Next token is token op_bar ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0
+  Entering state 24
+  Next token is token op_bar ()
+  Shifting token op_bar ()
+  Entering state 72
+  Reading a token: Next token is token identifier ()
+  Shifting token identifier ()
+  Entering state 28
+  Reading a token: Next token is token '\n' ()
+  Reducing stack by rule 45 (line 144):
+     $1 = token identifier ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 72
+  Entering state 25
+  Next token is token '\n' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72
+  Entering state 108
+  Next token is token '\n' ()
+  Reducing stack by rule 20 (line 109):
+     $1 = nterm expr ()
+     $2 = token op_bar ()
+     $3 = nterm expr ()
+  -> $$ = nterm expr ()
+  Stack now 0
+  Entering state 24
+  Next token is token '\n' ()
+  Reducing stack by rule 13 (line 98):
+     $1 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0
+  Entering state 21
+  Next token is token '\n' ()
+  Shifting token '\n' ()
+  Entering state 52
+  Reducing stack by rule 75 (line 190):
+     $1 = token '\n' ()
+  -> $$ = nterm term ()
+  Stack now 0 21
+  Entering state 55
+  Reducing stack by rule 72 (line 185):
+     $1 = nterm term ()
+  -> $$ = nterm terms ()
+  Stack now 0 21
+  Entering state 54
+  Reading a token: Now at end of input.
+  Reducing stack by rule 71 (line 182):
+     $1 = nterm terms ()
+  -> $$ = nterm opt_terms ()
+  Stack now 0 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0
+  Entering state 20
+  Reducing stack by rule 1 (line 80):
+     $1 = nterm compstmt ()
+  -> $$ = nterm program ()
+  Stack now 0
+  Entering state 19
+  Now at end of input.
+  Stack now 0 19
+  Cleanup: popping nterm program ()
+  Syntax OK
+
+Streem should recognise a block expression:
+  $ echo '{ |x| x + 1 }' | $TESTDIR/../bin/streem
+  Starting parse
+  Entering state 0
+  Reading a token: Next token is token '{' ()
+  Shifting token '{' ()
+  Entering state 16
+  Reading a token: Next token is token op_bar ()
+  Shifting token op_bar ()
+  Entering state 40
+  Reading a token: Next token is token identifier ()
+  Shifting token identifier ()
+  Entering state 79
+  Reducing stack by rule 68 (line 177):
+     $1 = token identifier ()
+  -> $$ = nterm f_args ()
+  Stack now 0 16 40
+  Entering state 80
+  Reading a token: Next token is token op_bar ()
+  Shifting token op_bar ()
+  Entering state 114
+  Reducing stack by rule 67 (line 174):
+     $1 = token op_bar ()
+     $2 = nterm f_args ()
+     $3 = token op_bar ()
+  -> $$ = nterm bparam ()
+  Stack now 0 16
+  Entering state 41
+  Reading a token: Next token is token identifier ()
+  Shifting token identifier ()
+  Entering state 13
+  Reading a token: Next token is token op_plus ()
+  Reducing stack by rule 45 (line 144):
+     $1 = token identifier ()
+  -> $$ = nterm primary ()
+  Stack now 0 16 41
+  Entering state 25
+  Next token is token op_plus ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 16 41
+  Entering state 24
+  Next token is token op_plus ()
+  Shifting token op_plus ()
+  Entering state 59
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0 16 41 24 59
+  Entering state 25
+  Reading a token: Next token is token '}' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 16 41 24 59
+  Entering state 95
+  Next token is token '}' ()
+  Reducing stack by rule 15 (line 104):
+     $1 = nterm expr ()
+     $2 = token op_plus ()
+     $3 = nterm expr ()
+  -> $$ = nterm expr ()
+  Stack now 0 16 41
+  Entering state 24
+  Next token is token '}' ()
+  Reducing stack by rule 13 (line 98):
+     $1 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0 16 41
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0 16 41
+  Entering state 21
+  Next token is token '}' ()
+  Reducing stack by rule 70 (line 181):
+  -> $$ = nterm opt_terms ()
+  Stack now 0 16 41 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0 16 41
+  Entering state 81
+  Next token is token '}' ()
+  Shifting token '}' ()
+  Entering state 116
+  Reducing stack by rule 63 (line 168):
+     $1 = token '{' ()
+     $2 = nterm bparam ()
+     $3 = nterm compstmt ()
+     $4 = token '}' ()
+  -> $$ = nterm block ()
+  Stack now 0
+  Entering state 26
+  Reducing stack by rule 51 (line 150):
+     $1 = nterm block ()
+  -> $$ = nterm primary ()
+  Stack now 0
+  Entering state 25
+  Reading a token: Next token is token '\n' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0
+  Entering state 24
+  Next token is token '\n' ()
+  Reducing stack by rule 13 (line 98):
+     $1 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0
+  Entering state 21
+  Next token is token '\n' ()
+  Shifting token '\n' ()
+  Entering state 52
+  Reducing stack by rule 75 (line 190):
+     $1 = token '\n' ()
+  -> $$ = nterm term ()
+  Stack now 0 21
+  Entering state 55
+  Reducing stack by rule 72 (line 185):
+     $1 = nterm term ()
+  -> $$ = nterm terms ()
+  Stack now 0 21
+  Entering state 54
+  Reading a token: Now at end of input.
+  Reducing stack by rule 71 (line 182):
+     $1 = nterm terms ()
+  -> $$ = nterm opt_terms ()
+  Stack now 0 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0
+  Entering state 20
+  Reducing stack by rule 1 (line 80):
+     $1 = nterm compstmt ()
+  -> $$ = nterm program ()
+  Stack now 0
+  Entering state 19
+  Now at end of input.
+  Stack now 0 19
+  Cleanup: popping nterm program ()
+  Syntax OK
+
+Streem should recognise a block expression in a stream:
+  $ echo 'STDIN | { |s| s + "!" } | STDOUT' | $TESTDIR/../bin/streem
+  Starting parse
+  Entering state 0
+  Reading a token: Next token is token identifier ()
+  Shifting token identifier ()
+  Entering state 13
+  Reading a token: Next token is token op_bar ()
+  Reducing stack by rule 45 (line 144):
+     $1 = token identifier ()
+  -> $$ = nterm primary ()
+  Stack now 0
+  Entering state 25
+  Next token is token op_bar ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0
+  Entering state 24
+  Next token is token op_bar ()
+  Shifting token op_bar ()
+  Entering state 72
+  Reading a token: Next token is token '{' ()
+  Shifting token '{' ()
+  Entering state 16
+  Reading a token: Next token is token op_bar ()
+  Shifting token op_bar ()
+  Entering state 40
+  Reading a token: Next token is token identifier ()
+  Shifting token identifier ()
+  Entering state 79
+  Reducing stack by rule 68 (line 177):
+     $1 = token identifier ()
+  -> $$ = nterm f_args ()
+  Stack now 0 24 72 16 40
+  Entering state 80
+  Reading a token: Next token is token op_bar ()
+  Shifting token op_bar ()
+  Entering state 114
+  Reducing stack by rule 67 (line 174):
+     $1 = token op_bar ()
+     $2 = nterm f_args ()
+     $3 = token op_bar ()
+  -> $$ = nterm bparam ()
+  Stack now 0 24 72 16
+  Entering state 41
+  Reading a token: Next token is token identifier ()
+  Shifting token identifier ()
+  Entering state 13
+  Reading a token: Next token is token op_plus ()
+  Reducing stack by rule 45 (line 144):
+     $1 = token identifier ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 72 16 41
+  Entering state 25
+  Next token is token op_plus ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72 16 41
+  Entering state 24
+  Next token is token op_plus ()
+  Shifting token op_plus ()
+  Entering state 59
+  Reading a token: Next token is token lit_string ()
+  Shifting token lit_string ()
+  Entering state 12
+  Reducing stack by rule 44 (line 143):
+     $1 = token lit_string ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 72 16 41 24 59
+  Entering state 25
+  Reading a token: Next token is token '}' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72 16 41 24 59
+  Entering state 95
+  Next token is token '}' ()
+  Reducing stack by rule 15 (line 104):
+     $1 = nterm expr ()
+     $2 = token op_plus ()
+     $3 = nterm expr ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72 16 41
+  Entering state 24
+  Next token is token '}' ()
+  Reducing stack by rule 13 (line 98):
+     $1 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0 24 72 16 41
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0 24 72 16 41
+  Entering state 21
+  Next token is token '}' ()
+  Reducing stack by rule 70 (line 181):
+  -> $$ = nterm opt_terms ()
+  Stack now 0 24 72 16 41 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0 24 72 16 41
+  Entering state 81
+  Next token is token '}' ()
+  Shifting token '}' ()
+  Entering state 116
+  Reducing stack by rule 63 (line 168):
+     $1 = token '{' ()
+     $2 = nterm bparam ()
+     $3 = nterm compstmt ()
+     $4 = token '}' ()
+  -> $$ = nterm block ()
+  Stack now 0 24 72
+  Entering state 26
+  Reducing stack by rule 51 (line 150):
+     $1 = nterm block ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 72
+  Entering state 25
+  Reading a token: Next token is token op_bar ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72
+  Entering state 108
+  Next token is token op_bar ()
+  Reducing stack by rule 20 (line 109):
+     $1 = nterm expr ()
+     $2 = token op_bar ()
+     $3 = nterm expr ()
+  -> $$ = nterm expr ()
+  Stack now 0
+  Entering state 24
+  Next token is token op_bar ()
+  Shifting token op_bar ()
+  Entering state 72
+  Reading a token: Next token is token identifier ()
+  Shifting token identifier ()
+  Entering state 28
+  Reading a token: Next token is token '\n' ()
+  Reducing stack by rule 45 (line 144):
+     $1 = token identifier ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 72
+  Entering state 25
+  Next token is token '\n' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72
+  Entering state 108
+  Next token is token '\n' ()
+  Reducing stack by rule 20 (line 109):
+     $1 = nterm expr ()
+     $2 = token op_bar ()
+     $3 = nterm expr ()
+  -> $$ = nterm expr ()
+  Stack now 0
+  Entering state 24
+  Next token is token '\n' ()
+  Reducing stack by rule 13 (line 98):
+     $1 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0
+  Entering state 21
+  Next token is token '\n' ()
+  Shifting token '\n' ()
+  Entering state 52
+  Reducing stack by rule 75 (line 190):
+     $1 = token '\n' ()
+  -> $$ = nterm term ()
+  Stack now 0 21
+  Entering state 55
+  Reducing stack by rule 72 (line 185):
+     $1 = nterm term ()
+  -> $$ = nterm terms ()
+  Stack now 0 21
+  Entering state 54
+  Reading a token: Now at end of input.
+  Reducing stack by rule 71 (line 182):
+     $1 = nterm terms ()
+  -> $$ = nterm opt_terms ()
+  Stack now 0 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0
+  Entering state 20
+  Reducing stack by rule 1 (line 80):
+     $1 = nterm compstmt ()
+  -> $$ = nterm program ()
+  Stack now 0
+  Entering state 19
+  Now at end of input.
+  Stack now 0 19
+  Cleanup: popping nterm program ()
+  Syntax OK
+
+Streem should recognise a block expression with a statement in a stream:
+  $ echo 'STDIN | { |s| if (s != "exit") { s } else { exit() } } | STDOUT' | $TESTDIR/../bin/streem
+  Starting parse
+  Entering state 0
+  Reading a token: Next token is token identifier ()
+  Shifting token identifier ()
+  Entering state 13
+  Reading a token: Next token is token op_bar ()
+  Reducing stack by rule 45 (line 144):
+     $1 = token identifier ()
+  -> $$ = nterm primary ()
+  Stack now 0
+  Entering state 25
+  Next token is token op_bar ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0
+  Entering state 24
+  Next token is token op_bar ()
+  Shifting token op_bar ()
+  Entering state 72
+  Reading a token: Next token is token '{' ()
+  Shifting token '{' ()
+  Entering state 16
+  Reading a token: Next token is token op_bar ()
+  Shifting token op_bar ()
+  Entering state 40
+  Reading a token: Next token is token identifier ()
+  Shifting token identifier ()
+  Entering state 79
+  Reducing stack by rule 68 (line 177):
+     $1 = token identifier ()
+  -> $$ = nterm f_args ()
+  Stack now 0 24 72 16 40
+  Entering state 80
+  Reading a token: Next token is token op_bar ()
+  Shifting token op_bar ()
+  Entering state 114
+  Reducing stack by rule 67 (line 174):
+     $1 = token op_bar ()
+     $2 = nterm f_args ()
+     $3 = token op_bar ()
+  -> $$ = nterm bparam ()
+  Stack now 0 24 72 16
+  Entering state 41
+  Reading a token: Next token is token keyword_if ()
+  Shifting token keyword_if ()
+  Entering state 2
+  Reading a token: Next token is token '(' ()
+  Shifting token '(' ()
+  Entering state 17
+  Reading a token: Next token is token identifier ()
+  Shifting token identifier ()
+  Entering state 13
+  Reading a token: Next token is token op_neq ()
+  Reducing stack by rule 45 (line 144):
+     $1 = token identifier ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 72 16 41 2 17
+  Entering state 25
+  Next token is token op_neq ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72 16 41 2 17
+  Entering state 24
+  Next token is token op_neq ()
+  Shifting token op_neq ()
+  Entering state 65
+  Reading a token: Next token is token lit_string ()
+  Shifting token lit_string ()
+  Entering state 12
+  Reducing stack by rule 44 (line 143):
+     $1 = token lit_string ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 72 16 41 2 17 24 65
+  Entering state 25
+  Reading a token: Next token is token ')' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72 16 41 2 17 24 65
+  Entering state 101
+  Next token is token ')' ()
+  Reducing stack by rule 27 (line 116):
+     $1 = nterm expr ()
+     $2 = token op_neq ()
+     $3 = nterm expr ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72 16 41 2 17
+  Entering state 24
+  Next token is token ')' ()
+  Reducing stack by rule 13 (line 98):
+     $1 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0 24 72 16 41 2 17
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0 24 72 16 41 2 17
+  Entering state 21
+  Next token is token ')' ()
+  Reducing stack by rule 70 (line 181):
+  -> $$ = nterm opt_terms ()
+  Stack now 0 24 72 16 41 2 17 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0 24 72 16 41 2 17
+  Entering state 42
+  Next token is token ')' ()
+  Shifting token ')' ()
+  Entering state 82
+  Reducing stack by rule 46 (line 145):
+     $1 = token '(' ()
+     $2 = nterm compstmt ()
+     $3 = token ')' ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 72 16 41 2
+  Entering state 25
+  Reading a token: Next token is token '{' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72 16 41 2
+  Entering state 29
+  Next token is token '{' ()
+  Shifting token '{' ()
+  Entering state 75
+  Reading a token: Next token is token identifier ()
+  Shifting token identifier ()
+  Entering state 13
+  Reading a token: Next token is token '}' ()
+  Reducing stack by rule 45 (line 144):
+     $1 = token identifier ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 72 16 41 2 29 75
+  Entering state 25
+  Next token is token '}' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72 16 41 2 29 75
+  Entering state 24
+  Next token is token '}' ()
+  Reducing stack by rule 13 (line 98):
+     $1 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0 24 72 16 41 2 29 75
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0 24 72 16 41 2 29 75
+  Entering state 21
+  Next token is token '}' ()
+  Reducing stack by rule 70 (line 181):
+  -> $$ = nterm opt_terms ()
+  Stack now 0 24 72 16 41 2 29 75 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0 24 72 16 41 2 29 75
+  Entering state 111
+  Next token is token '}' ()
+  Shifting token '}' ()
+  Entering state 123
+  Reducing stack by rule 35 (line 126):
+  -> $$ = nterm opt_elsif ()
+  Stack now 0 24 72 16 41 2 29 75 111 123
+  Entering state 126
+  Reading a token: Next token is token keyword_else ()
+  Shifting token keyword_else ()
+  Entering state 129
+  Reading a token: Next token is token '{' ()
+  Shifting token '{' ()
+  Entering state 131
+  Reading a token: Next token is token identifier ()
+  Shifting token identifier ()
+  Entering state 13
+  Reading a token: Next token is token '(' ()
+  Shifting token '(' ()
+  Entering state 36
+  Reading a token: Next token is token ')' ()
+  Reducing stack by rule 39 (line 134):
+  -> $$ = nterm opt_args ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 131 13 36
+  Entering state 77
+  Next token is token ')' ()
+  Shifting token ')' ()
+  Entering state 113
+  Reducing stack by rule 52 (line 151):
+     $1 = token identifier ()
+     $2 = token '(' ()
+     $3 = nterm opt_args ()
+     $4 = token ')' ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 131
+  Entering state 25
+  Reading a token: Next token is token '}' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 131
+  Entering state 24
+  Next token is token '}' ()
+  Reducing stack by rule 13 (line 98):
+     $1 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 131
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 131
+  Entering state 21
+  Next token is token '}' ()
+  Reducing stack by rule 70 (line 181):
+  -> $$ = nterm opt_terms ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 131 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 131
+  Entering state 133
+  Next token is token '}' ()
+  Shifting token '}' ()
+  Entering state 135
+  Reducing stack by rule 38 (line 131):
+     $1 = nterm opt_elsif ()
+     $2 = token keyword_else ()
+     $3 = token '{' ()
+     $4 = nterm compstmt ()
+     $5 = token '}' ()
+  -> $$ = nterm opt_else ()
+  Stack now 0 24 72 16 41 2 29 75 111 123
+  Entering state 127
+  Reducing stack by rule 55 (line 154):
+     $1 = token keyword_if ()
+     $2 = nterm expr ()
+     $3 = token '{' ()
+     $4 = nterm compstmt ()
+     $5 = token '}' ()
+     $6 = nterm opt_else ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 72 16 41
+  Entering state 25
+  Reading a token: Next token is token '}' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72 16 41
+  Entering state 24
+  Next token is token '}' ()
+  Reducing stack by rule 13 (line 98):
+     $1 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0 24 72 16 41
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0 24 72 16 41
+  Entering state 21
+  Next token is token '}' ()
+  Reducing stack by rule 70 (line 181):
+  -> $$ = nterm opt_terms ()
+  Stack now 0 24 72 16 41 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0 24 72 16 41
+  Entering state 81
+  Next token is token '}' ()
+  Shifting token '}' ()
+  Entering state 116
+  Reducing stack by rule 63 (line 168):
+     $1 = token '{' ()
+     $2 = nterm bparam ()
+     $3 = nterm compstmt ()
+     $4 = token '}' ()
+  -> $$ = nterm block ()
+  Stack now 0 24 72
+  Entering state 26
+  Reducing stack by rule 51 (line 150):
+     $1 = nterm block ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 72
+  Entering state 25
+  Reading a token: Next token is token op_bar ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72
+  Entering state 108
+  Next token is token op_bar ()
+  Reducing stack by rule 20 (line 109):
+     $1 = nterm expr ()
+     $2 = token op_bar ()
+     $3 = nterm expr ()
+  -> $$ = nterm expr ()
+  Stack now 0
+  Entering state 24
+  Next token is token op_bar ()
+  Shifting token op_bar ()
+  Entering state 72
+  Reading a token: Next token is token identifier ()
+  Shifting token identifier ()
+  Entering state 28
+  Reading a token: Next token is token '\n' ()
+  Reducing stack by rule 45 (line 144):
+     $1 = token identifier ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 72
+  Entering state 25
+  Next token is token '\n' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72
+  Entering state 108
+  Next token is token '\n' ()
+  Reducing stack by rule 20 (line 109):
+     $1 = nterm expr ()
+     $2 = token op_bar ()
+     $3 = nterm expr ()
+  -> $$ = nterm expr ()
+  Stack now 0
+  Entering state 24
+  Next token is token '\n' ()
+  Reducing stack by rule 13 (line 98):
+     $1 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0
+  Entering state 21
+  Next token is token '\n' ()
+  Shifting token '\n' ()
+  Entering state 52
+  Reducing stack by rule 75 (line 190):
+     $1 = token '\n' ()
+  -> $$ = nterm term ()
+  Stack now 0 21
+  Entering state 55
+  Reducing stack by rule 72 (line 185):
+     $1 = nterm term ()
+  -> $$ = nterm terms ()
+  Stack now 0 21
+  Entering state 54
+  Reading a token: Now at end of input.
+  Reducing stack by rule 71 (line 182):
+     $1 = nterm terms ()
+  -> $$ = nterm opt_terms ()
+  Stack now 0 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0
+  Entering state 20
+  Reducing stack by rule 1 (line 80):
+     $1 = nterm compstmt ()
+  -> $$ = nterm program ()
+  Stack now 0
+  Entering state 19
+  Now at end of input.
+  Stack now 0 19
+  Cleanup: popping nterm program ()
+  Syntax OK
+
+Streem should recognise a block expression with an if statement and return values in a stream:
+  $ echo 'seq(100) | { |x| if x % 15 == 0 { "FizzBuzz" } else if x % 3 == 0 { "Fizz" } else if x % 5 == 0 { "Buzz" } else { x } } | STDOUT' | $TESTDIR/../bin/streem
+  Starting parse
+  Entering state 0
+  Reading a token: Next token is token identifier ()
+  Shifting token identifier ()
+  Entering state 13
+  Reading a token: Next token is token '(' ()
+  Shifting token '(' ()
+  Entering state 36
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0 13 36
+  Entering state 25
+  Reading a token: Next token is token ')' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 13 36
+  Entering state 30
+  Next token is token ')' ()
+  Reducing stack by rule 41 (line 138):
+     $1 = nterm expr ()
+  -> $$ = nterm args ()
+  Stack now 0 13 36
+  Entering state 32
+  Next token is token ')' ()
+  Reducing stack by rule 40 (line 135):
+     $1 = nterm args ()
+  -> $$ = nterm opt_args ()
+  Stack now 0 13 36
+  Entering state 77
+  Next token is token ')' ()
+  Shifting token ')' ()
+  Entering state 113
+  Reducing stack by rule 52 (line 151):
+     $1 = token identifier ()
+     $2 = token '(' ()
+     $3 = nterm opt_args ()
+     $4 = token ')' ()
+  -> $$ = nterm primary ()
+  Stack now 0
+  Entering state 25
+  Reading a token: Next token is token op_bar ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0
+  Entering state 24
+  Next token is token op_bar ()
+  Shifting token op_bar ()
+  Entering state 72
+  Reading a token: Next token is token '{' ()
+  Shifting token '{' ()
+  Entering state 16
+  Reading a token: Next token is token op_bar ()
+  Shifting token op_bar ()
+  Entering state 40
+  Reading a token: Next token is token identifier ()
+  Shifting token identifier ()
+  Entering state 79
+  Reducing stack by rule 68 (line 177):
+     $1 = token identifier ()
+  -> $$ = nterm f_args ()
+  Stack now 0 24 72 16 40
+  Entering state 80
+  Reading a token: Next token is token op_bar ()
+  Shifting token op_bar ()
+  Entering state 114
+  Reducing stack by rule 67 (line 174):
+     $1 = token op_bar ()
+     $2 = nterm f_args ()
+     $3 = token op_bar ()
+  -> $$ = nterm bparam ()
+  Stack now 0 24 72 16
+  Entering state 41
+  Reading a token: Next token is token keyword_if ()
+  Shifting token keyword_if ()
+  Entering state 2
+  Reading a token: Next token is token identifier ()
+  Shifting token identifier ()
+  Entering state 28
+  Reading a token: Next token is token op_mod ()
+  Reducing stack by rule 45 (line 144):
+     $1 = token identifier ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 72 16 41 2
+  Entering state 25
+  Next token is token op_mod ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72 16 41 2
+  Entering state 29
+  Next token is token op_mod ()
+  Shifting token op_mod ()
+  Entering state 63
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 72 16 41 2 29 63
+  Entering state 25
+  Reading a token: Next token is token op_eq ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72 16 41 2 29 63
+  Entering state 99
+  Reducing stack by rule 19 (line 108):
+     $1 = nterm expr ()
+     $2 = token op_mod ()
+     $3 = nterm expr ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72 16 41 2
+  Entering state 29
+  Next token is token op_eq ()
+  Shifting token op_eq ()
+  Entering state 64
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 72 16 41 2 29 64
+  Entering state 25
+  Reading a token: Next token is token '{' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72 16 41 2 29 64
+  Entering state 100
+  Next token is token '{' ()
+  Reducing stack by rule 26 (line 115):
+     $1 = nterm expr ()
+     $2 = token op_eq ()
+     $3 = nterm expr ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72 16 41 2
+  Entering state 29
+  Next token is token '{' ()
+  Shifting token '{' ()
+  Entering state 75
+  Reading a token: Next token is token lit_string ()
+  Shifting token lit_string ()
+  Entering state 12
+  Reducing stack by rule 44 (line 143):
+     $1 = token lit_string ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 72 16 41 2 29 75
+  Entering state 25
+  Reading a token: Next token is token '}' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72 16 41 2 29 75
+  Entering state 24
+  Next token is token '}' ()
+  Reducing stack by rule 13 (line 98):
+     $1 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0 24 72 16 41 2 29 75
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0 24 72 16 41 2 29 75
+  Entering state 21
+  Next token is token '}' ()
+  Reducing stack by rule 70 (line 181):
+  -> $$ = nterm opt_terms ()
+  Stack now 0 24 72 16 41 2 29 75 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0 24 72 16 41 2 29 75
+  Entering state 111
+  Next token is token '}' ()
+  Shifting token '}' ()
+  Entering state 123
+  Reducing stack by rule 35 (line 126):
+  -> $$ = nterm opt_elsif ()
+  Stack now 0 24 72 16 41 2 29 75 111 123
+  Entering state 126
+  Reading a token: Next token is token keyword_else ()
+  Shifting token keyword_else ()
+  Entering state 129
+  Reading a token: Next token is token keyword_if ()
+  Shifting token keyword_if ()
+  Entering state 130
+  Reading a token: Next token is token identifier ()
+  Shifting token identifier ()
+  Entering state 28
+  Reading a token: Next token is token op_mod ()
+  Reducing stack by rule 45 (line 144):
+     $1 = token identifier ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130
+  Entering state 25
+  Next token is token op_mod ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130
+  Entering state 132
+  Next token is token op_mod ()
+  Shifting token op_mod ()
+  Entering state 63
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130 132 63
+  Entering state 25
+  Reading a token: Next token is token op_eq ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130 132 63
+  Entering state 99
+  Reducing stack by rule 19 (line 108):
+     $1 = nterm expr ()
+     $2 = token op_mod ()
+     $3 = nterm expr ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130
+  Entering state 132
+  Next token is token op_eq ()
+  Shifting token op_eq ()
+  Entering state 64
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130 132 64
+  Entering state 25
+  Reading a token: Next token is token '{' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130 132 64
+  Entering state 100
+  Next token is token '{' ()
+  Reducing stack by rule 26 (line 115):
+     $1 = nterm expr ()
+     $2 = token op_eq ()
+     $3 = nterm expr ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130
+  Entering state 132
+  Next token is token '{' ()
+  Shifting token '{' ()
+  Entering state 134
+  Reading a token: Next token is token lit_string ()
+  Shifting token lit_string ()
+  Entering state 12
+  Reducing stack by rule 44 (line 143):
+     $1 = token lit_string ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130 132 134
+  Entering state 25
+  Reading a token: Next token is token '}' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130 132 134
+  Entering state 24
+  Next token is token '}' ()
+  Reducing stack by rule 13 (line 98):
+     $1 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130 132 134
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130 132 134
+  Entering state 21
+  Next token is token '}' ()
+  Reducing stack by rule 70 (line 181):
+  -> $$ = nterm opt_terms ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130 132 134 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130 132 134
+  Entering state 136
+  Next token is token '}' ()
+  Shifting token '}' ()
+  Entering state 137
+  Reducing stack by rule 36 (line 127):
+     $1 = nterm opt_elsif ()
+     $2 = token keyword_else ()
+     $3 = token keyword_if ()
+     $4 = nterm expr ()
+     $5 = token '{' ()
+     $6 = nterm compstmt ()
+     $7 = token '}' ()
+  -> $$ = nterm opt_elsif ()
+  Stack now 0 24 72 16 41 2 29 75 111 123
+  Entering state 126
+  Reading a token: Next token is token keyword_else ()
+  Shifting token keyword_else ()
+  Entering state 129
+  Reading a token: Next token is token keyword_if ()
+  Shifting token keyword_if ()
+  Entering state 130
+  Reading a token: Next token is token identifier ()
+  Shifting token identifier ()
+  Entering state 28
+  Reading a token: Next token is token op_mod ()
+  Reducing stack by rule 45 (line 144):
+     $1 = token identifier ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130
+  Entering state 25
+  Next token is token op_mod ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130
+  Entering state 132
+  Next token is token op_mod ()
+  Shifting token op_mod ()
+  Entering state 63
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130 132 63
+  Entering state 25
+  Reading a token: Next token is token op_eq ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130 132 63
+  Entering state 99
+  Reducing stack by rule 19 (line 108):
+     $1 = nterm expr ()
+     $2 = token op_mod ()
+     $3 = nterm expr ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130
+  Entering state 132
+  Next token is token op_eq ()
+  Shifting token op_eq ()
+  Entering state 64
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130 132 64
+  Entering state 25
+  Reading a token: Next token is token '{' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130 132 64
+  Entering state 100
+  Next token is token '{' ()
+  Reducing stack by rule 26 (line 115):
+     $1 = nterm expr ()
+     $2 = token op_eq ()
+     $3 = nterm expr ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130
+  Entering state 132
+  Next token is token '{' ()
+  Shifting token '{' ()
+  Entering state 134
+  Reading a token: Next token is token lit_string ()
+  Shifting token lit_string ()
+  Entering state 12
+  Reducing stack by rule 44 (line 143):
+     $1 = token lit_string ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130 132 134
+  Entering state 25
+  Reading a token: Next token is token '}' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130 132 134
+  Entering state 24
+  Next token is token '}' ()
+  Reducing stack by rule 13 (line 98):
+     $1 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130 132 134
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130 132 134
+  Entering state 21
+  Next token is token '}' ()
+  Reducing stack by rule 70 (line 181):
+  -> $$ = nterm opt_terms ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130 132 134 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130 132 134
+  Entering state 136
+  Next token is token '}' ()
+  Shifting token '}' ()
+  Entering state 137
+  Reducing stack by rule 36 (line 127):
+     $1 = nterm opt_elsif ()
+     $2 = token keyword_else ()
+     $3 = token keyword_if ()
+     $4 = nterm expr ()
+     $5 = token '{' ()
+     $6 = nterm compstmt ()
+     $7 = token '}' ()
+  -> $$ = nterm opt_elsif ()
+  Stack now 0 24 72 16 41 2 29 75 111 123
+  Entering state 126
+  Reading a token: Next token is token keyword_else ()
+  Shifting token keyword_else ()
+  Entering state 129
+  Reading a token: Next token is token '{' ()
+  Shifting token '{' ()
+  Entering state 131
+  Reading a token: Next token is token identifier ()
+  Shifting token identifier ()
+  Entering state 13
+  Reading a token: Next token is token '}' ()
+  Reducing stack by rule 45 (line 144):
+     $1 = token identifier ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 131
+  Entering state 25
+  Next token is token '}' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 131
+  Entering state 24
+  Next token is token '}' ()
+  Reducing stack by rule 13 (line 98):
+     $1 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 131
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 131
+  Entering state 21
+  Next token is token '}' ()
+  Reducing stack by rule 70 (line 181):
+  -> $$ = nterm opt_terms ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 131 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 131
+  Entering state 133
+  Next token is token '}' ()
+  Shifting token '}' ()
+  Entering state 135
+  Reducing stack by rule 38 (line 131):
+     $1 = nterm opt_elsif ()
+     $2 = token keyword_else ()
+     $3 = token '{' ()
+     $4 = nterm compstmt ()
+     $5 = token '}' ()
+  -> $$ = nterm opt_else ()
+  Stack now 0 24 72 16 41 2 29 75 111 123
+  Entering state 127
+  Reducing stack by rule 55 (line 154):
+     $1 = token keyword_if ()
+     $2 = nterm expr ()
+     $3 = token '{' ()
+     $4 = nterm compstmt ()
+     $5 = token '}' ()
+     $6 = nterm opt_else ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 72 16 41
+  Entering state 25
+  Reading a token: Next token is token '}' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72 16 41
+  Entering state 24
+  Next token is token '}' ()
+  Reducing stack by rule 13 (line 98):
+     $1 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0 24 72 16 41
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0 24 72 16 41
+  Entering state 21
+  Next token is token '}' ()
+  Reducing stack by rule 70 (line 181):
+  -> $$ = nterm opt_terms ()
+  Stack now 0 24 72 16 41 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0 24 72 16 41
+  Entering state 81
+  Next token is token '}' ()
+  Shifting token '}' ()
+  Entering state 116
+  Reducing stack by rule 63 (line 168):
+     $1 = token '{' ()
+     $2 = nterm bparam ()
+     $3 = nterm compstmt ()
+     $4 = token '}' ()
+  -> $$ = nterm block ()
+  Stack now 0 24 72
+  Entering state 26
+  Reducing stack by rule 51 (line 150):
+     $1 = nterm block ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 72
+  Entering state 25
+  Reading a token: Next token is token op_bar ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72
+  Entering state 108
+  Next token is token op_bar ()
+  Reducing stack by rule 20 (line 109):
+     $1 = nterm expr ()
+     $2 = token op_bar ()
+     $3 = nterm expr ()
+  -> $$ = nterm expr ()
+  Stack now 0
+  Entering state 24
+  Next token is token op_bar ()
+  Shifting token op_bar ()
+  Entering state 72
+  Reading a token: Next token is token identifier ()
+  Shifting token identifier ()
+  Entering state 28
+  Reading a token: Next token is token '\n' ()
+  Reducing stack by rule 45 (line 144):
+     $1 = token identifier ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 72
+  Entering state 25
+  Next token is token '\n' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72
+  Entering state 108
+  Next token is token '\n' ()
+  Reducing stack by rule 20 (line 109):
+     $1 = nterm expr ()
+     $2 = token op_bar ()
+     $3 = nterm expr ()
+  -> $$ = nterm expr ()
+  Stack now 0
+  Entering state 24
+  Next token is token '\n' ()
+  Reducing stack by rule 13 (line 98):
+     $1 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0
+  Entering state 21
+  Next token is token '\n' ()
+  Shifting token '\n' ()
+  Entering state 52
+  Reducing stack by rule 75 (line 190):
+     $1 = token '\n' ()
+  -> $$ = nterm term ()
+  Stack now 0 21
+  Entering state 55
+  Reducing stack by rule 72 (line 185):
+     $1 = nterm term ()
+  -> $$ = nterm terms ()
+  Stack now 0 21
+  Entering state 54
+  Reading a token: Now at end of input.
+  Reducing stack by rule 71 (line 182):
+     $1 = nterm terms ()
+  -> $$ = nterm opt_terms ()
+  Stack now 0 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0
+  Entering state 20
+  Reducing stack by rule 1 (line 80):
+     $1 = nterm compstmt ()
+  -> $$ = nterm program ()
+  Stack now 0
+  Entering state 19
+  Now at end of input.
+  Stack now 0 19
+  Cleanup: popping nterm program ()
+  Syntax OK
+
+Streem should recognise a block expression with a break statement in a stream:
+  $ echo 'seq(100) | { |x| if x % 15 == 0 { break } else if x % 3 == 0 { "Fizz" } else if x % 5 == 0 { "Buzz" } else { x } } | STDOUT' | $TESTDIR/../bin/streem
+  Starting parse
+  Entering state 0
+  Reading a token: Next token is token identifier ()
+  Shifting token identifier ()
+  Entering state 13
+  Reading a token: Next token is token '(' ()
+  Shifting token '(' ()
+  Entering state 36
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0 13 36
+  Entering state 25
+  Reading a token: Next token is token ')' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 13 36
+  Entering state 30
+  Next token is token ')' ()
+  Reducing stack by rule 41 (line 138):
+     $1 = nterm expr ()
+  -> $$ = nterm args ()
+  Stack now 0 13 36
+  Entering state 32
+  Next token is token ')' ()
+  Reducing stack by rule 40 (line 135):
+     $1 = nterm args ()
+  -> $$ = nterm opt_args ()
+  Stack now 0 13 36
+  Entering state 77
+  Next token is token ')' ()
+  Shifting token ')' ()
+  Entering state 113
+  Reducing stack by rule 52 (line 151):
+     $1 = token identifier ()
+     $2 = token '(' ()
+     $3 = nterm opt_args ()
+     $4 = token ')' ()
+  -> $$ = nterm primary ()
+  Stack now 0
+  Entering state 25
+  Reading a token: Next token is token op_bar ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0
+  Entering state 24
+  Next token is token op_bar ()
+  Shifting token op_bar ()
+  Entering state 72
+  Reading a token: Next token is token '{' ()
+  Shifting token '{' ()
+  Entering state 16
+  Reading a token: Next token is token op_bar ()
+  Shifting token op_bar ()
+  Entering state 40
+  Reading a token: Next token is token identifier ()
+  Shifting token identifier ()
+  Entering state 79
+  Reducing stack by rule 68 (line 177):
+     $1 = token identifier ()
+  -> $$ = nterm f_args ()
+  Stack now 0 24 72 16 40
+  Entering state 80
+  Reading a token: Next token is token op_bar ()
+  Shifting token op_bar ()
+  Entering state 114
+  Reducing stack by rule 67 (line 174):
+     $1 = token op_bar ()
+     $2 = nterm f_args ()
+     $3 = token op_bar ()
+  -> $$ = nterm bparam ()
+  Stack now 0 24 72 16
+  Entering state 41
+  Reading a token: Next token is token keyword_if ()
+  Shifting token keyword_if ()
+  Entering state 2
+  Reading a token: Next token is token identifier ()
+  Shifting token identifier ()
+  Entering state 28
+  Reading a token: Next token is token op_mod ()
+  Reducing stack by rule 45 (line 144):
+     $1 = token identifier ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 72 16 41 2
+  Entering state 25
+  Next token is token op_mod ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72 16 41 2
+  Entering state 29
+  Next token is token op_mod ()
+  Shifting token op_mod ()
+  Entering state 63
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 72 16 41 2 29 63
+  Entering state 25
+  Reading a token: Next token is token op_eq ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72 16 41 2 29 63
+  Entering state 99
+  Reducing stack by rule 19 (line 108):
+     $1 = nterm expr ()
+     $2 = token op_mod ()
+     $3 = nterm expr ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72 16 41 2
+  Entering state 29
+  Next token is token op_eq ()
+  Shifting token op_eq ()
+  Entering state 64
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 72 16 41 2 29 64
+  Entering state 25
+  Reading a token: Next token is token '{' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72 16 41 2 29 64
+  Entering state 100
+  Next token is token '{' ()
+  Reducing stack by rule 26 (line 115):
+     $1 = nterm expr ()
+     $2 = token op_eq ()
+     $3 = nterm expr ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72 16 41 2
+  Entering state 29
+  Next token is token '{' ()
+  Shifting token '{' ()
+  Entering state 75
+  Reading a token: Next token is token keyword_break ()
+  Shifting token keyword_break ()
+  Entering state 3
+  Reducing stack by rule 12 (line 97):
+     $1 = token keyword_break ()
+  -> $$ = nterm stmt ()
+  Stack now 0 24 72 16 41 2 29 75
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0 24 72 16 41 2 29 75
+  Entering state 21
+  Reading a token: Next token is token '}' ()
+  Reducing stack by rule 70 (line 181):
+  -> $$ = nterm opt_terms ()
+  Stack now 0 24 72 16 41 2 29 75 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0 24 72 16 41 2 29 75
+  Entering state 111
+  Next token is token '}' ()
+  Shifting token '}' ()
+  Entering state 123
+  Reducing stack by rule 35 (line 126):
+  -> $$ = nterm opt_elsif ()
+  Stack now 0 24 72 16 41 2 29 75 111 123
+  Entering state 126
+  Reading a token: Next token is token keyword_else ()
+  Shifting token keyword_else ()
+  Entering state 129
+  Reading a token: Next token is token keyword_if ()
+  Shifting token keyword_if ()
+  Entering state 130
+  Reading a token: Next token is token identifier ()
+  Shifting token identifier ()
+  Entering state 28
+  Reading a token: Next token is token op_mod ()
+  Reducing stack by rule 45 (line 144):
+     $1 = token identifier ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130
+  Entering state 25
+  Next token is token op_mod ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130
+  Entering state 132
+  Next token is token op_mod ()
+  Shifting token op_mod ()
+  Entering state 63
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130 132 63
+  Entering state 25
+  Reading a token: Next token is token op_eq ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130 132 63
+  Entering state 99
+  Reducing stack by rule 19 (line 108):
+     $1 = nterm expr ()
+     $2 = token op_mod ()
+     $3 = nterm expr ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130
+  Entering state 132
+  Next token is token op_eq ()
+  Shifting token op_eq ()
+  Entering state 64
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130 132 64
+  Entering state 25
+  Reading a token: Next token is token '{' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130 132 64
+  Entering state 100
+  Next token is token '{' ()
+  Reducing stack by rule 26 (line 115):
+     $1 = nterm expr ()
+     $2 = token op_eq ()
+     $3 = nterm expr ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130
+  Entering state 132
+  Next token is token '{' ()
+  Shifting token '{' ()
+  Entering state 134
+  Reading a token: Next token is token lit_string ()
+  Shifting token lit_string ()
+  Entering state 12
+  Reducing stack by rule 44 (line 143):
+     $1 = token lit_string ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130 132 134
+  Entering state 25
+  Reading a token: Next token is token '}' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130 132 134
+  Entering state 24
+  Next token is token '}' ()
+  Reducing stack by rule 13 (line 98):
+     $1 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130 132 134
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130 132 134
+  Entering state 21
+  Next token is token '}' ()
+  Reducing stack by rule 70 (line 181):
+  -> $$ = nterm opt_terms ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130 132 134 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130 132 134
+  Entering state 136
+  Next token is token '}' ()
+  Shifting token '}' ()
+  Entering state 137
+  Reducing stack by rule 36 (line 127):
+     $1 = nterm opt_elsif ()
+     $2 = token keyword_else ()
+     $3 = token keyword_if ()
+     $4 = nterm expr ()
+     $5 = token '{' ()
+     $6 = nterm compstmt ()
+     $7 = token '}' ()
+  -> $$ = nterm opt_elsif ()
+  Stack now 0 24 72 16 41 2 29 75 111 123
+  Entering state 126
+  Reading a token: Next token is token keyword_else ()
+  Shifting token keyword_else ()
+  Entering state 129
+  Reading a token: Next token is token keyword_if ()
+  Shifting token keyword_if ()
+  Entering state 130
+  Reading a token: Next token is token identifier ()
+  Shifting token identifier ()
+  Entering state 28
+  Reading a token: Next token is token op_mod ()
+  Reducing stack by rule 45 (line 144):
+     $1 = token identifier ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130
+  Entering state 25
+  Next token is token op_mod ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130
+  Entering state 132
+  Next token is token op_mod ()
+  Shifting token op_mod ()
+  Entering state 63
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130 132 63
+  Entering state 25
+  Reading a token: Next token is token op_eq ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130 132 63
+  Entering state 99
+  Reducing stack by rule 19 (line 108):
+     $1 = nterm expr ()
+     $2 = token op_mod ()
+     $3 = nterm expr ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130
+  Entering state 132
+  Next token is token op_eq ()
+  Shifting token op_eq ()
+  Entering state 64
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130 132 64
+  Entering state 25
+  Reading a token: Next token is token '{' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130 132 64
+  Entering state 100
+  Next token is token '{' ()
+  Reducing stack by rule 26 (line 115):
+     $1 = nterm expr ()
+     $2 = token op_eq ()
+     $3 = nterm expr ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130
+  Entering state 132
+  Next token is token '{' ()
+  Shifting token '{' ()
+  Entering state 134
+  Reading a token: Next token is token lit_string ()
+  Shifting token lit_string ()
+  Entering state 12
+  Reducing stack by rule 44 (line 143):
+     $1 = token lit_string ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130 132 134
+  Entering state 25
+  Reading a token: Next token is token '}' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130 132 134
+  Entering state 24
+  Next token is token '}' ()
+  Reducing stack by rule 13 (line 98):
+     $1 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130 132 134
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130 132 134
+  Entering state 21
+  Next token is token '}' ()
+  Reducing stack by rule 70 (line 181):
+  -> $$ = nterm opt_terms ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130 132 134 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 130 132 134
+  Entering state 136
+  Next token is token '}' ()
+  Shifting token '}' ()
+  Entering state 137
+  Reducing stack by rule 36 (line 127):
+     $1 = nterm opt_elsif ()
+     $2 = token keyword_else ()
+     $3 = token keyword_if ()
+     $4 = nterm expr ()
+     $5 = token '{' ()
+     $6 = nterm compstmt ()
+     $7 = token '}' ()
+  -> $$ = nterm opt_elsif ()
+  Stack now 0 24 72 16 41 2 29 75 111 123
+  Entering state 126
+  Reading a token: Next token is token keyword_else ()
+  Shifting token keyword_else ()
+  Entering state 129
+  Reading a token: Next token is token '{' ()
+  Shifting token '{' ()
+  Entering state 131
+  Reading a token: Next token is token identifier ()
+  Shifting token identifier ()
+  Entering state 13
+  Reading a token: Next token is token '}' ()
+  Reducing stack by rule 45 (line 144):
+     $1 = token identifier ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 131
+  Entering state 25
+  Next token is token '}' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 131
+  Entering state 24
+  Next token is token '}' ()
+  Reducing stack by rule 13 (line 98):
+     $1 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 131
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 131
+  Entering state 21
+  Next token is token '}' ()
+  Reducing stack by rule 70 (line 181):
+  -> $$ = nterm opt_terms ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 131 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0 24 72 16 41 2 29 75 111 123 126 129 131
+  Entering state 133
+  Next token is token '}' ()
+  Shifting token '}' ()
+  Entering state 135
+  Reducing stack by rule 38 (line 131):
+     $1 = nterm opt_elsif ()
+     $2 = token keyword_else ()
+     $3 = token '{' ()
+     $4 = nterm compstmt ()
+     $5 = token '}' ()
+  -> $$ = nterm opt_else ()
+  Stack now 0 24 72 16 41 2 29 75 111 123
+  Entering state 127
+  Reducing stack by rule 55 (line 154):
+     $1 = token keyword_if ()
+     $2 = nterm expr ()
+     $3 = token '{' ()
+     $4 = nterm compstmt ()
+     $5 = token '}' ()
+     $6 = nterm opt_else ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 72 16 41
+  Entering state 25
+  Reading a token: Next token is token '}' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72 16 41
+  Entering state 24
+  Next token is token '}' ()
+  Reducing stack by rule 13 (line 98):
+     $1 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0 24 72 16 41
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0 24 72 16 41
+  Entering state 21
+  Next token is token '}' ()
+  Reducing stack by rule 70 (line 181):
+  -> $$ = nterm opt_terms ()
+  Stack now 0 24 72 16 41 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0 24 72 16 41
+  Entering state 81
+  Next token is token '}' ()
+  Shifting token '}' ()
+  Entering state 116
+  Reducing stack by rule 63 (line 168):
+     $1 = token '{' ()
+     $2 = nterm bparam ()
+     $3 = nterm compstmt ()
+     $4 = token '}' ()
+  -> $$ = nterm block ()
+  Stack now 0 24 72
+  Entering state 26
+  Reducing stack by rule 51 (line 150):
+     $1 = nterm block ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 72
+  Entering state 25
+  Reading a token: Next token is token op_bar ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72
+  Entering state 108
+  Next token is token op_bar ()
+  Reducing stack by rule 20 (line 109):
+     $1 = nterm expr ()
+     $2 = token op_bar ()
+     $3 = nterm expr ()
+  -> $$ = nterm expr ()
+  Stack now 0
+  Entering state 24
+  Next token is token op_bar ()
+  Shifting token op_bar ()
+  Entering state 72
+  Reading a token: Next token is token identifier ()
+  Shifting token identifier ()
+  Entering state 28
+  Reading a token: Next token is token '\n' ()
+  Reducing stack by rule 45 (line 144):
+     $1 = token identifier ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 72
+  Entering state 25
+  Next token is token '\n' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 72
+  Entering state 108
+  Next token is token '\n' ()
+  Reducing stack by rule 20 (line 109):
+     $1 = nterm expr ()
+     $2 = token op_bar ()
+     $3 = nterm expr ()
+  -> $$ = nterm expr ()
+  Stack now 0
+  Entering state 24
+  Next token is token '\n' ()
+  Reducing stack by rule 13 (line 98):
+     $1 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0
+  Entering state 21
+  Next token is token '\n' ()
+  Shifting token '\n' ()
+  Entering state 52
+  Reducing stack by rule 75 (line 190):
+     $1 = token '\n' ()
+  -> $$ = nterm term ()
+  Stack now 0 21
+  Entering state 55
+  Reducing stack by rule 72 (line 185):
+     $1 = nterm term ()
+  -> $$ = nterm terms ()
+  Stack now 0 21
+  Entering state 54
+  Reading a token: Now at end of input.
+  Reducing stack by rule 71 (line 182):
+     $1 = nterm terms ()
+  -> $$ = nterm opt_terms ()
+  Stack now 0 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0
+  Entering state 20
+  Reducing stack by rule 1 (line 80):
+     $1 = nterm compstmt ()
+  -> $$ = nterm program ()
+  Stack now 0
+  Entering state 19
+  Now at end of input.
+  Stack now 0 19
+  Cleanup: popping nterm program ()
+  Syntax OK
+
+Streem should recognise nil:
+  $ echo 'nil' | $TESTDIR/../bin/streem
+  Starting parse
+  Entering state 0
+  Reading a token: Next token is token keyword_nil ()
+  Shifting token keyword_nil ()
+  Entering state 6
+  Reducing stack by rule 56 (line 155):
+     $1 = token keyword_nil ()
+  -> $$ = nterm primary ()
+  Stack now 0
+  Entering state 25
+  Reading a token: Now at end of input.
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0
+  Entering state 24
+  Now at end of input.
+  Reducing stack by rule 13 (line 98):
+     $1 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0
+  Entering state 21
+  Now at end of input.
+  Reducing stack by rule 70 (line 181):
+  -> $$ = nterm opt_terms ()
+  Stack now 0 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0
+  Entering state 20
+  Reducing stack by rule 1 (line 80):
+     $1 = nterm compstmt ()
+  -> $$ = nterm program ()
+  Stack now 0
+  Entering state 19
+  Now at end of input.
+  Stack now 0 19
+  Cleanup: popping nterm program ()
+  Syntax OK
+
+Streem should recognise true:
+  $ echo 'true' | $TESTDIR/../bin/streem
+  Starting parse
+  Entering state 0
+  Reading a token: Next token is token keyword_true ()
+  Shifting token keyword_true ()
+  Entering state 7
+  Reducing stack by rule 57 (line 156):
+     $1 = token keyword_true ()
+  -> $$ = nterm primary ()
+  Stack now 0
+  Entering state 25
+  Reading a token: Now at end of input.
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0
+  Entering state 24
+  Now at end of input.
+  Reducing stack by rule 13 (line 98):
+     $1 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0
+  Entering state 21
+  Now at end of input.
+  Reducing stack by rule 70 (line 181):
+  -> $$ = nterm opt_terms ()
+  Stack now 0 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0
+  Entering state 20
+  Reducing stack by rule 1 (line 80):
+     $1 = nterm compstmt ()
+  -> $$ = nterm program ()
+  Stack now 0
+  Entering state 19
+  Now at end of input.
+  Stack now 0 19
+  Cleanup: popping nterm program ()
+  Syntax OK
+
+Streem should recognise false:
+  $ echo 'false' | $TESTDIR/../bin/streem
+  Starting parse
+  Entering state 0
+  Reading a token: Next token is token keyword_false ()
+  Shifting token keyword_false ()
+  Entering state 8
+  Reducing stack by rule 58 (line 157):
+     $1 = token keyword_false ()
+  -> $$ = nterm primary ()
+  Stack now 0
+  Entering state 25
+  Reading a token: Now at end of input.
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0
+  Entering state 24
+  Now at end of input.
+  Reducing stack by rule 13 (line 98):
+     $1 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0
+  Entering state 21
+  Now at end of input.
+  Reducing stack by rule 70 (line 181):
+  -> $$ = nterm opt_terms ()
+  Stack now 0 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0
+  Entering state 20
+  Reducing stack by rule 1 (line 80):
+     $1 = nterm compstmt ()
+  -> $$ = nterm program ()
+  Stack now 0
+  Entering state 19
+  Now at end of input.
+  Stack now 0 19
+  Cleanup: popping nterm program ()
+  Syntax OK
+
+Streem should recognise a literal string:
+  $ echo '"It works!!"' | $TESTDIR/../bin/streem
+  Starting parse
+  Entering state 0
+  Reading a token: Next token is token lit_string ()
+  Shifting token lit_string ()
+  Entering state 12
+  Reducing stack by rule 44 (line 143):
+     $1 = token lit_string ()
+  -> $$ = nterm primary ()
+  Stack now 0
+  Entering state 25
+  Reading a token: Next token is token '\n' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0
+  Entering state 24
+  Next token is token '\n' ()
+  Reducing stack by rule 13 (line 98):
+     $1 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0
+  Entering state 21
+  Next token is token '\n' ()
+  Shifting token '\n' ()
+  Entering state 52
+  Reducing stack by rule 75 (line 190):
+     $1 = token '\n' ()
+  -> $$ = nterm term ()
+  Stack now 0 21
+  Entering state 55
+  Reducing stack by rule 72 (line 185):
+     $1 = nterm term ()
+  -> $$ = nterm terms ()
+  Stack now 0 21
+  Entering state 54
+  Reading a token: Now at end of input.
+  Reducing stack by rule 71 (line 182):
+     $1 = nterm terms ()
+  -> $$ = nterm opt_terms ()
+  Stack now 0 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0
+  Entering state 20
+  Reducing stack by rule 1 (line 80):
+     $1 = nterm compstmt ()
+  -> $$ = nterm program ()
+  Stack now 0
+  Entering state 19
+  Now at end of input.
+  Stack now 0 19
+  Cleanup: popping nterm program ()
+  Syntax OK
+
+Streem should recognise a variable assignment using <-:
+  $ echo 'foo <- 1' | $TESTDIR/../bin/streem
+  Starting parse
+  Entering state 0
+  Reading a token: Next token is token identifier ()
+  Shifting token identifier ()
+  Entering state 13
+  Reading a token: Next token is token op_lasgn ()
+  Reducing stack by rule 14 (line 101):
+     $1 = token identifier ()
+  -> $$ = nterm var ()
+  Stack now 0
+  Entering state 23
+  Next token is token op_lasgn ()
+  Shifting token op_lasgn ()
+  Entering state 56
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0 23 56
+  Entering state 25
+  Reading a token: Next token is token '\n' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 23 56
+  Entering state 91
+  Next token is token '\n' ()
+  Reducing stack by rule 8 (line 93):
+     $1 = nterm var ()
+     $2 = token op_lasgn ()
+     $3 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0
+  Entering state 21
+  Next token is token '\n' ()
+  Shifting token '\n' ()
+  Entering state 52
+  Reducing stack by rule 75 (line 190):
+     $1 = token '\n' ()
+  -> $$ = nterm term ()
+  Stack now 0 21
+  Entering state 55
+  Reducing stack by rule 72 (line 185):
+     $1 = nterm term ()
+  -> $$ = nterm terms ()
+  Stack now 0 21
+  Entering state 54
+  Reading a token: Now at end of input.
+  Reducing stack by rule 71 (line 182):
+     $1 = nterm terms ()
+  -> $$ = nterm opt_terms ()
+  Stack now 0 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0
+  Entering state 20
+  Reducing stack by rule 1 (line 80):
+     $1 = nterm compstmt ()
+  -> $$ = nterm program ()
+  Stack now 0
+  Entering state 19
+  Now at end of input.
+  Stack now 0 19
+  Cleanup: popping nterm program ()
+  Syntax OK
+
+Streem should recognise a variable assignment using ->:
+  $ echo '1 -> foo' | $TESTDIR/../bin/streem
+  Starting parse
+  Entering state 0
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0
+  Entering state 25
+  Reading a token: Next token is token op_rasgn ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0
+  Entering state 24
+  Next token is token op_rasgn ()
+  Shifting token op_rasgn ()
+  Entering state 58
+  Reading a token: Next token is token identifier ()
+  Shifting token identifier ()
+  Entering state 93
+  Reducing stack by rule 14 (line 101):
+     $1 = token identifier ()
+  -> $$ = nterm var ()
+  Stack now 0 24 58
+  Entering state 94
+  Reducing stack by rule 9 (line 94):
+     $1 = nterm expr ()
+     $2 = token op_rasgn ()
+     $3 = nterm var ()
+  -> $$ = nterm stmt ()
+  Stack now 0
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0
+  Entering state 21
+  Reading a token: Next token is token '\n' ()
+  Shifting token '\n' ()
+  Entering state 52
+  Reducing stack by rule 75 (line 190):
+     $1 = token '\n' ()
+  -> $$ = nterm term ()
+  Stack now 0 21
+  Entering state 55
+  Reducing stack by rule 72 (line 185):
+     $1 = nterm term ()
+  -> $$ = nterm terms ()
+  Stack now 0 21
+  Entering state 54
+  Reading a token: Now at end of input.
+  Reducing stack by rule 71 (line 182):
+     $1 = nterm terms ()
+  -> $$ = nterm opt_terms ()
+  Stack now 0 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0
+  Entering state 20
+  Reducing stack by rule 1 (line 80):
+     $1 = nterm compstmt ()
+  -> $$ = nterm program ()
+  Stack now 0
+  Entering state 19
+  Now at end of input.
+  Stack now 0 19
+  Cleanup: popping nterm program ()
+  Syntax OK
+
+Streem should recognise a variable assignment using =:
+  $ echo 'foo = 1' | $TESTDIR/../bin/streem
+  Starting parse
+  Entering state 0
+  Reading a token: Next token is token identifier ()
+  Shifting token identifier ()
+  Entering state 13
+  Reading a token: Next token is token '=' ()
+  Reducing stack by rule 14 (line 101):
+     $1 = token identifier ()
+  -> $$ = nterm var ()
+  Stack now 0
+  Entering state 23
+  Next token is token '=' ()
+  Shifting token '=' ()
+  Entering state 57
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0 23 57
+  Entering state 25
+  Reading a token: Next token is token '\n' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 23 57
+  Entering state 92
+  Next token is token '\n' ()
+  Reducing stack by rule 7 (line 92):
+     $1 = nterm var ()
+     $2 = token '=' ()
+     $3 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0
+  Entering state 21
+  Next token is token '\n' ()
+  Shifting token '\n' ()
+  Entering state 52
+  Reducing stack by rule 75 (line 190):
+     $1 = token '\n' ()
+  -> $$ = nterm term ()
+  Stack now 0 21
+  Entering state 55
+  Reducing stack by rule 72 (line 185):
+     $1 = nterm term ()
+  -> $$ = nterm terms ()
+  Stack now 0 21
+  Entering state 54
+  Reading a token: Now at end of input.
+  Reducing stack by rule 71 (line 182):
+     $1 = nterm terms ()
+  -> $$ = nterm opt_terms ()
+  Stack now 0 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0
+  Entering state 20
+  Reducing stack by rule 1 (line 80):
+     $1 = nterm compstmt ()
+  -> $$ = nterm program ()
+  Stack now 0
+  Entering state 19
+  Now at end of input.
+  Stack now 0 19
+  Cleanup: popping nterm program ()
+  Syntax OK
+
+Streem should recognise return statement in lambda:
+  $ echo '{ |x| return x + 1 }' | $TESTDIR/../bin/streem
+  Starting parse
+  Entering state 0
+  Reading a token: Next token is token '{' ()
+  Shifting token '{' ()
+  Entering state 16
+  Reading a token: Next token is token op_bar ()
+  Shifting token op_bar ()
+  Entering state 40
+  Reading a token: Next token is token identifier ()
+  Shifting token identifier ()
+  Entering state 79
+  Reducing stack by rule 68 (line 177):
+     $1 = token identifier ()
+  -> $$ = nterm f_args ()
+  Stack now 0 16 40
+  Entering state 80
+  Reading a token: Next token is token op_bar ()
+  Shifting token op_bar ()
+  Entering state 114
+  Reducing stack by rule 67 (line 174):
+     $1 = token op_bar ()
+     $2 = nterm f_args ()
+     $3 = token op_bar ()
+  -> $$ = nterm bparam ()
+  Stack now 0 16
+  Entering state 41
+  Reading a token: Next token is token keyword_return ()
+  Shifting token keyword_return ()
+  Entering state 5
+  Reading a token: Next token is token identifier ()
+  Shifting token identifier ()
+  Entering state 28
+  Reading a token: Next token is token op_plus ()
+  Reducing stack by rule 45 (line 144):
+     $1 = token identifier ()
+  -> $$ = nterm primary ()
+  Stack now 0 16 41 5
+  Entering state 25
+  Next token is token op_plus ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 16 41 5
+  Entering state 30
+  Next token is token op_plus ()
+  Shifting token op_plus ()
+  Entering state 59
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0 16 41 5 30 59
+  Entering state 25
+  Reading a token: Next token is token '}' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 16 41 5 30 59
+  Entering state 95
+  Next token is token '}' ()
+  Reducing stack by rule 15 (line 104):
+     $1 = nterm expr ()
+     $2 = token op_plus ()
+     $3 = nterm expr ()
+  -> $$ = nterm expr ()
+  Stack now 0 16 41 5
+  Entering state 30
+  Next token is token '}' ()
+  Reducing stack by rule 41 (line 138):
+     $1 = nterm expr ()
+  -> $$ = nterm args ()
+  Stack now 0 16 41 5
+  Entering state 32
+  Next token is token '}' ()
+  Reducing stack by rule 40 (line 135):
+     $1 = nterm args ()
+  -> $$ = nterm opt_args ()
+  Stack now 0 16 41 5
+  Entering state 33
+  Reducing stack by rule 11 (line 96):
+     $1 = token keyword_return ()
+     $2 = nterm opt_args ()
+  -> $$ = nterm stmt ()
+  Stack now 0 16 41
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0 16 41
+  Entering state 21
+  Next token is token '}' ()
+  Reducing stack by rule 70 (line 181):
+  -> $$ = nterm opt_terms ()
+  Stack now 0 16 41 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0 16 41
+  Entering state 81
+  Next token is token '}' ()
+  Shifting token '}' ()
+  Entering state 116
+  Reducing stack by rule 63 (line 168):
+     $1 = token '{' ()
+     $2 = nterm bparam ()
+     $3 = nterm compstmt ()
+     $4 = token '}' ()
+  -> $$ = nterm block ()
+  Stack now 0
+  Entering state 26
+  Reducing stack by rule 51 (line 150):
+     $1 = nterm block ()
+  -> $$ = nterm primary ()
+  Stack now 0
+  Entering state 25
+  Reading a token: Next token is token '\n' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0
+  Entering state 24
+  Next token is token '\n' ()
+  Reducing stack by rule 13 (line 98):
+     $1 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0
+  Entering state 21
+  Next token is token '\n' ()
+  Shifting token '\n' ()
+  Entering state 52
+  Reducing stack by rule 75 (line 190):
+     $1 = token '\n' ()
+  -> $$ = nterm term ()
+  Stack now 0 21
+  Entering state 55
+  Reducing stack by rule 72 (line 185):
+     $1 = nterm term ()
+  -> $$ = nterm terms ()
+  Stack now 0 21
+  Entering state 54
+  Reading a token: Now at end of input.
+  Reducing stack by rule 71 (line 182):
+     $1 = nterm terms ()
+  -> $$ = nterm opt_terms ()
+  Stack now 0 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0
+  Entering state 20
+  Reducing stack by rule 1 (line 80):
+     $1 = nterm compstmt ()
+  -> $$ = nterm program ()
+  Stack now 0
+  Entering state 19
+  Now at end of input.
+  Stack now 0 19
+  Cleanup: popping nterm program ()
+  Syntax OK
+
+Streem should recognise basic math:
+  $ echo '((x + 1) * (9 / 3)) % 10' | $TESTDIR/../bin/streem
+  Starting parse
+  Entering state 0
+  Reading a token: Next token is token '(' ()
+  Shifting token '(' ()
+  Entering state 17
+  Reading a token: Next token is token '(' ()
+  Shifting token '(' ()
+  Entering state 17
+  Reading a token: Next token is token identifier ()
+  Shifting token identifier ()
+  Entering state 13
+  Reading a token: Next token is token op_plus ()
+  Reducing stack by rule 45 (line 144):
+     $1 = token identifier ()
+  -> $$ = nterm primary ()
+  Stack now 0 17 17
+  Entering state 25
+  Next token is token op_plus ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 17 17
+  Entering state 24
+  Next token is token op_plus ()
+  Shifting token op_plus ()
+  Entering state 59
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0 17 17 24 59
+  Entering state 25
+  Reading a token: Next token is token ')' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 17 17 24 59
+  Entering state 95
+  Next token is token ')' ()
+  Reducing stack by rule 15 (line 104):
+     $1 = nterm expr ()
+     $2 = token op_plus ()
+     $3 = nterm expr ()
+  -> $$ = nterm expr ()
+  Stack now 0 17 17
+  Entering state 24
+  Next token is token ')' ()
+  Reducing stack by rule 13 (line 98):
+     $1 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0 17 17
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0 17 17
+  Entering state 21
+  Next token is token ')' ()
+  Reducing stack by rule 70 (line 181):
+  -> $$ = nterm opt_terms ()
+  Stack now 0 17 17 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0 17 17
+  Entering state 42
+  Next token is token ')' ()
+  Shifting token ')' ()
+  Entering state 82
+  Reducing stack by rule 46 (line 145):
+     $1 = token '(' ()
+     $2 = nterm compstmt ()
+     $3 = token ')' ()
+  -> $$ = nterm primary ()
+  Stack now 0 17
+  Entering state 25
+  Reading a token: Next token is token op_mult ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 17
+  Entering state 24
+  Next token is token op_mult ()
+  Shifting token op_mult ()
+  Entering state 61
+  Reading a token: Next token is token '(' ()
+  Shifting token '(' ()
+  Entering state 17
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0 17 24 61 17
+  Entering state 25
+  Reading a token: Next token is token op_div ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 17 24 61 17
+  Entering state 24
+  Next token is token op_div ()
+  Shifting token op_div ()
+  Entering state 62
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0 17 24 61 17 24 62
+  Entering state 25
+  Reading a token: Next token is token ')' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 17 24 61 17 24 62
+  Entering state 98
+  Reducing stack by rule 18 (line 107):
+     $1 = nterm expr ()
+     $2 = token op_div ()
+     $3 = nterm expr ()
+  -> $$ = nterm expr ()
+  Stack now 0 17 24 61 17
+  Entering state 24
+  Next token is token ')' ()
+  Reducing stack by rule 13 (line 98):
+     $1 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0 17 24 61 17
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0 17 24 61 17
+  Entering state 21
+  Next token is token ')' ()
+  Reducing stack by rule 70 (line 181):
+  -> $$ = nterm opt_terms ()
+  Stack now 0 17 24 61 17 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0 17 24 61 17
+  Entering state 42
+  Next token is token ')' ()
+  Shifting token ')' ()
+  Entering state 82
+  Reducing stack by rule 46 (line 145):
+     $1 = token '(' ()
+     $2 = nterm compstmt ()
+     $3 = token ')' ()
+  -> $$ = nterm primary ()
+  Stack now 0 17 24 61
+  Entering state 25
+  Reading a token: Next token is token ')' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 17 24 61
+  Entering state 97
+  Reducing stack by rule 17 (line 106):
+     $1 = nterm expr ()
+     $2 = token op_mult ()
+     $3 = nterm expr ()
+  -> $$ = nterm expr ()
+  Stack now 0 17
+  Entering state 24
+  Next token is token ')' ()
+  Reducing stack by rule 13 (line 98):
+     $1 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0 17
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0 17
+  Entering state 21
+  Next token is token ')' ()
+  Reducing stack by rule 70 (line 181):
+  -> $$ = nterm opt_terms ()
+  Stack now 0 17 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0 17
+  Entering state 42
+  Next token is token ')' ()
+  Shifting token ')' ()
+  Entering state 82
+  Reducing stack by rule 46 (line 145):
+     $1 = token '(' ()
+     $2 = nterm compstmt ()
+     $3 = token ')' ()
+  -> $$ = nterm primary ()
+  Stack now 0
+  Entering state 25
+  Reading a token: Next token is token op_mod ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0
+  Entering state 24
+  Next token is token op_mod ()
+  Shifting token op_mod ()
+  Entering state 63
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0 24 63
+  Entering state 25
+  Reading a token: Next token is token '\n' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 24 63
+  Entering state 99
+  Reducing stack by rule 19 (line 108):
+     $1 = nterm expr ()
+     $2 = token op_mod ()
+     $3 = nterm expr ()
+  -> $$ = nterm expr ()
+  Stack now 0
+  Entering state 24
+  Next token is token '\n' ()
+  Reducing stack by rule 13 (line 98):
+     $1 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0
+  Entering state 21
+  Next token is token '\n' ()
+  Shifting token '\n' ()
+  Entering state 52
+  Reducing stack by rule 75 (line 190):
+     $1 = token '\n' ()
+  -> $$ = nterm term ()
+  Stack now 0 21
+  Entering state 55
+  Reducing stack by rule 72 (line 185):
+     $1 = nterm term ()
+  -> $$ = nterm terms ()
+  Stack now 0 21
+  Entering state 54
+  Reading a token: Now at end of input.
+  Reducing stack by rule 71 (line 182):
+     $1 = nterm terms ()
+  -> $$ = nterm opt_terms ()
+  Stack now 0 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0
+  Entering state 20
+  Reducing stack by rule 1 (line 80):
+     $1 = nterm compstmt ()
+  -> $$ = nterm program ()
+  Stack now 0
+  Entering state 19
+  Now at end of input.
+  Stack now 0 19
+  Cleanup: popping nterm program ()
+  Syntax OK
+
+Streem should recognise lists:
+  $ echo '[1, 2, 3, 4]' | $TESTDIR/../bin/streem
+  Starting parse
+  Entering state 0
+  Reading a token: Next token is token '[' ()
+  Shifting token '[' ()
+  Entering state 18
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0 18
+  Entering state 25
+  Reading a token: Next token is token ',' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 18
+  Entering state 30
+  Next token is token ',' ()
+  Reducing stack by rule 41 (line 138):
+     $1 = nterm expr ()
+  -> $$ = nterm args ()
+  Stack now 0 18
+  Entering state 47
+  Next token is token ',' ()
+  Shifting token ',' ()
+  Entering state 76
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0 18 47 76
+  Entering state 25
+  Reading a token: Next token is token ',' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 18 47 76
+  Entering state 112
+  Next token is token ',' ()
+  Reducing stack by rule 42 (line 139):
+     $1 = nterm args ()
+     $2 = token ',' ()
+     $3 = nterm expr ()
+  -> $$ = nterm args ()
+  Stack now 0 18
+  Entering state 47
+  Next token is token ',' ()
+  Shifting token ',' ()
+  Entering state 76
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0 18 47 76
+  Entering state 25
+  Reading a token: Next token is token ',' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 18 47 76
+  Entering state 112
+  Next token is token ',' ()
+  Reducing stack by rule 42 (line 139):
+     $1 = nterm args ()
+     $2 = token ',' ()
+     $3 = nterm expr ()
+  -> $$ = nterm args ()
+  Stack now 0 18
+  Entering state 47
+  Next token is token ',' ()
+  Shifting token ',' ()
+  Entering state 76
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0 18 47 76
+  Entering state 25
+  Reading a token: Next token is token ']' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 18 47 76
+  Entering state 112
+  Next token is token ']' ()
+  Reducing stack by rule 42 (line 139):
+     $1 = nterm args ()
+     $2 = token ',' ()
+     $3 = nterm expr ()
+  -> $$ = nterm args ()
+  Stack now 0 18
+  Entering state 47
+  Next token is token ']' ()
+  Shifting token ']' ()
+  Entering state 86
+  Reducing stack by rule 47 (line 146):
+     $1 = token '[' ()
+     $2 = nterm args ()
+     $3 = token ']' ()
+  -> $$ = nterm primary ()
+  Stack now 0
+  Entering state 25
+  Reading a token: Next token is token '\n' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0
+  Entering state 24
+  Next token is token '\n' ()
+  Reducing stack by rule 13 (line 98):
+     $1 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0
+  Entering state 21
+  Next token is token '\n' ()
+  Shifting token '\n' ()
+  Entering state 52
+  Reducing stack by rule 75 (line 190):
+     $1 = token '\n' ()
+  -> $$ = nterm term ()
+  Stack now 0 21
+  Entering state 55
+  Reducing stack by rule 72 (line 185):
+     $1 = nterm term ()
+  -> $$ = nterm terms ()
+  Stack now 0 21
+  Entering state 54
+  Reading a token: Now at end of input.
+  Reducing stack by rule 71 (line 182):
+     $1 = nterm terms ()
+  -> $$ = nterm opt_terms ()
+  Stack now 0 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0
+  Entering state 20
+  Reducing stack by rule 1 (line 80):
+     $1 = nterm compstmt ()
+  -> $$ = nterm program ()
+  Stack now 0
+  Entering state 19
+  Now at end of input.
+  Stack now 0 19
+  Cleanup: popping nterm program ()
+  Syntax OK
+
+Streem should recognise funciton calls:
+  $ echo 'fnc(1, 2, 3)' | $TESTDIR/../bin/streem
+  Starting parse
+  Entering state 0
+  Reading a token: Next token is token identifier ()
+  Shifting token identifier ()
+  Entering state 13
+  Reading a token: Next token is token '(' ()
+  Shifting token '(' ()
+  Entering state 36
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0 13 36
+  Entering state 25
+  Reading a token: Next token is token ',' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 13 36
+  Entering state 30
+  Next token is token ',' ()
+  Reducing stack by rule 41 (line 138):
+     $1 = nterm expr ()
+  -> $$ = nterm args ()
+  Stack now 0 13 36
+  Entering state 32
+  Next token is token ',' ()
+  Shifting token ',' ()
+  Entering state 76
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0 13 36 32 76
+  Entering state 25
+  Reading a token: Next token is token ',' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 13 36 32 76
+  Entering state 112
+  Next token is token ',' ()
+  Reducing stack by rule 42 (line 139):
+     $1 = nterm args ()
+     $2 = token ',' ()
+     $3 = nterm expr ()
+  -> $$ = nterm args ()
+  Stack now 0 13 36
+  Entering state 32
+  Next token is token ',' ()
+  Shifting token ',' ()
+  Entering state 76
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0 13 36 32 76
+  Entering state 25
+  Reading a token: Next token is token ')' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 13 36 32 76
+  Entering state 112
+  Next token is token ')' ()
+  Reducing stack by rule 42 (line 139):
+     $1 = nterm args ()
+     $2 = token ',' ()
+     $3 = nterm expr ()
+  -> $$ = nterm args ()
+  Stack now 0 13 36
+  Entering state 32
+  Next token is token ')' ()
+  Reducing stack by rule 40 (line 135):
+     $1 = nterm args ()
+  -> $$ = nterm opt_args ()
+  Stack now 0 13 36
+  Entering state 77
+  Next token is token ')' ()
+  Shifting token ')' ()
+  Entering state 113
+  Reducing stack by rule 52 (line 151):
+     $1 = token identifier ()
+     $2 = token '(' ()
+     $3 = nterm opt_args ()
+     $4 = token ')' ()
+  -> $$ = nterm primary ()
+  Stack now 0
+  Entering state 25
+  Reading a token: Next token is token '\n' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0
+  Entering state 24
+  Next token is token '\n' ()
+  Reducing stack by rule 13 (line 98):
+     $1 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0
+  Entering state 21
+  Next token is token '\n' ()
+  Shifting token '\n' ()
+  Entering state 52
+  Reducing stack by rule 75 (line 190):
+     $1 = token '\n' ()
+  -> $$ = nterm term ()
+  Stack now 0 21
+  Entering state 55
+  Reducing stack by rule 72 (line 185):
+     $1 = nterm term ()
+  -> $$ = nterm terms ()
+  Stack now 0 21
+  Entering state 54
+  Reading a token: Now at end of input.
+  Reducing stack by rule 71 (line 182):
+     $1 = nterm terms ()
+  -> $$ = nterm opt_terms ()
+  Stack now 0 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0
+  Entering state 20
+  Reducing stack by rule 1 (line 80):
+     $1 = nterm compstmt ()
+  -> $$ = nterm program ()
+  Stack now 0
+  Entering state 19
+  Now at end of input.
+  Stack now 0 19
+  Cleanup: popping nterm program ()
+  Syntax OK
+
+Streem should recognise method calls:
+  $ echo 'obj.meth(1, 2, 3)' | $TESTDIR/../bin/streem
+  Starting parse
+  Entering state 0
+  Reading a token: Next token is token identifier ()
+  Shifting token identifier ()
+  Entering state 13
+  Reading a token: Next token is token '.' ()
+  Reducing stack by rule 45 (line 144):
+     $1 = token identifier ()
+  -> $$ = nterm primary ()
+  Stack now 0
+  Entering state 25
+  Next token is token '.' ()
+  Shifting token '.' ()
+  Entering state 74
+  Reading a token: Next token is token identifier ()
+  Shifting token identifier ()
+  Entering state 110
+  Reading a token: Next token is token '(' ()
+  Shifting token '(' ()
+  Entering state 122
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0 25 74 110 122
+  Entering state 25
+  Reading a token: Next token is token ',' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 25 74 110 122
+  Entering state 30
+  Next token is token ',' ()
+  Reducing stack by rule 41 (line 138):
+     $1 = nterm expr ()
+  -> $$ = nterm args ()
+  Stack now 0 25 74 110 122
+  Entering state 32
+  Next token is token ',' ()
+  Shifting token ',' ()
+  Entering state 76
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0 25 74 110 122 32 76
+  Entering state 25
+  Reading a token: Next token is token ',' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 25 74 110 122 32 76
+  Entering state 112
+  Next token is token ',' ()
+  Reducing stack by rule 42 (line 139):
+     $1 = nterm args ()
+     $2 = token ',' ()
+     $3 = nterm expr ()
+  -> $$ = nterm args ()
+  Stack now 0 25 74 110 122
+  Entering state 32
+  Next token is token ',' ()
+  Shifting token ',' ()
+  Entering state 76
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0 25 74 110 122 32 76
+  Entering state 25
+  Reading a token: Next token is token ')' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 25 74 110 122 32 76
+  Entering state 112
+  Next token is token ')' ()
+  Reducing stack by rule 42 (line 139):
+     $1 = nterm args ()
+     $2 = token ',' ()
+     $3 = nterm expr ()
+  -> $$ = nterm args ()
+  Stack now 0 25 74 110 122
+  Entering state 32
+  Next token is token ')' ()
+  Reducing stack by rule 40 (line 135):
+     $1 = nterm args ()
+  -> $$ = nterm opt_args ()
+  Stack now 0 25 74 110 122
+  Entering state 125
+  Next token is token ')' ()
+  Shifting token ')' ()
+  Entering state 128
+  Reducing stack by rule 53 (line 152):
+     $1 = nterm primary ()
+     $2 = token '.' ()
+     $3 = token identifier ()
+     $4 = token '(' ()
+     $5 = nterm opt_args ()
+     $6 = token ')' ()
+  -> $$ = nterm primary ()
+  Stack now 0
+  Entering state 25
+  Reading a token: Next token is token '\n' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0
+  Entering state 24
+  Next token is token '\n' ()
+  Reducing stack by rule 13 (line 98):
+     $1 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0
+  Entering state 21
+  Next token is token '\n' ()
+  Shifting token '\n' ()
+  Entering state 52
+  Reducing stack by rule 75 (line 190):
+     $1 = token '\n' ()
+  -> $$ = nterm term ()
+  Stack now 0 21
+  Entering state 55
+  Reducing stack by rule 72 (line 185):
+     $1 = nterm term ()
+  -> $$ = nterm terms ()
+  Stack now 0 21
+  Entering state 54
+  Reading a token: Now at end of input.
+  Reducing stack by rule 71 (line 182):
+     $1 = nterm terms ()
+  -> $$ = nterm opt_terms ()
+  Stack now 0 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0
+  Entering state 20
+  Reducing stack by rule 1 (line 80):
+     $1 = nterm compstmt ()
+  -> $$ = nterm program ()
+  Stack now 0
+  Entering state 19
+  Now at end of input.
+  Stack now 0 19
+  Cleanup: popping nterm program ()
+  Syntax OK
+
+Streem should recognise map:
+  $ echo '[ "foo": 1, "bar": "BAZ" ]' | $TESTDIR/../bin/streem
+  Starting parse
+  Entering state 0
+  Reading a token: Next token is token '[' ()
+  Shifting token '[' ()
+  Entering state 18
+  Reading a token: Next token is token lit_string ()
+  Shifting token lit_string ()
+  Entering state 43
+  Reading a token: Next token is token ':' ()
+  Shifting token ':' ()
+  Entering state 83
+  Reading a token: Next token is token lit_number ()
+  Shifting token lit_number ()
+  Entering state 11
+  Reducing stack by rule 43 (line 142):
+     $1 = token lit_number ()
+  -> $$ = nterm primary ()
+  Stack now 0 18 43 83
+  Entering state 25
+  Reading a token: Next token is token ',' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 18 43 83
+  Entering state 117
+  Next token is token ',' ()
+  Reducing stack by rule 59 (line 160):
+     $1 = token lit_string ()
+     $2 = token ':' ()
+     $3 = nterm expr ()
+  -> $$ = nterm map ()
+  Stack now 0 18
+  Entering state 48
+  Reducing stack by rule 61 (line 164):
+     $1 = nterm map ()
+  -> $$ = nterm map_args ()
+  Stack now 0 18
+  Entering state 49
+  Next token is token ',' ()
+  Shifting token ',' ()
+  Entering state 87
+  Reading a token: Next token is token lit_string ()
+  Shifting token lit_string ()
+  Entering state 119
+  Reading a token: Next token is token ':' ()
+  Shifting token ':' ()
+  Entering state 83
+  Reading a token: Next token is token lit_string ()
+  Shifting token lit_string ()
+  Entering state 12
+  Reducing stack by rule 44 (line 143):
+     $1 = token lit_string ()
+  -> $$ = nterm primary ()
+  Stack now 0 18 49 87 119 83
+  Entering state 25
+  Reading a token: Next token is token ']' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 18 49 87 119 83
+  Entering state 117
+  Next token is token ']' ()
+  Reducing stack by rule 59 (line 160):
+     $1 = token lit_string ()
+     $2 = token ':' ()
+     $3 = nterm expr ()
+  -> $$ = nterm map ()
+  Stack now 0 18 49 87
+  Entering state 121
+  Reducing stack by rule 62 (line 165):
+     $1 = nterm map_args ()
+     $2 = token ',' ()
+     $3 = nterm map ()
+  -> $$ = nterm map_args ()
+  Stack now 0 18
+  Entering state 49
+  Next token is token ']' ()
+  Shifting token ']' ()
+  Entering state 88
+  Reducing stack by rule 49 (line 148):
+     $1 = token '[' ()
+     $2 = nterm map_args ()
+     $3 = token ']' ()
+  -> $$ = nterm primary ()
+  Stack now 0
+  Entering state 25
+  Reading a token: Next token is token '\n' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0
+  Entering state 24
+  Next token is token '\n' ()
+  Reducing stack by rule 13 (line 98):
+     $1 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0
+  Entering state 21
+  Next token is token '\n' ()
+  Shifting token '\n' ()
+  Entering state 52
+  Reducing stack by rule 75 (line 190):
+     $1 = token '\n' ()
+  -> $$ = nterm term ()
+  Stack now 0 21
+  Entering state 55
+  Reducing stack by rule 72 (line 185):
+     $1 = nterm term ()
+  -> $$ = nterm terms ()
+  Stack now 0 21
+  Entering state 54
+  Reading a token: Now at end of input.
+  Reducing stack by rule 71 (line 182):
+     $1 = nterm terms ()
+  -> $$ = nterm opt_terms ()
+  Stack now 0 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0
+  Entering state 20
+  Reducing stack by rule 1 (line 80):
+     $1 = nterm compstmt ()
+  -> $$ = nterm program ()
+  Stack now 0
+  Entering state 19
+  Now at end of input.
+  Stack now 0 19
+  Cleanup: popping nterm program ()
+  Syntax OK
+
+Streem should recognise empty map:
+  $ echo '[ : ]' | $TESTDIR/../bin/streem
+  Starting parse
+  Entering state 0
+  Reading a token: Next token is token '[' ()
+  Shifting token '[' ()
+  Entering state 18
+  Reading a token: Next token is token ':' ()
+  Shifting token ':' ()
+  Entering state 46
+  Reading a token: Next token is token ']' ()
+  Shifting token ']' ()
+  Entering state 85
+  Reducing stack by rule 50 (line 149):
+     $1 = token '[' ()
+     $2 = token ':' ()
+     $3 = token ']' ()
+  -> $$ = nterm primary ()
+  Stack now 0
+  Entering state 25
+  Reading a token: Next token is token '\n' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0
+  Entering state 24
+  Next token is token '\n' ()
+  Reducing stack by rule 13 (line 98):
+     $1 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0
+  Entering state 21
+  Next token is token '\n' ()
+  Shifting token '\n' ()
+  Entering state 52
+  Reducing stack by rule 75 (line 190):
+     $1 = token '\n' ()
+  -> $$ = nterm term ()
+  Stack now 0 21
+  Entering state 55
+  Reducing stack by rule 72 (line 185):
+     $1 = nterm term ()
+  -> $$ = nterm terms ()
+  Stack now 0 21
+  Entering state 54
+  Reading a token: Now at end of input.
+  Reducing stack by rule 71 (line 182):
+     $1 = nterm terms ()
+  -> $$ = nterm opt_terms ()
+  Stack now 0 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0
+  Entering state 20
+  Reducing stack by rule 1 (line 80):
+     $1 = nterm compstmt ()
+  -> $$ = nterm program ()
+  Stack now 0
+  Entering state 19
+  Now at end of input.
+  Stack now 0 19
+  Cleanup: popping nterm program ()
+  Syntax OK
+
+Streem should recognise empty array:
+  $ echo '[ ]' | $TESTDIR/../bin/streem
+  Starting parse
+  Entering state 0
+  Reading a token: Next token is token '[' ()
+  Shifting token '[' ()
+  Entering state 18
+  Reading a token: Next token is token ']' ()
+  Shifting token ']' ()
+  Entering state 45
+  Reducing stack by rule 48 (line 147):
+     $1 = token '[' ()
+     $2 = token ']' ()
+  -> $$ = nterm primary ()
+  Stack now 0
+  Entering state 25
+  Reading a token: Next token is token '\n' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0
+  Entering state 24
+  Next token is token '\n' ()
+  Reducing stack by rule 13 (line 98):
+     $1 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0
+  Entering state 21
+  Next token is token '\n' ()
+  Shifting token '\n' ()
+  Entering state 52
+  Reducing stack by rule 75 (line 190):
+     $1 = token '\n' ()
+  -> $$ = nterm term ()
+  Stack now 0 21
+  Entering state 55
+  Reducing stack by rule 72 (line 185):
+     $1 = nterm term ()
+  -> $$ = nterm terms ()
+  Stack now 0 21
+  Entering state 54
+  Reading a token: Now at end of input.
+  Reducing stack by rule 71 (line 182):
+     $1 = nterm terms ()
+  -> $$ = nterm opt_terms ()
+  Stack now 0 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0
+  Entering state 20
+  Reducing stack by rule 1 (line 80):
+     $1 = nterm compstmt ()
+  -> $$ = nterm program ()
+  Stack now 0
+  Entering state 19
+  Now at end of input.
+  Stack now 0 19
+  Cleanup: popping nterm program ()
+  Syntax OK
+
+Streem should recognise multiple statements on one line:
+  $ echo 'puts("foo"); true' | $TESTDIR/../bin/streem
+  Starting parse
+  Entering state 0
+  Reading a token: Next token is token identifier ()
+  Shifting token identifier ()
+  Entering state 13
+  Reading a token: Next token is token '(' ()
+  Shifting token '(' ()
+  Entering state 36
+  Reading a token: Next token is token lit_string ()
+  Shifting token lit_string ()
+  Entering state 12
+  Reducing stack by rule 44 (line 143):
+     $1 = token lit_string ()
+  -> $$ = nterm primary ()
+  Stack now 0 13 36
+  Entering state 25
+  Reading a token: Next token is token ')' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 13 36
+  Entering state 30
+  Next token is token ')' ()
+  Reducing stack by rule 41 (line 138):
+     $1 = nterm expr ()
+  -> $$ = nterm args ()
+  Stack now 0 13 36
+  Entering state 32
+  Next token is token ')' ()
+  Reducing stack by rule 40 (line 135):
+     $1 = nterm args ()
+  -> $$ = nterm opt_args ()
+  Stack now 0 13 36
+  Entering state 77
+  Next token is token ')' ()
+  Shifting token ')' ()
+  Entering state 113
+  Reducing stack by rule 52 (line 151):
+     $1 = token identifier ()
+     $2 = token '(' ()
+     $3 = nterm opt_args ()
+     $4 = token ')' ()
+  -> $$ = nterm primary ()
+  Stack now 0
+  Entering state 25
+  Reading a token: Next token is token ';' ()
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0
+  Entering state 24
+  Next token is token ';' ()
+  Reducing stack by rule 13 (line 98):
+     $1 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0
+  Entering state 22
+  Reducing stack by rule 4 (line 87):
+     $1 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0
+  Entering state 21
+  Next token is token ';' ()
+  Shifting token ';' ()
+  Entering state 51
+  Reducing stack by rule 74 (line 189):
+     $1 = token ';' ()
+  -> $$ = nterm term ()
+  Stack now 0 21
+  Entering state 55
+  Reducing stack by rule 72 (line 185):
+     $1 = nterm term ()
+  -> $$ = nterm terms ()
+  Stack now 0 21
+  Entering state 54
+  Reading a token: Next token is token keyword_true ()
+  Shifting token keyword_true ()
+  Entering state 7
+  Reducing stack by rule 57 (line 156):
+     $1 = token keyword_true ()
+  -> $$ = nterm primary ()
+  Stack now 0 21 54
+  Entering state 25
+  Reading a token: Now at end of input.
+  Reducing stack by rule 34 (line 123):
+     $1 = nterm primary ()
+  -> $$ = nterm expr ()
+  Stack now 0 21 54
+  Entering state 24
+  Now at end of input.
+  Reducing stack by rule 13 (line 98):
+     $1 = nterm expr ()
+  -> $$ = nterm stmt ()
+  Stack now 0 21 54
+  Entering state 89
+  Reducing stack by rule 5 (line 88):
+     $1 = nterm stmts ()
+     $2 = nterm terms ()
+     $3 = nterm stmt ()
+  -> $$ = nterm stmts ()
+  Stack now 0
+  Entering state 21
+  Now at end of input.
+  Reducing stack by rule 70 (line 181):
+  -> $$ = nterm opt_terms ()
+  Stack now 0 21
+  Entering state 53
+  Reducing stack by rule 2 (line 83):
+     $1 = nterm stmts ()
+     $2 = nterm opt_terms ()
+  -> $$ = nterm compstmt ()
+  Stack now 0
+  Entering state 20
+  Reducing stack by rule 1 (line 80):
+     $1 = nterm compstmt ()
+  -> $$ = nterm program ()
+  Stack now 0
+  Entering state 19
+  Now at end of input.
+  Stack now 0 19
+  Cleanup: popping nterm program ()
+  Syntax OK
