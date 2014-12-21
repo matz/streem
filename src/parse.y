@@ -6,6 +6,7 @@
 
 %{
 typedef struct parser_state {
+  int nerr;
   void *lval;
 } parser_state;
 
@@ -197,22 +198,39 @@ term            : ';' {yyerrok;}
 static void
 yyerror(parser_state *p, const char *s)
 {
+  p->nerr++;
   fprintf(stderr, "%s\n", s);
+}
+
+static int
+syntax_check(const char* fname)
+{
+  int n;
+  parser_state state = {0, NULL};
+
+  yyin = fopen(fname, "r");
+
+  n = yyparse(&state);
+  fclose(yyin);
+  if (n == 0 && state.nerr == 0) {
+    printf("%s: Syntax OK\n", fname);
+  }
+  else {
+    printf("%s: Syntax NG\n", fname);
+  }
+  return n;
 }
 
 int
 main(int argc, const char**argv)
 {
-  int n;
+  int i, n = 0;
 
-  if (argc > 1) {
-    yyin = fopen(argv[1], "r");
+  // yydebug = 1;
+  for (i=1; i<argc; i++) {
+    n += syntax_check(argv[i]);
   }
 
-  yydebug = 1;
-  n = yyparse(NULL);
-  if (n == 0) {
-    printf("Syntax OK\n");
-  }
+  if (n > 0) return 1;
   return 0;
 }
