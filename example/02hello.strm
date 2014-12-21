@@ -1,0 +1,2 @@
+# Array can be a source of Stream pipeline
+["Hello World"] | STDOUT
