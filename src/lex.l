@@ -40,7 +40,7 @@ strndup0(const char *s, size_t n)
 
 %option noyywrap
 
-TRAIL  [\t \n]*
+TRAIL  ([\t \n]|"#"[^\n]*"\n")*
 %%
 "+"{TRAIL}  return op_plus;
 "-"{TRAIL}  return op_minus;
