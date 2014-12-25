@@ -203,23 +203,41 @@ yyerror(parser_state *p, const char *s)
 }
 
 static int
-syntax_check(const char* fname)
+syntax_check(FILE *f)
 {
-  int n;
   parser_state state = {0, NULL};
+  int n;
 
-  yyin = fopen(fname, "r");
-
+  yyin = f;
   n = yyparse(&state);
   fclose(yyin);
+
   if (n == 0 && state.nerr == 0) {
-    printf("%s: Syntax OK\n", fname);
     return 0;
   }
   else {
-    printf("%s: Syntax NG\n", fname);
     return 1;
   }
+}
+
+static int
+syntax_check_file(const char* fname)
+{
+  int n;
+  FILE *f = fopen(fname, "r");
+
+  if (f == NULL) {
+    fprintf(stderr, "failed to open file: %s\n", fname);
+    return 1;
+  }
+  n = syntax_check(f);
+  if (n == 0) {
+    printf("%s: Syntax OK\n", fname);
+  }
+  else {
+    printf("%s: Syntax NG\n", fname);
+  }
+  return n;
 }
 
 int
@@ -228,8 +246,13 @@ main(int argc, const char**argv)
   int i, n = 0;
 
   // yydebug = 1;
-  for (i=1; i<argc; i++) {
-    n += syntax_check(argv[i]);
+  if (argc == 1) {              /* no args */
+    n = syntax_check(stdin);
+  }
+  else {
+    for (i=1; i<argc; i++) {
+      n += syntax_check_file(argv[i]);
+    }
   }
 
   if (n > 0) return 1;
