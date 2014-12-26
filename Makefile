@@ -2,6 +2,10 @@ YACC = bison -y
 LEX = flex
 TARGET = bin/streem
 
+ifeq (Windows_NT,$(OS))
+TARGET:=$(TARGET).exe
+endif
+
 TESTS=$(wildcard examples/*.strm)
 
 all : $(TARGET)
