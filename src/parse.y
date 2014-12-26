@@ -8,6 +8,9 @@
 typedef struct parser_state {
   int nerr;
   void *lval;
+  const char *fname;
+  int lineno;
+  int tline;
 } parser_state;
 
 #define YYDEBUG 1
@@ -21,9 +24,10 @@ typedef struct parser_state {
 
 %pure-parser
 %parse-param {parser_state *p}
+%lex-param {p}
 
 %{
-int yylex(YYSTYPE*);
+int yylex(YYSTYPE *yylval, parser_state *p);
 static void yyerror(parser_state *p, const char *s);
 %}
 
@@ -199,13 +203,18 @@ static void
 yyerror(parser_state *p, const char *s)
 {
   p->nerr++;
-  fprintf(stderr, "%s\n", s);
+  if (p->fname) {
+    fprintf(stderr, "%s:%d:%s\n", p->fname, p->lineno, s);
+  }
+  else {
+    fprintf(stderr, "%s\n", s);
+  }
 }
 
 static int
 syntax_check(FILE *f, const char *fname)
 {
-  parser_state state = {0, NULL};
+  parser_state state = {0, NULL, fname, 1, 1};
   int n;
 
   yyin = f;

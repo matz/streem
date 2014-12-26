@@ -7,7 +7,7 @@
 %{
 #include <string.h>
 
-#define YY_DECL    int yylex(YYSTYPE *yylval)
+#define YY_DECL    int yylex(YYSTYPE *yylval, parser_state *p)
 
 static char*
 strdup0(const char *s)
@@ -38,63 +38,73 @@ strndup0(const char *s, size_t n)
   }
   return new;
 }
+
+static int
+lex_return(parser_state *p, int c)
+{
+  p->lineno = p->tline;
+  p->tline = yylineno;
+  return c;
+}
+
+#define LEX_RETURN(c) return lex_return(p, c)
 %}
 
 %option noyywrap
+%option yylineno
 
 TRAIL  ([\t \n]|"#"[^\n]*"\n")*
 %%
-"+"{TRAIL}  return op_plus;
-"-"{TRAIL}  return op_minus;
-"*"{TRAIL}  return op_mult;
-"/"{TRAIL}  return op_div;
-"%"{TRAIL}  return op_mod;
-"=="{TRAIL} return op_eq;
-"!="{TRAIL} return op_neq;
-"<"{TRAIL}  return op_lt;
-"<="{TRAIL} return op_le;
-">"{TRAIL}  return op_gt;
-">="{TRAIL} return op_ge;
-"&&"{TRAIL} return op_and;
-"||"{TRAIL} return op_or;
-"|"{TRAIL}  return op_bar;
-"&"{TRAIL}  return op_amper;
-"<-"{TRAIL} return op_lasgn;
-"->"{TRAIL} return op_rasgn;
-"="{TRAIL}  return '=';
+"+"{TRAIL}  LEX_RETURN(op_plus);
+"-"{TRAIL}  LEX_RETURN(op_minus);
+"*"{TRAIL}  LEX_RETURN(op_mult);
+"/"{TRAIL}  LEX_RETURN(op_div);
+"%"{TRAIL}  LEX_RETURN(op_mod);
+"=="{TRAIL} LEX_RETURN(op_eq);
+"!="{TRAIL} LEX_RETURN(op_neq);
+"<"{TRAIL}  LEX_RETURN(op_lt);
+"<="{TRAIL} LEX_RETURN(op_le);
+">"{TRAIL}  LEX_RETURN(op_gt);
+">="{TRAIL} LEX_RETURN(op_ge);
+"&&"{TRAIL} LEX_RETURN(op_and);
+"||"{TRAIL} LEX_RETURN(op_or);
+"|"{TRAIL}  LEX_RETURN(op_bar);
+"&"{TRAIL}  LEX_RETURN(op_amper);
+"<-"{TRAIL} LEX_RETURN(op_lasgn);
+"->"{TRAIL} LEX_RETURN(op_rasgn);
+"="{TRAIL}  LEX_RETURN('=');
 
-if{TRAIL}           return keyword_if;
-{TRAIL}else{TRAIL}  return keyword_else;
-break{TRAIL}        return keyword_break;
-emit{TRAIL}         return keyword_emit;
-return{TRAIL}       return keyword_return;
-nil{TRAIL}          return keyword_nil;
-true{TRAIL}         return keyword_true;
-false{TRAIL}        return keyword_false;
+if{TRAIL}           LEX_RETURN(keyword_if);
+{TRAIL}else{TRAIL}  LEX_RETURN(keyword_else);
+break{TRAIL}        LEX_RETURN(keyword_break);
+emit{TRAIL}         LEX_RETURN(keyword_emit);
+return{TRAIL}       LEX_RETURN(keyword_return);
+nil{TRAIL}          LEX_RETURN(keyword_nil);
+true{TRAIL}         LEX_RETURN(keyword_true);
+false{TRAIL}        LEX_RETURN(keyword_false);
 
 [A-Za-z_][A-Za-z0-9_]* {
   yylval->str = strdup0(yytext);
-  return identifier;
+  LEX_RETURN(identifier);
 };
 
-{TRAIL}\.{TRAIL} return '.';
-[(\[{,;:]{TRAIL} return yytext[0];
-[)\]}]           return yytext[0];
-"\n"             return '\n';
+{TRAIL}\.{TRAIL} LEX_RETURN('.');
+[(\[{,;:]{TRAIL} LEX_RETURN(yytext[0]);
+[)\]}]           LEX_RETURN(yytext[0]);
+"\n"             LEX_RETURN('\n');
+"#"[^\n]*"\n"    LEX_RETURN('\n');
 
 (([1-9][0-9]*)|0)(\.[0-9]*)? {
   double temp;
   sscanf(yytext, "%lf", &temp);
   yylval->d = temp;
-  return lit_number;
+  LEX_RETURN(lit_number);
 };
 
 \"([^\\\"]|\\.)*\"      {
   yylval->str = strndup0(yytext+1, strlen(yytext)-2);
-  return lit_string;
+  LEX_RETURN(lit_string);
 };
-
-"#"[^\n]*"\n" return '\n';
 
 [ \t] ; 
 
