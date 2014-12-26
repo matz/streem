@@ -5,6 +5,8 @@
 */
 
 %{
+#include <string.h>
+
 #define YY_DECL    int yylex(YYSTYPE *yylval)
 
 static char*

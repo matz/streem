@@ -21,7 +21,7 @@ src/y.tab.c : src/parse.y
 	$(YACC) -o src/y.tab.c src/parse.y
 
 src/lex.yy.c : src/lex.l
-	$(LEX) -o src/lex.yy.c src/lex.l
+	$(LEX) -osrc/lex.yy.c src/lex.l
 
 src/parse.o : src/y.tab.c src/lex.yy.c
 	$(CC) -g -c src/y.tab.c -o src/parse.o
