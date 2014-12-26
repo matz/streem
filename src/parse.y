@@ -210,7 +210,6 @@ syntax_check(FILE *f, const char *fname)
 
   yyin = f;
   n = yyparse(&state);
-  fclose(yyin);
 
   if (n == 0 && state.nerr == 0) {
     printf("%s: Syntax OK\n", fname);
@@ -233,6 +232,7 @@ syntax_check_file(const char* fname)
     return 1;
   }
   n = syntax_check(f, fname);
+  fclose(f);
   return n;
 }
 
