@@ -43,15 +43,19 @@ The second part in the pipeline (`{|x|...}`) is a function
 object.  If a function object is connected in the pipeline,
 it will be invoked for each elements in the stream.
 
-## Requirements
+## Compiling
+
+### Install dependencies
 * bison
 * flex
 * gcc / clang
 
-## Compiling
+### Run make
 ```
 make
 ```
+
+Please note that Streem will not run any scripts yet, but you can check parse files and check syntax.
 
 ## Contributing
 Send a pull request to <http://github.com/matz/streem>.  We consider
