@@ -9,7 +9,7 @@ functional programming languages.
 
 __Note:__ Streem is still in the design stage. It's not working yet.  Stay tuned.
 
-# Examples
+## Examples
 
 In Streem, a simple `cat` program looks like this:
 
@@ -45,26 +45,26 @@ The second part in the pipeline (`{|x|...}`) is a function
 object.  If a function object is connected in the pipeline,
 it will be invoked for each elements in the stream.
 
-# Requirements
+## Requirements
 
 * bison
 * flex
 * gcc / clang
 
-# Compiling
+## Compiling
 
 ```
 make
 ```
 
-# Contributing
+## Contributing
 
 Send a pull request to <http://github.com/matz/streem>.  We consider
 you have granted non-exclusive right to your contributed code under
 MIT license.  Use <http://github.com/matz/streem/issues> for
 discussion.
 
-# License
+## License
 
 Streem is distributed under MIT license.
 
