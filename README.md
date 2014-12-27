@@ -7,6 +7,10 @@ Streem is a concurrent scripting language based on a programming model
 similar to shell, with influences from Ruby, Erlang and other
 functional programming languages.
 
+__Note:__ Streem is still in the design stage. It's not working yet.  Stay tuned.
+
+# Examples
+
 In Streem, a simple `cat` program looks like this:
 
 ```
@@ -41,23 +45,19 @@ The second part in the pipeline (`{|x|...}`) is a function
 object.  If a function object is connected in the pipeline,
 it will be invoked for each elements in the stream.
 
-# Note
-
-Streem is still in the design stage. It's not working yet.  Stay tuned.
-
 # Requirements
 
 * bison
 * flex
 * gcc / clang
 
-# How to compile
+# Compiling
 
 ```
 make
 ```
 
-# How to contribute
+# Contributing
 
 Send a pull request to <http://github.com/matz/streem>.  We consider
 you have granted non-exclusive right to your contributed code under
