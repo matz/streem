@@ -1,5 +1,4 @@
 # Streem - stream based concurrent scripting language
-
 [![Build Status](https://travis-ci.org/matz/streem.svg?branch=master)](https://travis-ci.org/matz/streem)
 [![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/matz/streem?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
@@ -10,7 +9,6 @@ functional programming languages.
 __Note:__ Streem is still in the design stage. It's not working yet.  Stay tuned.
 
 ## Examples
-
 In Streem, a simple `cat` program looks like this:
 
 ```
@@ -46,26 +44,22 @@ object.  If a function object is connected in the pipeline,
 it will be invoked for each elements in the stream.
 
 ## Requirements
-
 * bison
 * flex
 * gcc / clang
 
 ## Compiling
-
 ```
 make
 ```
 
 ## Contributing
-
 Send a pull request to <http://github.com/matz/streem>.  We consider
 you have granted non-exclusive right to your contributed code under
 MIT license.  Use <http://github.com/matz/streem/issues> for
 discussion.
 
 ## License
-
 Streem is distributed under MIT license.
 
 Copyright (c) 2015 Yukihiro Matsumoto
