@@ -199,7 +199,7 @@ static void
 yyerror(parser_state *p, const char *s)
 {
   p->nerr++;
-  fprintf(stderr, "%s\n", s);
+  fprintf(stderr, "%d: %s around \"%s\"\n", yylineno, s, yytext);
 }
 
 static int
