@@ -51,6 +51,17 @@ Streem is still in the design stage. It's not working yet.  Stay tuned.
 * flex
 * gcc / clang
 
+# Logos
+Both types of logos are available as SVGs for [Inkscape](https://inkscape.org/) and as exported PNGs.
+
+## Icon
+Note that the exported icon is the size of a retina ready favicon.
+
+![Streem Icon](logos/icon.png)
+
+## Iconic Logotype
+![Streem Logotype](logos/iconic_logotype.png)
+
 # How to compile
 
 ```
