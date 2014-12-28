@@ -51,7 +51,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -61,47 +61,43 @@
      inkscape:groupmode="layer"
      transform="translate(-238.34498,-164.1468)">
     <g
-       id="g2996"
-       transform="matrix(2.094539,0,0,2.094539,-256.78898,-179.66509)">
-      <g
-         id="g2988">
-        <text
-           xml:space="preserve"
-           style="font-size:7.50292206px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#0074d9;fill-opacity:1;stroke:none;font-family:Raleway;-inkscape-font-specification:Raleway"
-           x="253.61342"
-           y="177.6339"
-           id="text2993"
-           sodipodi:linespacing="125%"><tspan
-             sodipodi:role="line"
-             x="253.61342"
-             y="177.6339"
-             style="font-size:16.88157463px;font-style:normal;font-variant:normal;font-weight:200;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#0074d9;fill-opacity:1;font-family:Raleway;-inkscape-font-specification:Raleway Ultra-Light"
-             id="tspan3784" /></text>
-        <text
-           xml:space="preserve"
-           style="font-size:9.37865257px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Raleway;-inkscape-font-specification:Raleway Bold"
-           x="237.01134"
-           y="177.23003"
-           id="text2988"
-           sodipodi:linespacing="125%"><tspan
-             sodipodi:role="line"
-             id="tspan2990"
-             x="237.01134"
-             y="177.23003"
-             style="font-size:16.88157463px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;fill:#001f3f;fill-opacity:1;font-family:Raleway;-inkscape-font-specification:Raleway">|</tspan></text>
-        <text
-           xml:space="preserve"
-           style="font-size:9.37865257px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
-           x="241.56467"
-           y="176.14117"
-           id="text2986"
-           sodipodi:linespacing="125%"><tspan
-             sodipodi:role="line"
-             id="tspan2988"
-             x="241.56467"
-             y="176.14117"
-             style="font-size:16.88157463px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;fill:#001f3f;fill-opacity:1;font-family:Raleway;-inkscape-font-specification:Raleway">&gt;</tspan></text>
-      </g>
+       id="g3003">
+      <text
+         sodipodi:linespacing="125%"
+         id="text2993"
+         y="192.39603"
+         x="274.41422"
+         style="font-size:15.71516323px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#0074d9;fill-opacity:1;stroke:none;font-family:Raleway;-inkscape-font-specification:Raleway"
+         xml:space="preserve"><tspan
+           id="tspan3784"
+           style="font-size:35.3591156px;font-style:normal;font-variant:normal;font-weight:200;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#0074d9;fill-opacity:1;font-family:Raleway;-inkscape-font-specification:Raleway Ultra-Light"
+           y="192.39603"
+           x="274.41422"
+           sodipodi:role="line" /></text>
+      <text
+         sodipodi:linespacing="125%"
+         id="text2988"
+         y="191.55011"
+         x="239.6405"
+         style="font-size:19.64395332px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Raleway;-inkscape-font-specification:Raleway Bold"
+         xml:space="preserve"><tspan
+           style="font-size:35.3591156px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;fill:#001f3f;fill-opacity:1;font-family:Raleway;-inkscape-font-specification:Raleway"
+           y="191.55011"
+           x="239.6405"
+           id="tspan2990"
+           sodipodi:role="line">|</tspan></text>
+      <text
+         sodipodi:linespacing="125%"
+         id="text2986"
+         y="189.26947"
+         x="249.17764"
+         style="font-size:19.64395332px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+         xml:space="preserve"><tspan
+           style="font-size:35.3591156px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;fill:#001f3f;fill-opacity:1;font-family:Raleway;-inkscape-font-specification:Raleway"
+           y="189.26947"
+           x="249.17764"
+           id="tspan2988"
+           sodipodi:role="line">&gt;</tspan></text>
     </g>
   </g>
 </svg>
