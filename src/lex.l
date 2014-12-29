@@ -41,6 +41,7 @@ strndup0(const char *s, size_t n)
 %}
 
 %option noyywrap
+%option yylineno
 
 TRAIL  ([\t \n]|"#"[^\n]*"\n")*
 %%
