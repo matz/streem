@@ -13,6 +13,7 @@
 .ccmalloc
 .svn
 /.git
+a.out
 cscope.out
 /src/y.tab.c
 /src/lex.yy.c
@@ -20,5 +21,4 @@ cscope.out
 /src/y.output
 /bin
 /build
-/lib
 /vagrant/.vagrant
