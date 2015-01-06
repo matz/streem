@@ -34,3 +34,5 @@ int strm_loop();
 void strm_fd_read(strm_stream *strm, int fd, strm_func cb);
 void strm_fd_write(strm_stream *strm, int fd, strm_func cb);
 void strm_io_enque(strm_stream *s, int fd);
+strm_stream* strm_readio(int fd);
+strm_stream* strm_writeio(int fd);
