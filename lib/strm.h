@@ -18,7 +18,7 @@ typedef void*(*strm_map_func)(strm_stream*, void*);
 
 struct strm_stream {
   strm_task_mode mode;
-  uint flags;
+  unsigned int flags;
   strm_func start_func;
   strm_func callback;
   void *cb_data;
