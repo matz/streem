@@ -15,6 +15,9 @@
 /.git
 a.out
 cscope.out
+GPATH
+GRTAGS
+GTAGS
 /src/y.tab.c
 /src/lex.yy.c
 /src/parse.tab.c
