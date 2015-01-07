@@ -32,6 +32,7 @@ str_toupper(strm_stream *strm, void *p)
     t++;
     s++;
   }
+  *t = '\0';
   return (void*)buf;
 }
 
