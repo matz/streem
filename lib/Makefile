@@ -6,8 +6,10 @@ endif
 CFLAGS=-g -Wall
 SRC=$(wildcard *.c)
 OBJ=${SRC:.c=.o}
+DEPENDS=$(wildcard *.d)
 
 %.o: %.c
+	@$(CC) -MM $< > $*.d
 	$(CC) -c $(CFLAGS) $< -o $@
 
 all : $(TARGET)
@@ -21,3 +23,5 @@ $(TARGET) : $(OBJ)
 clean :
 	rm -f *.o $(TARGET)
 .PHONY : clean
+
+-include $(DEPENDS)
