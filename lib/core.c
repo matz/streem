@@ -5,7 +5,7 @@ struct strm_queue {
   strm_stream *fi, *fo;
 };
 
-static pthread_mutex_t q_mutex;
+static pthread_mutex_t q_mutex = PTHREAD_MUTEX_INITIALIZER;
 static struct strm_queue task_q = {NULL, NULL};
 
 static void
@@ -130,6 +130,7 @@ strm_alloc_stream(strm_task_mode mode, strm_func start_func, void *data)
   s->dst = NULL;
   s->nextd = NULL;
   s->nextq = NULL;
-  
+  s->callback = NULL;
+
   return s;
 }
