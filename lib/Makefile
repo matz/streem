@@ -4,6 +4,7 @@ TARGET:=$(TARGET).exe
 endif
 
 CFLAGS=-g -Wall
+LIBS=-lpthread
 SRC=$(wildcard *.c)
 OBJ=${SRC:.c=.o}
 DEPENDS=$(wildcard *.d)
@@ -18,7 +19,7 @@ all : $(TARGET)
 .PHONY : test
 
 $(TARGET) : $(OBJ)
-	$(CC) $(CFLAGS) $(OBJ) -o $(TARGET)
+	$(CC) $(CFLAGS) $(OBJ) -o $(TARGET) $(LIBS)
 
 clean :
 	rm -f *.o $(TARGET)

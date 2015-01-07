@@ -1,30 +1,36 @@
 #include "strm.h"
+#include <pthread.h>
 
-/* ----- core private */
 struct strm_queue {
   strm_stream *fi, *fo;
 };
 
+static pthread_mutex_t q_mutex;
 static struct strm_queue task_q = {NULL, NULL};
-static struct strm_queue io_q   = {NULL, NULL};
 
 static void
 strm_enque(struct strm_queue *q, strm_stream *s)
 {
+  pthread_mutex_lock(&q_mutex);
   if (q->fi) {
     q->fi->nextq = s;
   }
   q->fi = s;
   if (!q->fo) q->fo = s;
+  pthread_mutex_unlock(&q_mutex);  
 }
 
 static strm_stream*
 strm_deque(struct strm_queue *q)
 {
-  strm_stream *s = q->fo;
+  strm_stream *s;
+
+  pthread_mutex_lock(&q_mutex);  
+  s = q->fo;
   q->fo = s->nextq;
   if (!q->fo) q->fi = NULL;
   s->nextq = NULL;
+  pthread_mutex_unlock(&q_mutex);  
   return s;
 }
 
@@ -44,24 +50,6 @@ int
 strm_task_que_p()
 {
   return task_q.fi != NULL;
-}
-
-void
-strm_io_enque(strm_stream *s, int fd)
-{
-  strm_enque(&io_q, s);
-}
-
-strm_stream*
-strm_io_deque()
-{
-  return strm_deque(&io_q);
-}
-
-int
-strm_io_que_p()
-{
-  return io_q.fi != NULL;
 }
 
 void
@@ -111,22 +99,21 @@ strm_connect(strm_stream *src, strm_stream *dst)
   return 1;
 }
 
+void strm_init_io_loop();
+int strm_io_queue();
+
 int
 strm_loop()
 {
   strm_stream *s;
 
+  strm_init_io_loop();
   for (;;) {
-    if (strm_io_que_p()) {
-      /* enqueue I/O ready stream */
-      s = strm_io_deque();
-      strm_task_enque(s);
-    }
-    if (strm_task_que_p()) {
+    while (strm_task_que_p()) {
       s = strm_task_deque();
       (*s->callback)(s);
     }
-    if (!strm_io_que_p() && !strm_task_que_p()) {
+    if (strm_io_queue() == 0 && !strm_task_que_p()) {
       break;
     }
   }
