@@ -16,15 +16,22 @@ strm_funcmap(void *(*func)(strm_stream*,void*))
   return strm_alloc_stream(strm_task_filt, map_recv, func);
 }
 
+#include <ctype.h>
+
 static 
 void*
-bracket(strm_stream *strm, void *p)
+str_toupper(strm_stream *strm, void *p)
 {
   const char *s = p;
-  char *buf;
+  char *t, *buf;
 
-  buf = malloc(strlen(s)+3);
-  sprintf(buf, "[]%s", s);
+  buf = malloc(strlen(s)+1);
+  t = buf;
+  while (*s) {
+    *t = toupper(*s);
+    t++;
+    s++;
+  }
   return (void*)buf;
 }
 
@@ -32,7 +39,7 @@ int
 main(int argc, char **argv)
 {
   strm_stream *strm_stdin = strm_readio(0 /* stdin*/);
-  strm_stream *strm_map = strm_funcmap(bracket);
+  strm_stream *strm_map = strm_funcmap(str_toupper);
   strm_stream *strm_stdout = strm_writeio(1 /* stdout */);
 
   strm_connect(strm_stdin, strm_map);
