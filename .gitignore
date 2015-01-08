@@ -2,6 +2,7 @@
 *.bak
 *.d
 *.o
+*.exe
 *.orig
 *.pdb
 *.rej
@@ -18,6 +19,7 @@ cscope.out
 GPATH
 GRTAGS
 GTAGS
+tags
 /src/y.tab.c
 /src/lex.yy.c
 /src/parse.tab.c
