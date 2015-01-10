@@ -3,70 +3,25 @@
 #include <sys/epoll.h>
 #include <errno.h>
 
-static pthread_mutex_t io_mutex = PTHREAD_MUTEX_INITIALIZER;
-static pthread_cond_t io_cond = PTHREAD_COND_INITIALIZER;
+static strm_queue *io_queue;
 static pthread_t io_worker;
 static int io_wait_num = 0;
 static int epoll_fd;
 
 #define MAX_EVENTS 10
 
-struct io_qentry {
-  strm_stream *s;
-  struct io_qentry *next;
-};
-
-struct io_queue {
-  struct io_qentry *fi, *fo;
-} io_queue;
-
-static void
-strm_io_enque(strm_stream *s)
-{
-  struct io_qentry *e = malloc(sizeof(struct io_qentry));
-
-  pthread_mutex_lock(&io_mutex);
-  e->s = s;
-  e->next = NULL;
-  if (io_queue.fi) {
-    io_queue.fi->next = e;
-  }
-  io_queue.fi = e;
-  if (!io_queue.fo) io_queue.fo = e;
-  pthread_mutex_unlock(&io_mutex);
-}
+static strm_queue *io_queue;
 
 strm_stream*
 strm_io_deque()
 {
-  strm_stream *s;
-  struct io_qentry *e;
-
-  pthread_mutex_lock(&io_mutex);
-  e = io_queue.fo;
-  if (!e) {
-    pthread_mutex_unlock(&io_mutex);
-    return NULL;
-  }
-  io_queue.fo = e->next;
-  if (!io_queue.fo) io_queue.fi = NULL;
-  s = e->s;
-  free(e);
-  pthread_mutex_unlock(&io_mutex);
-
-  return s;
+  return strm_queue_get(io_queue);
 }
 
 int
 strm_io_queue()
 {
   return (io_wait_num > 0);
-}
-
-void
-strm_io_emit(strm_stream *s, void *p, strm_func cb)
-{
-  strm_emit(s, p, cb);
 }
 
 static void*
@@ -78,19 +33,21 @@ io_loop(void *d)
   for (;;) {
     n = epoll_wait(epoll_fd, events, MAX_EVENTS, -1);
     if (n < 0) {
+      strm_queue_free(io_queue);
       return NULL;
     }
     for (i=0; i<n; i++) {
-      strm_stream *strm = (strm_stream*)events[i].data.ptr;
-      strm_io_enque(strm);
+      strm_queue_put(io_queue, events[i].data.ptr);
     }
   }
+  strm_queue_free(io_queue);
   return NULL;
 }
 
 void
 strm_init_io_loop()
 {
+  io_queue = strm_queue_alloc();
   pthread_create(&io_worker, NULL, io_loop, NULL);
   epoll_fd = epoll_create(10);
 }
@@ -116,16 +73,14 @@ strm_io_start(strm_stream *strm, int fd, strm_func cb, uint32_t events)
   ev.data.ptr = strm;
   n = epoll_ctl(epoll_fd, EPOLL_CTL_ADD, fd, &ev);
   if (n == 0) {
-    pthread_mutex_lock(&io_mutex);
     io_wait_num++;
-    pthread_mutex_unlock(&io_mutex);
   }
   else {
     if (errno == EPERM) {
       /* fd must be a regular file */
       /* enqueue task without waiting */
       strm->flags |= STRM_IO_NOWAIT;
-      strm_task_enque(strm);
+      strm_queue_put(io_queue, strm);
     }
   }
 }
@@ -133,17 +88,9 @@ strm_io_start(strm_stream *strm, int fd, strm_func cb, uint32_t events)
 void
 strm_io_stop(strm_stream *strm, int fd)
 {
-  int n;
-
   if (strm->flags & STRM_IO_NOWAIT) return;
-
-  pthread_mutex_lock(&io_mutex);
-  n = epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL);
-  if (n == 0) {
-    io_wait_num--;
-    pthread_cond_broadcast(&io_cond);
-  }
-  pthread_mutex_unlock(&io_mutex);  
+  io_wait_num--;
+  epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL);
 }
 
 void
@@ -183,7 +130,7 @@ read_cb(strm_stream *strm)
     if (b->buf < b->end) {
       char *s = read_str(b->beg, b->end-b->beg);
       b->beg = b->end = b->buf;
-      strm_io_emit(strm, s, NULL);
+      strm_emit(strm, s, NULL);
       io_kick(strm, b->fd);
     }
     else {
@@ -215,14 +162,16 @@ readline_cb(strm_stream *strm)
     }
     strm->callback = read_cb;
     if (strm->flags & STRM_IO_NOWAIT) {
-      strm_io_enque(strm);
+      strm_queue_put(io_queue, strm);
     }
-    io_kick(strm, b->fd);
+    else {
+      io_kick(strm, b->fd);
+    }
     return;
   }
   s = read_str(b->beg, len);
   b->beg += len;
-  strm_io_emit(strm, s, readline_cb);
+  strm_emit(strm, s, readline_cb);
 }
 
 static void

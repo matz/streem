@@ -36,6 +36,16 @@ int strm_loop();
 
 void strm_task_enque(strm_stream *s);
 
+/* queue */
+typedef struct strm_queue strm_queue;
+struct strm_queue_entry;
+
+strm_queue* strm_queue_alloc(void);
+void strm_queue_free(strm_queue *q);
+void strm_queue_put(strm_queue *q, void *data);
+void* strm_queue_get(strm_queue *q);
+int strm_queue_p(strm_queue *q);
+
 /* ----- I/O */
 void strm_io_start_read(strm_stream *strm, int fd, strm_func cb);
 void strm_io_start_write(strm_stream *strm, int fd, strm_func cb);
