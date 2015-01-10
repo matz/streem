@@ -98,7 +98,6 @@ strm_alloc_stream(strm_task_mode mode, strm_func start_func, void *data)
   s->data = data;
   s->dst = NULL;
   s->nextd = NULL;
-  s->nextq = NULL;
   s->callback = NULL;
   s->flags = 0;
 

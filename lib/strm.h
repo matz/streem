@@ -26,7 +26,6 @@ struct strm_stream {
   void *data;
   strm_stream *dst;
   strm_stream *nextd;
-  strm_stream *nextq;
 };
 
 strm_stream* strm_alloc_stream(strm_task_mode mode, strm_func start, void *data);
