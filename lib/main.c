@@ -43,7 +43,6 @@ main(int argc, char **argv)
   strm_stream *strm_map = strm_funcmap(str_toupper);
   strm_stream *strm_stdout = strm_writeio(1 /* stdout */);
 
-  fprintf(stderr, "stdin->%p\ntoupper->%p\nstdout->%p\n", strm_stdin, strm_map, strm_stdout);
   strm_connect(strm_stdin, strm_map);
   strm_connect(strm_map, strm_stdout);
   strm_loop();
