@@ -35,14 +35,14 @@ int strm_loop();
 
 void strm_task_enque(strm_stream *s);
 
-/* queue */
+/* ----- queue */
 typedef struct strm_queue strm_queue;
 struct strm_queue_entry;
 
 strm_queue* strm_queue_alloc(void);
 void strm_queue_free(strm_queue *q);
-void strm_queue_put(strm_queue *q, void *data);
-void* strm_queue_get(strm_queue *q);
+void strm_queue_put(strm_queue *q, strm_stream *data);
+strm_stream* strm_queue_get(strm_queue *q);
 int strm_queue_p(strm_queue *q);
 
 /* ----- I/O */
