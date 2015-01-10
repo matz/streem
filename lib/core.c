@@ -8,6 +8,8 @@ struct strm_queue {
 static pthread_mutex_t q_mutex = PTHREAD_MUTEX_INITIALIZER;
 static struct strm_queue task_q = {NULL, NULL};
 
+#include <assert.h>
+
 static void
 strm_enque(struct strm_queue *q, strm_stream *s)
 {
@@ -27,9 +29,19 @@ strm_deque(struct strm_queue *q)
 
   pthread_mutex_lock(&q_mutex);  
   s = q->fo;
-  q->fo = s->nextq;
-  if (!q->fo) q->fi = NULL;
-  s->nextq = NULL;
+  if (s) {
+    q->fo = s->nextq;
+    if (!q->fo) q->fi = NULL;
+    s->nextq = NULL;
+    {
+      int n = 0;
+      strm_stream *p = q->fi;
+      while (p) {
+        n++;
+        p = p->nextq;
+      }
+    }
+  }
   pthread_mutex_unlock(&q_mutex);  
   return s;
 }
@@ -100,6 +112,7 @@ strm_connect(strm_stream *src, strm_stream *dst)
 }
 
 void strm_init_io_loop();
+strm_stream *strm_io_deque();
 int strm_io_queue();
 
 int
@@ -109,8 +122,10 @@ strm_loop()
 
   strm_init_io_loop();
   for (;;) {
-    while (strm_task_que_p()) {
-      s = strm_task_deque();
+    while ((s = strm_task_deque())) {
+      (*s->callback)(s);
+    }
+    if ((s = strm_io_deque())) {
       (*s->callback)(s);
     }
     if (strm_io_queue() == 0 && !strm_task_que_p()) {

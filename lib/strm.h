@@ -15,6 +15,7 @@ typedef void (*strm_func)(strm_stream*);
 typedef void*(*strm_map_func)(strm_stream*, void*);
 
 #define STRM_IO_NOWAIT 1
+#define STRM_IO_BFULL  2
 
 struct strm_stream {
   strm_task_mode mode;

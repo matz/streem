@@ -11,28 +11,62 @@ static int epoll_fd;
 
 #define MAX_EVENTS 10
 
+struct io_qentry {
+  strm_stream *s;
+  struct io_qentry *next;
+};
+
+struct io_queue {
+  struct io_qentry *fi, *fo;
+} io_queue;
+
+static void
+strm_io_enque(strm_stream *s)
+{
+  struct io_qentry *e = malloc(sizeof(struct io_qentry));
+
+  pthread_mutex_lock(&io_mutex);
+  e->s = s;
+  e->next = NULL;
+  if (io_queue.fi) {
+    io_queue.fi->next = e;
+  }
+  io_queue.fi = e;
+  if (!io_queue.fo) io_queue.fo = e;
+  pthread_mutex_unlock(&io_mutex);
+}
+
+strm_stream*
+strm_io_deque()
+{
+  strm_stream *s;
+  struct io_qentry *e;
+
+  pthread_mutex_lock(&io_mutex);
+  e = io_queue.fo;
+  if (!e) {
+    pthread_mutex_unlock(&io_mutex);
+    return NULL;
+  }
+  io_queue.fo = e->next;
+  if (!io_queue.fo) io_queue.fi = NULL;
+  s = e->s;
+  free(e);
+  pthread_mutex_unlock(&io_mutex);
+
+  return s;
+}
+
 int
 strm_io_queue()
 {
-  int n;
-
-  pthread_mutex_lock(&io_mutex);
-  if (io_wait_num > 0) {
-    pthread_cond_wait(&io_cond, &io_mutex);
-  }
-  n = (io_wait_num > 0);
-  pthread_mutex_unlock(&io_mutex);
-
-  return n;
+  return (io_wait_num > 0);
 }
 
 void
 strm_io_emit(strm_stream *s, void *p, strm_func cb)
 {
   strm_emit(s, p, cb);
-  if (pthread_self() == io_worker) {
-    pthread_cond_broadcast(&io_cond);
-  }
 }
 
 static void*
@@ -43,10 +77,12 @@ io_loop(void *d)
 
   for (;;) {
     n = epoll_wait(epoll_fd, events, MAX_EVENTS, -1);
+    if (n < 0) {
+      return NULL;
+    }
     for (i=0; i<n; i++) {
       strm_stream *strm = (strm_stream*)events[i].data.ptr;
-
-      (*strm->callback)(strm);
+      strm_io_enque(strm);
     }
   }
   return NULL;
@@ -60,13 +96,23 @@ strm_init_io_loop()
 }
 
 static void
+io_kick(strm_stream *strm, int fd)
+{
+  struct epoll_event ev;
+
+  ev.events = EPOLLIN | EPOLLONESHOT;
+  ev.data.ptr = strm;
+  epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &ev);
+}
+
+static void
 strm_io_start(strm_stream *strm, int fd, strm_func cb, uint32_t events)
 {
   struct epoll_event ev;
   int n;
 
   strm->callback = cb;
-  ev.events = events;
+  ev.events = events | EPOLLONESHOT;
   ev.data.ptr = strm;
   n = epoll_ctl(epoll_fd, EPOLL_CTL_ADD, fd, &ev);
   if (n == 0) {
@@ -128,14 +174,17 @@ static void
 read_cb(strm_stream *strm)
 {
   struct fd_read_buffer *b = strm->data;
+  size_t count;
   ssize_t n;
 
-  n = read(b->fd, b->end, sizeof(b->buf)-(b->end-b->buf));
+  count = sizeof(b->buf)-(b->end-b->buf);
+  n = read(b->fd, b->end, count);
   if (n <= 0) {
     if (b->buf < b->end) {
       char *s = read_str(b->beg, b->end-b->beg);
       b->beg = b->end = b->buf;
-      strm_io_emit(strm, s, read_cb);
+      strm_io_emit(strm, s, NULL);
+      io_kick(strm, b->fd);
     }
     else {
       strm_io_stop(strm, b->fd);
@@ -143,13 +192,8 @@ read_cb(strm_stream *strm)
     return;
   }
   b->end += n;
-  if (strm->flags & STRM_IO_NOWAIT) {
-    strm->callback = readline_cb;
-    strm_task_enque(strm);
-  }
-  else {
-    readline_cb(strm);
-  }
+  strm->callback = readline_cb;
+  (*readline_cb)(strm);
 }
 
 static void
@@ -171,8 +215,9 @@ readline_cb(strm_stream *strm)
     }
     strm->callback = read_cb;
     if (strm->flags & STRM_IO_NOWAIT) {
-      strm_task_enque(strm);
+      strm_io_enque(strm);
     }
+    io_kick(strm, b->fd);
     return;
   }
   s = read_str(b->beg, len);
