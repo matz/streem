@@ -1,17 +1,17 @@
 #include "strm.h"
 
 static void
-map_recv(strm_stream *strm)
+map_recv(strm_stream *strm, void *data)
 {
   strm_map_func func = strm->data;
   void *d;
 
-  d = (*func)(strm, strm->cb_data);
+  d = (*func)(strm, data);
   strm_emit(strm, d, NULL);
 }
 
 strm_stream*
-strm_funcmap(void *(*func)(strm_stream*,void*))
+strm_funcmap(void *(*func)(strm_stream *, void*))
 {
   return strm_alloc_stream(strm_task_filt, map_recv, func);
 }

@@ -6,15 +6,15 @@ static strm_queue *task_q;
 #include <assert.h>
 
 void
-strm_task_enque(strm_stream *s)
+strm_task_push(strm_stream *s, strm_func func, void *data)
 {
-  strm_queue_put(task_q, s);
+  strm_queue_push(task_q, s, func, data);
 }
 
-strm_stream*
-strm_task_deque()
+int
+strm_task_exec()
 {
-  return strm_queue_get(task_q);
+  return strm_queue_exec(task_q);
 }
 
 void
@@ -23,17 +23,11 @@ strm_emit(strm_stream *strm, void *data, strm_func func)
   strm_stream *d = strm->dst;
 
   while (d) {
-    if (!d->callback) {
-      d->callback = d->start_func;
-    }
-    d->cb_data = data;
-    strm_task_enque(d);
+    strm_task_push(d, d->start_func, data);
     d = d->nextd;
   }
   if (func) {
-    strm->callback = func;
-    strm->cb_data = NULL;
-    strm_task_enque(strm);
+    strm_task_push(strm, func, NULL);
   }
 }
 
@@ -58,8 +52,7 @@ strm_connect(strm_stream *src, strm_stream *dst)
   }
 
   if (src->mode == strm_task_prod) {
-    src->callback = src->start_func;
-    strm_task_enque(src);
+    strm_task_push(src, src->start_func, NULL);
   }
   return 1;
 }
@@ -75,11 +68,15 @@ strm_loop()
 
   strm_init_io_loop();
   for (;;) {
-    while ((s = strm_task_deque())) {
-      (*s->callback)(s);
+    for (;;) {
+      if (strm_task_exec() == 0) {
+        break;
+      }
     }
-    if ((s = strm_io_deque())) {
-      (*s->callback)(s);
+    for (;;) {
+      if (strm_io_exec() == 0) {
+        break;
+      }
     }
     if (strm_io_queue() == 0 && !strm_queue_p(task_q)) {
       break;
@@ -98,7 +95,6 @@ strm_alloc_stream(strm_task_mode mode, strm_func start_func, void *data)
   s->data = data;
   s->dst = NULL;
   s->nextd = NULL;
-  s->callback = NULL;
   s->flags = 0;
 
   if (!task_q) {

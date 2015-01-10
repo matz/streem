@@ -11,7 +11,7 @@ typedef enum {
 } strm_task_mode;
 
 typedef struct strm_stream strm_stream;
-typedef void (*strm_func)(strm_stream*);
+typedef void (*strm_func)(strm_stream*, void*);
 typedef void*(*strm_map_func)(strm_stream*, void*);
 
 #define STRM_IO_NOWAIT 1
@@ -21,8 +21,6 @@ struct strm_stream {
   strm_task_mode mode;
   unsigned int flags;
   strm_func start_func;
-  strm_func callback;
-  void *cb_data;
   void *data;
   strm_stream *dst;
   strm_stream *nextd;
@@ -33,7 +31,7 @@ void strm_emit(strm_stream *strm, void *data, strm_func cb);
 int strm_connect(strm_stream *src, strm_stream *dst);
 int strm_loop();
 
-void strm_task_enque(strm_stream *s);
+void strm_task_push(strm_stream *s, strm_func func, void *data);
 
 /* ----- queue */
 typedef struct strm_queue strm_queue;
@@ -41,8 +39,8 @@ struct strm_queue_entry;
 
 strm_queue* strm_queue_alloc(void);
 void strm_queue_free(strm_queue *q);
-void strm_queue_put(strm_queue *q, strm_stream *data);
-strm_stream* strm_queue_get(strm_queue *q);
+void strm_queue_push(strm_queue *q, strm_stream *strm, strm_func func, void *data);
+int strm_queue_exec(strm_queue *q);
 int strm_queue_p(strm_queue *q);
 
 /* ----- I/O */
