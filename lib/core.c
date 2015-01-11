@@ -59,13 +59,11 @@ strm_connect(strm_stream *src, strm_stream *dst)
 
 void strm_init_io_loop();
 strm_stream *strm_io_deque();
-int strm_io_queue();
+int strm_io_waiting();
 
 int
 strm_loop()
 {
-  strm_stream *s;
-
   strm_init_io_loop();
   for (;;) {
     for (;;) {
@@ -73,12 +71,7 @@ strm_loop()
         break;
       }
     }
-    for (;;) {
-      if (strm_io_exec() == 0) {
-        break;
-      }
-    }
-    if (strm_io_queue() == 0 && !strm_queue_p(task_q)) {
+    if (strm_io_waiting() == 0 && !strm_queue_p(task_q)) {
       break;
     }
   }

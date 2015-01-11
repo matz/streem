@@ -3,23 +3,14 @@
 #include <sys/epoll.h>
 #include <errno.h>
 
-static strm_queue *io_queue;
 static pthread_t io_worker;
 static int io_wait_num = 0;
 static int epoll_fd;
 
 #define MAX_EVENTS 10
 
-static strm_queue *io_queue;
-
 int
-strm_io_exec()
-{
-  return strm_queue_exec(io_queue);
-}
-
-int
-strm_io_queue()
+strm_io_waiting()
 {
   return (io_wait_num > 0);
 }
@@ -75,7 +66,6 @@ io_loop(void *d)
   for (;;) {
     n = epoll_wait(epoll_fd, events, MAX_EVENTS, -1);
     if (n < 0) {
-      strm_queue_free(io_queue);
       return NULL;
     }
     for (i=0; i<n; i++) {
@@ -84,17 +74,15 @@ io_loop(void *d)
       strm_func func = t->func;
 
       free(t);
-      strm_queue_push(io_queue, strm, func, NULL);
+      strm_task_push(strm, func, NULL);
     }
   }
-  strm_queue_free(io_queue);
   return NULL;
 }
 
 void
 strm_init_io_loop()
 {
-  io_queue = strm_queue_alloc();
   pthread_create(&io_worker, NULL, io_loop, NULL);
   epoll_fd = epoll_create(10);
 }
@@ -113,7 +101,7 @@ strm_io_start(strm_stream *strm, int fd, strm_func cb, uint32_t events)
       /* fd must be a regular file */
       /* enqueue task without waiting */
       strm->flags |= STRM_IO_NOWAIT;
-      strm_queue_push(io_queue, strm, cb, NULL);
+      strm_task_push(strm, cb, NULL);
     }
   }
 }
@@ -193,7 +181,7 @@ readline_cb(strm_stream *strm, void *data)
       b->end = b->beg + len;
     }
     if (strm->flags & STRM_IO_NOWAIT) {
-      strm_queue_push(io_queue, strm, read_cb, NULL);
+      strm_task_push(strm, read_cb, NULL);
     }
     else {
       io_kick(b->fd, strm, read_cb);
