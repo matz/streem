@@ -3,6 +3,7 @@
 
 struct strm_queue {
   pthread_mutex_t mutex;
+  pthread_cond_t cond;
   struct strm_queue_entry *fi, *fo;
 };
 
@@ -19,6 +20,7 @@ strm_queue_alloc()
   strm_queue *q = malloc(sizeof(strm_queue));
 
   pthread_mutex_init(&q->mutex, NULL);
+  pthread_cond_init(&q->cond, NULL);
   q->fi = q->fo = NULL;
   return q;
 }
@@ -38,6 +40,7 @@ strm_queue_free(strm_queue *q)
     }
   }
   pthread_mutex_destroy(&q->mutex);
+  pthread_cond_destroy(&q->cond);
   free(q);
 }
 
@@ -59,6 +62,7 @@ strm_queue_push(strm_queue *q, strm_stream *strm, strm_func func, void *data)
   }
   q->fi = e;
   if (!q->fo) q->fo = e;
+  pthread_cond_signal(&q->cond);
   pthread_mutex_unlock(&q->mutex);
 }
 
@@ -71,11 +75,10 @@ strm_queue_exec(strm_queue *q)
   void *data;
 
   pthread_mutex_lock(&q->mutex);
-  e = q->fo;
-  if (!e) {
-    pthread_mutex_unlock(&q->mutex);
-    return 0;
+  if (!q->fo) {
+    pthread_cond_wait(&q->cond, &q->mutex);
   }
+  e = q->fo;
   q->fo = e->next;
   if (!q->fo) q->fi = NULL;
   pthread_mutex_unlock(&q->mutex);

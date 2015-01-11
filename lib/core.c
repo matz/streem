@@ -66,11 +66,7 @@ strm_loop()
 {
   strm_init_io_loop();
   for (;;) {
-    for (;;) {
-      if (strm_task_exec() == 0) {
-        break;
-      }
-    }
+    strm_task_exec();
     if (strm_io_waiting() == 0 && !strm_queue_p(task_q)) {
       break;
     }
