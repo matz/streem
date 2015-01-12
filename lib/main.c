@@ -13,7 +13,7 @@ map_recv(strm_stream *strm, void *data)
 strm_stream*
 strm_funcmap(void *(*func)(strm_stream *, void*))
 {
-  return strm_alloc_stream(strm_task_filt, map_recv, func);
+  return strm_alloc_stream(strm_task_filt, map_recv, NULL, func);
 }
 
 #include <ctype.h>

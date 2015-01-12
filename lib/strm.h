@@ -21,15 +21,17 @@ struct strm_stream {
   strm_task_mode mode;
   unsigned int flags;
   strm_func start_func;
+  strm_func close_func;
   void *data;
   strm_stream *dst;
   strm_stream *nextd;
 };
 
-strm_stream* strm_alloc_stream(strm_task_mode mode, strm_func start, void *data);
+strm_stream* strm_alloc_stream(strm_task_mode mode, strm_func start, strm_func close, void *data);
 void strm_emit(strm_stream *strm, void *data, strm_func cb);
 int strm_connect(strm_stream *src, strm_stream *dst);
 int strm_loop();
+void strm_close(strm_stream *strm);
 
 void strm_task_push(strm_stream *s, strm_func func, void *data);
 

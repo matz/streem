@@ -76,11 +76,12 @@ strm_loop()
 }
 
 strm_stream*
-strm_alloc_stream(strm_task_mode mode, strm_func start_func, void *data)
+strm_alloc_stream(strm_task_mode mode, strm_func start_func, strm_func close_func, void *data)
 {
   strm_stream *s = malloc(sizeof(strm_stream));
   s->mode = mode;
   s->start_func = start_func;
+  s->close_func = close_func;
   s->data = data;
   s->dst = NULL;
   s->nextd = NULL;
@@ -90,4 +91,18 @@ strm_alloc_stream(strm_task_mode mode, strm_func start_func, void *data)
     task_q = strm_queue_alloc();
   }
   return s;
+}
+
+void
+strm_close(strm_stream *strm)
+{
+  if (strm->close_func) {
+    (*strm->close_func)(strm, NULL);
+  }
+  strm_stream *d = strm->dst;
+
+  while (d) {
+    strm_task_push(d, strm_close, NULL);
+    d = d->nextd;
+  }
 }

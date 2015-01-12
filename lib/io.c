@@ -109,9 +109,11 @@ strm_io_start(strm_stream *strm, int fd, strm_func cb, uint32_t events)
 void
 strm_io_stop(strm_stream *strm, int fd)
 {
-  if (strm->flags & STRM_IO_NOWAIT) return;
-  io_wait_num--;
-  io_pop(fd);
+  if ((strm->flags & STRM_IO_NOWAIT) == 0) {
+    io_wait_num--;
+    io_pop(fd);
+  }
+  strm_close(strm);
 }
 
 void
@@ -201,6 +203,14 @@ stdio_read(strm_stream *strm, void *data)
   strm_io_start_read(strm, buf->fd, read_cb);
 }
 
+static void
+read_close(strm_stream *strm, void *d)
+{
+  struct fd_read_buffer *b = strm->data;
+
+  close(b->fd);
+}
+
 strm_stream*
 strm_readio(int fd)
 {
@@ -208,7 +218,7 @@ strm_readio(int fd)
 
   buf->fd = fd;
   buf->beg = buf->end = buf->buf;
-  return strm_alloc_stream(strm_task_prod, stdio_read, (void*)buf);
+  return strm_alloc_stream(strm_task_prod, stdio_read, read_close, (void*)buf);
 }
 
 static void
@@ -219,8 +229,14 @@ write_cb(strm_stream *strm, void *data)
   write((int)strm->data, p, strlen(p));
 }
 
+static void
+write_close(strm_stream *strm, void *d)
+{
+  close((int)strm->data);
+}
+
 strm_stream*
 strm_writeio(int fd)
 {
-  return strm_alloc_stream(strm_task_cons, write_cb, (void*)fd);
+  return strm_alloc_stream(strm_task_cons, write_cb, write_close, (void*)fd);
 }
