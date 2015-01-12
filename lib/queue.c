@@ -59,8 +59,9 @@ strm_queue_push(strm_queue *q, strm_stream *strm, strm_func func, void *data)
   e->next = NULL;
   if (q->fi) {
     q->fi->next = e;
+  } else {
+    q->fi = e;
   }
-  q->fi = e;
   if (!q->fo) q->fo = e;
   pthread_cond_signal(&q->cond);
   pthread_mutex_unlock(&q->mutex);
