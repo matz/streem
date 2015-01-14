@@ -1,15 +1,24 @@
-#ifdef _WIN32
-#include <stdint.h>
+#include "pollfd.h"
+
+#ifndef __linux__
+#include <stdio.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
+#include <memory.h>
 #include <unistd.h>
-#include "pollfd.h"
- 
+#ifndef _WIN32
+# include <sys/socket.h>
+# include <netinet/in.h>
+# include <netdb.h>
+# include <sys/time.h>
+#endif
+
 #define MAX_EPOLL 1
- 
+
 static struct epoll_event *_epoll_events = NULL;
 static int _num_epoll_events = 0;
- 
+
 int
 epoll_create(int size)
 {
@@ -23,7 +32,7 @@ epoll_create(int size)
   for (i = 0; i < FD_SETSIZE; i++) _epoll_events[num].fds[i] = -1;
   return num;
 }
- 
+
 int
 epoll_ctl(int epfd, int op, int fd, struct epoll_event *event)
 {
@@ -69,7 +78,8 @@ epoll_ctl(int epfd, int op, int fd, struct epoll_event *event)
   }
   return 1;
 }
- 
+
+#ifdef _WIN32
 int
 epoll_wait(int epfd, struct epoll_event *events, int maxevents, int timeout)
 {
@@ -92,18 +102,18 @@ epoll_wait(int epfd, struct epoll_event *events, int maxevents, int timeout)
         if (ee->events & EPOLLOUT) FD_SET(ee->fds[i], &fdset[1]);
         if (ee->events & EPOLLERR) FD_SET(ee->fds[i], &fdset[2]);
         if (select(1, &fdset[0], &fdset[1], &fdset[2], NULL) > 0 &&
-			(FD_ISSET(ee->fds[i], &fdset[0]) ||
+            (FD_ISSET(ee->fds[i], &fdset[0]) ||
              FD_ISSET(ee->fds[i], &fdset[1]) ||
              FD_ISSET(ee->fds[i], &fdset[2]))) {
           events[e++] = *ee;
-          if (ee->events & EPOLLONESHOT) 
+          if (ee->events & EPOLLONESHOT)
             ee->fds[i] = -1;
         }
       } else {
         HANDLE h = (HANDLE) _get_osfhandle(ee->fds[i]);
         if (WaitForSingleObject(h, 0) == WAIT_OBJECT_0) {
           events[e++] = *ee;
-          if (ee->events & EPOLLONESHOT) 
+          if (ee->events & EPOLLONESHOT)
             ee->fds[i] = -1;
         }
       }
@@ -114,4 +124,49 @@ epoll_wait(int epfd, struct epoll_event *events, int maxevents, int timeout)
   }
   return 0;
 }
+#else
+
+unsigned long current_time()
+{
+  struct timeval tv;
+  if (gettimeofday(&tv, NULL) != 0)
+    return 0;
+  return (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
+}
+
+int
+epoll_wait(int epfd, struct epoll_event *events, int maxevents, int timeout)
+{
+  struct epoll_event* ee;
+  unsigned long ct;
+  fd_set fdset[3];
+  ee = &_epoll_events[epfd];
+  if (!ee) return -1;
+  ct = current_time();
+  while (current_time() - ct < timeout) {
+    int i, e = 0;
+    for (i = 0; i < FD_SETSIZE; i++) {
+      if (ee->fds[i] == -1) continue;
+      FD_ZERO(&fdset[0]);
+      FD_ZERO(&fdset[1]);
+      FD_ZERO(&fdset[2]);
+      if (ee->events & EPOLLIN) FD_SET(ee->fds[i], &fdset[0]);
+      if (ee->events & EPOLLOUT) FD_SET(ee->fds[i], &fdset[1]);
+      if (ee->events & EPOLLERR) FD_SET(ee->fds[i], &fdset[2]);
+      if (select(1, &fdset[0], &fdset[1], &fdset[2], NULL) > 0 &&
+          (FD_ISSET(ee->fds[i], &fdset[0]) ||
+           FD_ISSET(ee->fds[i], &fdset[1]) ||
+           FD_ISSET(ee->fds[i], &fdset[2]))) {
+        events[e++] = *ee;
+        if (ee->events & EPOLLONESHOT)
+          ee->fds[i] = -1;
+      }
+      if (e >= maxevents) break;
+    }
+    if (e > 0) return e;
+    if (timeout == -1) break;
+  }
+  return 0;
+}
+#endif
 #endif
