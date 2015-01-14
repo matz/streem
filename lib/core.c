@@ -102,7 +102,7 @@ strm_close(strm_stream *strm)
   strm_stream *d = strm->dst;
 
   while (d) {
-    strm_task_push(d, strm_close, NULL);
+    strm_task_push(d, (strm_func) strm_close, NULL);
     d = d->nextd;
   }
 }
