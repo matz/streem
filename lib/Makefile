@@ -9,6 +9,10 @@ SRC=$(wildcard *.c)
 OBJ=${SRC:.c=.o}
 DEPENDS=$(wildcard *.d)
 
+ifeq (Windows_NT,$(OS))
+LIBS+=-lws2_32
+endif
+
 %.o: %.c
 	@$(CC) -MM $< > $*.d
 	$(CC) -c $(CFLAGS) $< -o $@

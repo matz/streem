@@ -1,6 +1,6 @@
 #include "strm.h"
 #include <pthread.h>
-#include <sys/epoll.h>
+#include "pollfd.h"
 #include <errno.h>
 
 static pthread_t io_worker;
