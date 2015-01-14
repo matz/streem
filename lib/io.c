@@ -83,8 +83,8 @@ io_loop(void *d)
 void
 strm_init_io_loop()
 {
-  pthread_create(&io_worker, NULL, io_loop, NULL);
   epoll_fd = epoll_create(10);
+  pthread_create(&io_worker, NULL, io_loop, NULL);
 }
 
 static void
