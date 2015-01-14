@@ -36,6 +36,35 @@ str_toupper(strm_stream *strm, void *p)
   return (void*)buf;
 }
 
+struct seq_seeder {
+  int n;
+  int end;
+};
+
+static void
+seq_seed(strm_stream *strm, void *data)
+{
+  struct seq_seeder *s = strm->data;
+  char *buf;
+
+  if (s->n > s->end)
+    return;
+  buf = malloc(16);
+  *buf = '\0';
+  sprintf(buf, "%d\n", s->n);
+  strm_emit(strm, buf, seq_seed);
+  s->n++;
+}
+
+strm_stream*
+strm_seq(int start, int end)
+{
+  struct seq_seeder *s = malloc(sizeof(struct seq_seeder));
+  s->n = start;
+  s->end = end;
+  return strm_alloc_stream(strm_task_prod, seq_seed, NULL, (void*)s);
+}
+
 int
 main(int argc, char **argv)
 {
