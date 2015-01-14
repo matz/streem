@@ -1,17 +1,22 @@
-#ifndef _WIN32
-#include <sys/epoll.h>
+#ifdef __linux__
+# include <sys/epoll.h>
 #else
- 
-#include <ws2tcpip.h>
+
+/* for FD_SETSIZE */
+#ifdef _WIN32
+# include <ws2tcpip.h>
+#else
+# include <sys/select.h>
+#endif
 #include <stdint.h>
  
-#define EPOLL_CTL_ADD 0
-#define EPOLL_CTL_DEL 1
-#define EPOLL_CTL_MOD 2
-#define EPOLLIN 1
-#define EPOLLOUT 2
-#define EPOLLERR 4
-#define EPOLLONESHOT 8
+#define EPOLL_CTL_ADD (1)
+#define EPOLL_CTL_DEL (2)
+#define EPOLL_CTL_MOD (3)
+#define EPOLLIN  (0x001)
+#define EPOLLOUT (0x004)
+#define EPOLLERR (0x008)
+#define EPOLLONESHOT (1u << 30)
  
 typedef union epoll_data {
     void *ptr;
