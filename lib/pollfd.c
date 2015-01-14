@@ -1,7 +1,6 @@
 #ifndef __linux__
 #include "pollfd.h"
 #include <stdio.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <memory.h>
