@@ -1,6 +1,5 @@
-#include "pollfd.h"
-
 #ifndef __linux__
+#include "pollfd.h"
 #include <stdio.h>
 #include <stdio.h>
 #include <stdlib.h>
