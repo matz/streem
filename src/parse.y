@@ -34,6 +34,7 @@ static void yyerror(parser_state *p, const char *s);
 %token
         keyword_if
         keyword_else
+        keyword_do
         keyword_break
         keyword_emit
         keyword_return
@@ -94,9 +95,7 @@ stmts           : /* none */
                 | error stmt
                 ;
 
-stmt            : var '=' expr
-                | var op_lasgn expr
-                | expr op_rasgn var
+stmt            : var '=' stmt
                 | keyword_emit opt_args
                 | keyword_return opt_args
                 | keyword_break
@@ -106,7 +105,7 @@ stmt            : var '=' expr
 var             : identifier
                 ;
 
-expr            : expr op_plus expr
+expr		: expr op_plus expr
                 | expr op_minus expr
                 | expr op_mult expr
                 | expr op_div expr
@@ -125,11 +124,33 @@ expr            : expr op_plus expr
                 | '~' expr
                 | expr op_and expr
                 | expr op_or expr
-                | primary
+		| primary
+		;
+
+condition	: condition op_plus condition
+                | condition op_minus condition
+                | condition op_mult condition
+                | condition op_div condition
+                | condition op_mod condition
+                | condition op_bar condition
+                | condition op_amper condition
+                | condition op_gt condition
+                | condition op_ge condition
+                | condition op_lt condition
+                | condition op_le condition
+                | condition op_eq condition
+                | condition op_neq condition
+                | op_plus condition	       %prec '!'
+                | op_minus condition           %prec '!'
+                | '!' condition
+                | '~' condition
+                | condition op_and condition
+                | condition op_or condition
+                | cond
                 ;
 
 opt_elsif       : /* none */
-                | opt_elsif keyword_else keyword_if expr '{' compstmt '}'
+                | opt_elsif keyword_else keyword_if condition '{' compstmt '}'
                 ;
 
 opt_else        : opt_elsif
@@ -144,23 +165,33 @@ args            : expr
                 | args ',' expr
                 ;
 
-primary         : lit_number
+primary0      	: lit_number
                 | lit_string
                 | identifier
-                | '(' compstmt ')'
+                | '(' expr ')'
                 | '[' args ']'
                 | '[' ']'
                 | '[' map_args ']'
-                | '[' ':' ']'
-                | block
-                | identifier '(' opt_args ')'
-                | primary '.' identifier '(' opt_args ')'
-                | primary '.' identifier
-                | keyword_if expr '{' compstmt '}' opt_else
+                | '[' ':' '}'
+		| keyword_if condition '{' compstmt '}' opt_else
                 | keyword_nil
                 | keyword_true
                 | keyword_false
                 ;
+
+cond		: primary0
+                | identifier '(' opt_args ')'
+                | cond '.' identifier '(' opt_args ')'
+                | cond '.' identifier
+		;
+
+primary		: primary0
+                | block
+                | identifier block
+                | identifier '(' opt_args ')' opt_block
+                | primary '.' identifier '(' opt_args ')' opt_block
+                | primary '.' identifier opt_block
+		;
 
 map             : lit_string ':' expr
                 | identifier ':' expr
@@ -170,13 +201,16 @@ map_args        : map
                 | map_args ',' map
                 ;
 
+opt_block	: /* none */
+		| block	
+		;
+
 block           : '{' bparam compstmt '}'
+		| '{' compstmt '}'
                 ;
 
-bparam          : /* none */
-                | op_or
-                | op_bar op_bar
-                | op_bar f_args op_bar
+bparam          : op_rasgn
+                | f_args op_rasgn
                 ;
 
 f_args          : identifier
