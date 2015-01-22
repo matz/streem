@@ -23,7 +23,7 @@ invoked after program execution.
 For another example, a simple FizzBuzz will look like this:
 
 ```
-seq(100) | {|x|
+seq(100) | {x ->
   if x % 15 == 0 {
     "FizzBuzz"
   }
