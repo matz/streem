@@ -39,7 +39,7 @@ seq(100) | {x ->
 } | STDOUT
 ```
 
-The second part in the pipeline (`{|x|...}`) is a function
+The second part in the pipeline (`{x ->...}`) is a function
 object.  If a function object is connected in the pipeline,
 it will be invoked for each element in the stream.
 
