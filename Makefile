@@ -1,7 +1,7 @@
 YACC = bison -y
 LEX = flex
 TARGET = bin/streem
-CFLAGS = -Wall
+CFLAGS = -g -Wall
 LIBS =
 
 ifeq (Windows_NT,$(OS))
