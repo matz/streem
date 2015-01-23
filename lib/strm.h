@@ -18,6 +18,7 @@ typedef void*(*strm_map_func)(strm_stream*, void*);
 #define STRM_IO_BFULL  2
 
 struct strm_stream {
+  int tid;
   strm_task_mode mode;
   unsigned int flags;
   strm_func start_func;
@@ -43,6 +44,7 @@ strm_queue* strm_queue_alloc(void);
 void strm_queue_free(strm_queue *q);
 void strm_queue_push(strm_queue *q, strm_stream *strm, strm_func func, void *data);
 int strm_queue_exec(strm_queue *q);
+int strm_queue_size(strm_queue *q);
 int strm_queue_p(strm_queue *q);
 
 /* ----- I/O */

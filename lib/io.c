@@ -34,7 +34,7 @@ io_task(strm_stream *strm, strm_func func)
 static int
 io_push(int fd, strm_stream *strm, strm_func cb)
 {
-  struct epoll_event ev;
+  struct epoll_event ev = { 0 };
 
   ev.events = EPOLLIN | EPOLLONESHOT;
   ev.data.ptr = io_task(strm, cb);

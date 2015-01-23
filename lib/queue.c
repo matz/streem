@@ -93,6 +93,19 @@ strm_queue_exec(strm_queue *q)
 }
 
 int
+strm_queue_size(strm_queue *q)
+{
+  int n = 0;
+  struct strm_queue_entry *e = q->fo;
+
+  while (e) {
+    n++;
+    e = e->next;
+  }
+  return n;
+}
+
+int
 strm_queue_p(strm_queue *q)
 {
   return q->fi != NULL;

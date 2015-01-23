@@ -16,6 +16,7 @@
 /.git
 a.out
 cscope.out
+gmon.out
 GPATH
 GRTAGS
 GTAGS
