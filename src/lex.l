@@ -6,38 +6,9 @@
 
 %{
 #include <string.h>
+#include "strm.h"
 
 #define YY_DECL    int yylex(YYSTYPE *yylval, parser_state *p)
-
-static char*
-strdup0(const char *s)
-{
-  size_t len = strlen(s);
-  char *p;
-
-  p = (char*)malloc(len+1);
-  if (p) {
-    strcpy(p, s);
-  }
-  return p;
-}
-
-static char*
-strndup0(const char *s, size_t n)
-{
-  size_t i, len;
-  const char *p = s;
-  char *new;
-
-  for (i=0; i<n && *p; i++,p++)
-    ;
-  new = (char*)malloc(i+1);
-  if (new) {
-    memcpy(new, s, i);
-    new[i] = '\0';
-  }
-  return new;
-}
 
 static int
 lex_return(parser_state *p, int c)
@@ -84,7 +55,7 @@ true{TRAIL}         LEX_RETURN(keyword_true);
 false{TRAIL}        LEX_RETURN(keyword_false);
 
 [A-Za-z_][A-Za-z0-9_]* {
-  yylval->str = strdup0(yytext);
+  yylval->nd = strm_string_new(yytext);
   LEX_RETURN(identifier);
 };
 
@@ -97,12 +68,12 @@ false{TRAIL}        LEX_RETURN(keyword_false);
 (([1-9][0-9]*)|0)(\.[0-9]*)? {
   double temp;
   sscanf(yytext, "%lf", &temp);
-  yylval->d = temp;
+  yylval->nd = strm_double_new(temp);
   LEX_RETURN(lit_number);
 };
 
 \"([^\\\"]|\\.)*\"      {
-  yylval->str = strndup0(yytext+1, strlen(yytext)-2);
+  yylval->nd = strm_string_len_new(yytext+1, strlen(yytext)-2);
   LEX_RETURN(lit_string);
 };
 

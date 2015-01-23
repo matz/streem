@@ -1,6 +1,8 @@
 YACC = bison -y
 LEX = flex
 TARGET = bin/streem
+CFLAGS = -Wall
+LIBS =
 
 ifeq (Windows_NT,$(OS))
 TARGET:=$(TARGET).exe
@@ -26,9 +28,9 @@ src/lex.yy.c : src/lex.l
 src/parse.o : src/y.tab.c src/lex.yy.c
 	$(CC) -g -c src/y.tab.c -o src/parse.o
 
-$(TARGET) : src/parse.o
+$(TARGET) : src/parse.o src/node.o
 	mkdir -p "$$(dirname $(TARGET))"
-	$(CC) -g src/parse.o -o $(TARGET)
+	$(CC) $(CFLAGS) src/parse.o src/node.o -o $(TARGET) $(LIBS)
 
 clean :
 	rm -f src/y.output src/y.tab.c
