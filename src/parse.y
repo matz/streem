@@ -105,7 +105,7 @@ stmt            : var '=' stmt
 var             : identifier
                 ;
 
-expr		: expr op_plus expr
+expr            : expr op_plus expr
                 | expr op_minus expr
                 | expr op_mult expr
                 | expr op_div expr
@@ -124,10 +124,10 @@ expr		: expr op_plus expr
                 | '~' expr
                 | expr op_and expr
                 | expr op_or expr
-		| primary
-		;
+                | primary
+                ;
 
-condition	: condition op_plus condition
+condition       : condition op_plus condition
                 | condition op_minus condition
                 | condition op_mult condition
                 | condition op_div condition
@@ -173,25 +173,25 @@ primary0      	: lit_number
                 | '[' ']'
                 | '[' map_args ']'
                 | '[' ':' '}'
-		| keyword_if condition '{' compstmt '}' opt_else
+                | keyword_if condition '{' compstmt '}' opt_else
                 | keyword_nil
                 | keyword_true
                 | keyword_false
                 ;
 
-cond		: primary0
+cond            : primary0
                 | identifier '(' opt_args ')'
                 | cond '.' identifier '(' opt_args ')'
                 | cond '.' identifier
-		;
+                ;
 
-primary		: primary0
+primary         : primary0
                 | block
                 | identifier block
                 | identifier '(' opt_args ')' opt_block
                 | primary '.' identifier '(' opt_args ')' opt_block
                 | primary '.' identifier opt_block
-		;
+                ;
 
 map             : lit_string ':' expr
                 | identifier ':' expr
@@ -201,12 +201,12 @@ map_args        : map
                 | map_args ',' map
                 ;
 
-opt_block	: /* none */
-		| block	
-		;
+opt_block       : /* none */
+                | block	
+                ;
 
 block           : '{' bparam compstmt '}'
-		| '{' compstmt '}'
+                | '{' compstmt '}'
                 ;
 
 bparam          : op_rasgn
