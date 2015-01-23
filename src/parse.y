@@ -89,212 +89,212 @@ compstmt        : stmts opt_terms
                 ;
 
 stmts           :
-                {
-                  $$ = strm_array_new();
-                }
+                    {
+                      $$ = strm_array_new();
+                    }
                 | stmt
-                {
-                  strm_array_add($$, $1);
-                }
+                    {
+                      strm_array_add($$, $1);
+                    }
                 | stmts terms stmt
-                {
-                  strm_array_add($1, $3);
-                }
+                    {
+                      strm_array_add($1, $3);
+                    }
                 | error stmt
-                {
-                  /* TODO */
-                }
+                    {
+                      /* TODO */
+                    }
                 ;
 
 stmt            : var '=' expr
-                {
-                  $$ = strm_let_new($1, $3);
-                }
+                    {
+                      $$ = strm_let_new($1, $3);
+                    }
                 | keyword_emit opt_args
-                {
-                  /* TODO */
-                }
+                    {
+                       /* TODO */
+                    }
                 | keyword_return opt_args
-                {
-                  /* TODO */
-                }
+                    {
+                      /* TODO */
+                    }
                 | keyword_break
-                {
-                  /* TODO */
-                }
+                    {
+                      /* TODO */
+                    }
                 | expr
-                {
-                  $$ = $1;
-                }
+                    {
+                      $$ = $1;
+                    }
                 ;
 
 var             : identifier
-                {
-                }
+                    {
+                    }
                 ;
 
 expr            : expr op_plus expr
-                {
-                  $$ = strm_op_new("+", $1, $3);
-                }
+                    {
+                      $$ = strm_op_new("+", $1, $3);
+                    }
                 | expr op_minus expr
-                {
-                  $$ = strm_op_new("-", $1, $3);
-                }
+                    {
+                      $$ = strm_op_new("-", $1, $3);
+                    }
                 | expr op_mult expr
-                {
-                  $$ = strm_op_new("*", $1, $3);
-                }
+                    {
+                      $$ = strm_op_new("*", $1, $3);
+                    }
                 | expr op_div expr
-                {
-                  $$ = strm_op_new("/", $1, $3);
-                }
+                    {
+                      $$ = strm_op_new("/", $1, $3);
+                    }
                 | expr op_mod expr
-                {
-                  $$ = strm_op_new("%", $1, $3);
-                }
+                    {
+                      $$ = strm_op_new("%", $1, $3);
+                    }
                 | expr op_bar expr
-                {
-                  $$ = strm_op_new("|", $1, $3);
-                }
+                    {
+                      $$ = strm_op_new("|", $1, $3);
+                    }
                 | expr op_amper expr
-                {
-                  $$ = strm_op_new("&", $1, $3);
-                }
+                    {
+                      $$ = strm_op_new("&", $1, $3);
+                    }
                 | expr op_gt expr
-                {
-                  $$ = strm_op_new("<", $1, $3);
-                }
+                    {
+                      $$ = strm_op_new("<", $1, $3);
+                    }
                 | expr op_ge expr
-                {
-                  $$ = strm_op_new("<=", $1, $3);
-                }
+                    {
+                      $$ = strm_op_new("<=", $1, $3);
+                    }
                 | expr op_lt expr
-                {
-                  $$ = strm_op_new(">", $1, $3);
-                }
+                    {
+                      $$ = strm_op_new(">", $1, $3);
+                    }
                 | expr op_le expr
-                {
-                  $$ = strm_op_new(">=", $1, $3);
-                }
+                    {
+                      $$ = strm_op_new(">=", $1, $3);
+                    }
                 | expr op_eq expr
-                {
-                  $$ = strm_op_new("==", $1, $3);
-                }
+                    {
+                      $$ = strm_op_new("==", $1, $3);
+                    }
                 | expr op_neq expr
-                {
-                  $$ = strm_op_new("!=", $1, $3);
-                }
+                    {
+                      $$ = strm_op_new("!=", $1, $3);
+                    }
                 | op_plus expr                 %prec '!'
-                {
-                  $$ = strm_value_new($2);
-                }
+                    {
+                      $$ = strm_value_new($2);
+                    }
                 | op_minus expr                %prec '!'
-                {
-                  $$ = strm_value_new($2);
-                }
+                    {
+                      $$ = strm_value_new($2);
+                    }
                 | '!' expr
-                {
-                  $$ = strm_op_new("!", NULL, $2);
-                }
+                    {
+                      $$ = strm_op_new("!", NULL, $2);
+                    }
                 | '~' expr
-                {
-                  $$ = strm_op_new("~", NULL, $2);
-                }
+                    {
+                      $$ = strm_op_new("~", NULL, $2);
+                    }
                 | expr op_and expr
-                {
-                  $$ = strm_op_new("&&", $1, $3);
-                }
+                    {
+                      $$ = strm_op_new("&&", $1, $3);
+                    }
                 | expr op_or expr
-                {
-                  $$ = strm_op_new("||", $1, $3);
-                }
+                    {
+                      $$ = strm_op_new("||", $1, $3);
+                    }
                 | primary
-                {
-                  $$ = $1;
-                }
+                    {
+                      $$ = $1;
+                    }
                 ;
 
 condition       : condition op_plus condition
-                {
-                  $$ = strm_op_new("+", $1, $3);
-                }
+                    {
+                      $$ = strm_op_new("+", $1, $3);
+                    }
                 | condition op_minus condition
-                {
-                  $$ = strm_op_new("-", $1, $3);
-                }
+                    {
+                      $$ = strm_op_new("-", $1, $3);
+                    }
                 | condition op_mult condition
-                {
-                  $$ = strm_op_new("*", $1, $3);
-                }
+                    {
+                      $$ = strm_op_new("*", $1, $3);
+                    }
                 | condition op_div condition
-                {
-                  $$ = strm_op_new("/", $1, $3);
-                }
+                    {
+                      $$ = strm_op_new("/", $1, $3);
+                    }
                 | condition op_mod condition
-                {
-                  $$ = strm_op_new("%", $1, $3);
-                }
+                    {
+                      $$ = strm_op_new("%", $1, $3);
+                    }
                 | condition op_bar condition
-                {
-                  $$ = strm_op_new("|", $1, $3);
-                }
+                    {
+                      $$ = strm_op_new("|", $1, $3);
+                    }
                 | condition op_amper condition
-                {
-                  $$ = strm_op_new("&", $1, $3);
-                }
+                    {
+                      $$ = strm_op_new("&", $1, $3);
+                    }
                 | condition op_gt condition
-                {
-                  $$ = strm_op_new("<", $1, $3);
-                }
+                    {
+                      $$ = strm_op_new("<", $1, $3);
+                    }
                 | condition op_ge condition
-                {
-                  $$ = strm_op_new("<=", $1, $3);
-                }
+                    {
+                      $$ = strm_op_new("<=", $1, $3);
+                    }
                 | condition op_lt condition
-                {
-                  $$ = strm_op_new(">", $1, $3);
-                }
+                    {
+                      $$ = strm_op_new(">", $1, $3);
+                    }
                 | condition op_le condition
-                {
-                  $$ = strm_op_new(">=", $1, $3);
-                }
+                    {
+                      $$ = strm_op_new(">=", $1, $3);
+                    }
                 | condition op_eq condition
-                {
-                  $$ = strm_op_new("==", $1, $3);
-                }
+                    {
+                      $$ = strm_op_new("==", $1, $3);
+                    }
                 | condition op_neq condition
-                {
-                  $$ = strm_op_new("!=", $1, $3);
-                }
+                    {
+                      $$ = strm_op_new("!=", $1, $3);
+                    }
                 | op_plus condition            %prec '!'
-                {
-                  $$ = strm_value_new($2);
-                }
+                    {
+                      $$ = strm_value_new($2);
+                    }
                 | op_minus condition           %prec '!'
-                {
-                  $$ = strm_value_new($2);
-                }
+                    {
+                      $$ = strm_value_new($2);
+                    }
                 | '!' condition
-                {
-                  $$ = strm_op_new("!", NULL, $2);
-                }
+                    {
+                      $$ = strm_op_new("!", NULL, $2);
+                    }
                 | '~' condition
-                {
-                  $$ = strm_op_new("~", NULL, $2);
-                }
+                    {
+                      $$ = strm_op_new("~", NULL, $2);
+                    }
                 | condition op_and condition
-                {
-                  $$ = strm_op_new("&&", $1, $3);
-                }
+                    {
+                      $$ = strm_op_new("&&", $1, $3);
+                    }
                 | condition op_or condition
-                {
-                  $$ = strm_op_new("||", $1, $3);
-                }
+                    {
+                      $$ = strm_op_new("||", $1, $3);
+                    }
                 | cond
-                {
-                  $$ = $1;
-                }
+                    {
+                      $$ = $1;
+                    }
                 ;
 
 opt_elsif       : /* none */
@@ -306,101 +306,101 @@ opt_else        : opt_elsif
                 ;
 
 opt_args        : /* none */
-                {
-                  $$ = strm_array_new();
-                }
+                    {
+                      $$ = strm_array_new();
+                    }
                 | args
-                {
-                  $$ = $1;
-                }
+                    {
+                      $$ = $1;
+                    }
                 ;
 
 args            : expr
-                {
-                  $$ = strm_array_new();
-                }
+                    {
+                      $$ = strm_array_new();
+                    }
                 | args ',' expr
-                {
-                  strm_array_add($1, $3);
-                }
+                    {
+                      strm_array_add($1, $3);
+                    }
                 ;
 
 primary0        : lit_number
-                {
-                  /* TODO */
-                }
+                    {
+                      /* TODO */
+                    }
                 | lit_string
-                {
-                  /* TODO */
-                }
+                    {
+                      /* TODO */
+                    }
                 | identifier
-                {
-                  $$ = strm_ident_new($1);
-                }
+                    {
+                      $$ = strm_ident_new($1);
+                    }
                 | '(' expr ')'
-                {
-                  /* TODO */
-                }
+                    {
+                      /* TODO */
+                    }
                 | '[' args ']'
-                {
-                  /* TODO */
-                }
+                    {
+                      /* TODO */
+                    }
                 | '[' ']'
-                {
-                  /* TODO */
-                }
+                    {
+                      /* TODO */
+                    }
                 | '[' map_args ']'
-                {
-                  /* TODO */
-                }
+                    {
+                      /* TODO */
+                    }
                 | '[' ':' '}'
-                {
-                  /* TODO */
-                }
+                    {
+                      /* TODO */
+                    }
                 | keyword_if condition '{' compstmt '}' opt_else
-                {
-                  /* TODO */
-                }
+                    {
+                      /* TODO */
+                    }
                 | keyword_nil
-                {
-                  /* TODO */
-                }
+                    {
+                      /* TODO */
+                    }
                 | keyword_true
-                {
-                  /* TODO */
-                }
+                    {
+                      /* TODO */
+                    }
                 | keyword_false
-                {
-                  /* TODO */
-                }
+                    {
+                      /* TODO */
+                    }
                 ;
 
 cond            : primary0
-                {
-                   $$ = $1;
-                }
+                    {
+                       $$ = $1;
+                    }
                 | identifier '(' opt_args ')'
-                {
-                  $$ = strm_funcall_new($1, $3, NULL);
-                }
+                    {
+                      $$ = strm_funcall_new($1, $3, NULL);
+                    }
                 | cond '.' identifier '(' opt_args ')'
                 | cond '.' identifier
                 ;
 
 primary         : primary0
-                {
-                   $$ = $1;
-                }
+                    {
+                       $$ = $1;
+                    }
                 | block
-                {
-                }
+                    {
+                    }
                 | identifier block
-                {
-                }
+                    {
+                    }
                 | identifier '(' opt_args ')' opt_block
-                {
-                  $$ = strm_funcall_new($1, $3, $5);
-                }
+                    {
+                      $$ = strm_funcall_new($1, $3, $5);
+                    }
                 | primary '.' identifier '(' opt_args ')' opt_block
                 | primary '.' identifier opt_block
                 ;
@@ -414,63 +414,63 @@ map_args        : map
                 ;
 
 opt_block       : /* none */
-                {
-                  $$ = strm_nil_value();
-                }
+                    {
+                      $$ = strm_nil_value();
+                    }
                 | block
-                {
-                   $$ = $1;
-                }
+                    {
+                       $$ = $1;
+                    }
                 ;
 
 block           : '{' bparam compstmt '}'
-                {
-                  /* TODO */
-                }
+                    {
+                      /* TODO */
+                    }
                 | '{' compstmt '}'
-                {
-                  /* TODO */
-                }
+                    {
+                      /* TODO */
+                    }
                 ;
 
 bparam          : op_rasgn
-                {
-                  /* TODO */
-                }
+                    {
+                      /* TODO */
+                    }
                 | f_args op_rasgn
-                {
-                  /* TODO */
-                }
+                    {
+                      /* TODO */
+                    }
                 ;
 
 f_args          : identifier
-                {
-                  $$ = strm_array_new();
-                }
+                    {
+                      $$ = strm_array_new();
+                    }
                 | f_args ',' identifier
-                {
-                  strm_array_add($$, $1);
-                }
+                    {
+                      strm_array_add($$, $1);
+                    }
                 ;
 
 opt_terms       : /* none */
-                {
-                  $$ = strm_array_new();
-                }
+                    {
+                      $$ = strm_array_new();
+                    }
                 | terms
-                {
-                  strm_array_add($$, $1);
-                }
+                    {
+                      strm_array_add($$, $1);
+                    }
                 ;
 
 terms           : term
-                {
-                  $$ = strm_array_new();
-                }
+                    {
+                      $$ = strm_array_new();
+                    }
                 | terms term {yyerrok;}
-                {
-                  strm_array_add($$, $1);
-                }
+                    {
+                      strm_array_add($$, $1);
+                    }
                 ;
 
 term            : ';' {yyerrok;}
