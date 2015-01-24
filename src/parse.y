@@ -12,13 +12,13 @@
 %}
 
 %union {
-  strm_node *nd;
+  strm_node* nd;
   strm_id id;
 }
 
 %type <nd> program compstmt
-%type <nd> stmts stmt expr condition cond args var primary primary0
-%type <nd> opt_args opt_block block terms f_args opt_terms
+%type <nd> stmt expr condition block cond var primary primary0
+%type <nd> stmts args opt_args opt_block f_args
 %type <id> identifier
 
 %pure-parser
@@ -26,7 +26,7 @@
 %lex-param {p}
 
 %{
-int yylex(YYSTYPE *yylval, parser_state *p);
+int yylex(YYSTYPE *lval, parser_state *p);
 static void yyerror(parser_state *p, const char *s);
 %}
 
@@ -83,6 +83,9 @@ static void yyerror(parser_state *p, const char *s);
 
 %%
 program         : compstmt
+                    { 
+                      p->lval = $1;  
+                    }
                 ;
 
 compstmt        : stmts opt_terms
@@ -90,15 +93,16 @@ compstmt        : stmts opt_terms
 
 stmts           :
                     {
-                      $$ = strm_array_new();
+                      $$ = node_array_new();
                     }
                 | stmt
                     {
-                      strm_array_add($$, $1);
+                      $$ = node_array_new();
+                      node_array_add($$, $1);
                     }
                 | stmts terms stmt
                     {
-                      strm_array_add($1, $3);
+                      node_array_add($1, $3);
                     }
                 | error stmt
                     {
@@ -108,7 +112,7 @@ stmts           :
 
 stmt            : var '=' expr
                     {
-                      $$ = strm_let_new($1, $3);
+                      $$ = node_let_new($1, $3);
                     }
                 | keyword_emit opt_args
                     {
@@ -135,79 +139,79 @@ var             : identifier
 
 expr            : expr op_plus expr
                     {
-                      $$ = strm_op_new("+", $1, $3);
+                      $$ = node_op_new("+", $1, $3);
                     }
                 | expr op_minus expr
                     {
-                      $$ = strm_op_new("-", $1, $3);
+                      $$ = node_op_new("-", $1, $3);
                     }
                 | expr op_mult expr
                     {
-                      $$ = strm_op_new("*", $1, $3);
+                      $$ = node_op_new("*", $1, $3);
                     }
                 | expr op_div expr
                     {
-                      $$ = strm_op_new("/", $1, $3);
+                      $$ = node_op_new("/", $1, $3);
                     }
                 | expr op_mod expr
                     {
-                      $$ = strm_op_new("%", $1, $3);
+                      $$ = node_op_new("%", $1, $3);
                     }
                 | expr op_bar expr
                     {
-                      $$ = strm_op_new("|", $1, $3);
+                      $$ = node_op_new("|", $1, $3);
                     }
                 | expr op_amper expr
                     {
-                      $$ = strm_op_new("&", $1, $3);
+                      $$ = node_op_new("&", $1, $3);
                     }
                 | expr op_gt expr
                     {
-                      $$ = strm_op_new("<", $1, $3);
+                      $$ = node_op_new("<", $1, $3);
                     }
                 | expr op_ge expr
                     {
-                      $$ = strm_op_new("<=", $1, $3);
+                      $$ = node_op_new("<=", $1, $3);
                     }
                 | expr op_lt expr
                     {
-                      $$ = strm_op_new(">", $1, $3);
+                      $$ = node_op_new(">", $1, $3);
                     }
                 | expr op_le expr
                     {
-                      $$ = strm_op_new(">=", $1, $3);
+                      $$ = node_op_new(">=", $1, $3);
                     }
                 | expr op_eq expr
                     {
-                      $$ = strm_op_new("==", $1, $3);
+                      $$ = node_op_new("==", $1, $3);
                     }
                 | expr op_neq expr
                     {
-                      $$ = strm_op_new("!=", $1, $3);
+                      $$ = node_op_new("!=", $1, $3);
                     }
                 | op_plus expr                 %prec '!'
                     {
-                      $$ = strm_value_new($2);
+                      $$ = node_value_new($2);
                     }
                 | op_minus expr                %prec '!'
                     {
-                      $$ = strm_value_new($2);
+                      $$ = node_value_new($2);
                     }
                 | '!' expr
                     {
-                      $$ = strm_op_new("!", NULL, $2);
+                      $$ = node_op_new("!", NULL, $2);
                     }
                 | '~' expr
                     {
-                      $$ = strm_op_new("~", NULL, $2);
+                      $$ = node_op_new("~", NULL, $2);
                     }
                 | expr op_and expr
                     {
-                      $$ = strm_op_new("&&", $1, $3);
+                      $$ = node_op_new("&&", $1, $3);
                     }
                 | expr op_or expr
                     {
-                      $$ = strm_op_new("||", $1, $3);
+                      $$ = node_op_new("||", $1, $3);
                     }
                 | primary
                     {
@@ -217,79 +221,79 @@ expr            : expr op_plus expr
 
 condition       : condition op_plus condition
                     {
-                      $$ = strm_op_new("+", $1, $3);
+                      $$ = node_op_new("+", $1, $3);
                     }
                 | condition op_minus condition
                     {
-                      $$ = strm_op_new("-", $1, $3);
+                      $$ = node_op_new("-", $1, $3);
                     }
                 | condition op_mult condition
                     {
-                      $$ = strm_op_new("*", $1, $3);
+                      $$ = node_op_new("*", $1, $3);
                     }
                 | condition op_div condition
                     {
-                      $$ = strm_op_new("/", $1, $3);
+                      $$ = node_op_new("/", $1, $3);
                     }
                 | condition op_mod condition
                     {
-                      $$ = strm_op_new("%", $1, $3);
+                      $$ = node_op_new("%", $1, $3);
                     }
                 | condition op_bar condition
                     {
-                      $$ = strm_op_new("|", $1, $3);
+                      $$ = node_op_new("|", $1, $3);
                     }
                 | condition op_amper condition
                     {
-                      $$ = strm_op_new("&", $1, $3);
+                      $$ = node_op_new("&", $1, $3);
                     }
                 | condition op_gt condition
                     {
-                      $$ = strm_op_new("<", $1, $3);
+                      $$ = node_op_new("<", $1, $3);
                     }
                 | condition op_ge condition
                     {
-                      $$ = strm_op_new("<=", $1, $3);
+                      $$ = node_op_new("<=", $1, $3);
                     }
                 | condition op_lt condition
                     {
-                      $$ = strm_op_new(">", $1, $3);
+                      $$ = node_op_new(">", $1, $3);
                     }
                 | condition op_le condition
                     {
-                      $$ = strm_op_new(">=", $1, $3);
+                      $$ = node_op_new(">=", $1, $3);
                     }
                 | condition op_eq condition
                     {
-                      $$ = strm_op_new("==", $1, $3);
+                      $$ = node_op_new("==", $1, $3);
                     }
                 | condition op_neq condition
                     {
-                      $$ = strm_op_new("!=", $1, $3);
+                      $$ = node_op_new("!=", $1, $3);
                     }
                 | op_plus condition            %prec '!'
                     {
-                      $$ = strm_value_new($2);
+                      $$ = node_value_new($2);
                     }
                 | op_minus condition           %prec '!'
                     {
-                      $$ = strm_value_new($2);
+                      $$ = node_value_new($2);
                     }
                 | '!' condition
                     {
-                      $$ = strm_op_new("!", NULL, $2);
+                      $$ = node_op_new("!", NULL, $2);
                     }
                 | '~' condition
                     {
-                      $$ = strm_op_new("~", NULL, $2);
+                      $$ = node_op_new("~", NULL, $2);
                     }
                 | condition op_and condition
                     {
-                      $$ = strm_op_new("&&", $1, $3);
+                      $$ = node_op_new("&&", $1, $3);
                     }
                 | condition op_or condition
                     {
-                      $$ = strm_op_new("||", $1, $3);
+                      $$ = node_op_new("||", $1, $3);
                     }
                 | cond
                     {
@@ -307,7 +311,7 @@ opt_else        : opt_elsif
 
 opt_args        : /* none */
                     {
-                      $$ = strm_array_new();
+                      $$ = node_array_new();
                     }
                 | args
                     {
@@ -317,11 +321,11 @@ opt_args        : /* none */
 
 args            : expr
                     {
-                      $$ = strm_array_new();
+                      $$ = node_array_new();
                     }
                 | args ',' expr
                     {
-                      strm_array_add($1, $3);
+                      node_array_add($1, $3);
                     }
                 ;
 
@@ -335,7 +339,7 @@ primary0        : lit_number
                     }
                 | identifier
                     {
-                      $$ = strm_ident_new($1);
+                      $$ = node_ident_new($1);
                     }
                 | '(' expr ')'
                     {
@@ -381,7 +385,7 @@ cond            : primary0
                     }
                 | identifier '(' opt_args ')'
                     {
-                      $$ = strm_funcall_new($1, $3, NULL);
+                      $$ = node_funcall_new($1, $3, NULL);
                     }
                 | cond '.' identifier '(' opt_args ')'
                 | cond '.' identifier
@@ -399,7 +403,7 @@ primary         : primary0
                     }
                 | identifier '(' opt_args ')' opt_block
                     {
-                      $$ = strm_funcall_new($1, $3, $5);
+                      $$ = node_funcall_new($1, $3, $5);
                     }
                 | primary '.' identifier '(' opt_args ')' opt_block
                 | primary '.' identifier opt_block
@@ -415,7 +419,7 @@ map_args        : map
 
 opt_block       : /* none */
                     {
-                      $$ = strm_nil_value();
+                      $$ = NULL;
                     }
                 | block
                     {
@@ -445,32 +449,20 @@ bparam          : op_rasgn
 
 f_args          : identifier
                     {
-                      $$ = strm_array_new();
+                      $$ = node_array_new();
                     }
                 | f_args ',' identifier
                     {
-                      strm_array_add($$, $1);
+                      node_array_add($$, $1);
                     }
                 ;
 
 opt_terms       : /* none */
-                    {
-                      $$ = strm_array_new();
-                    }
                 | terms
-                    {
-                      strm_array_add($$, $1);
-                    }
                 ;
 
 terms           : term
-                    {
-                      $$ = strm_array_new();
-                    }
                 | terms term {yyerrok;}
-                    {
-                      strm_array_add($$, $1);
-                    }
                 ;
 
 term            : ';' {yyerrok;}
@@ -493,6 +485,38 @@ yyerror(parser_state *p, const char *s)
   }
 }
 
+static void
+dump_node(strm_node* node, int indent) {
+  int i;
+  for (i = 0; i < indent; i++)
+    putchar(' ');
+  switch (node->type) {
+  case STRM_NODE_ARRAY:
+    {
+      strm_array* arr0 = node->value.v.p;
+      for (i = 0; i < arr0->len; i++)
+        dump_node(arr0->data[i], indent+1);
+    }
+    break;
+  case STRM_NODE_IDENT:
+    printf("IDENT: %d\n", node->value.v.id);
+    break;
+  case STRM_NODE_VALUE:
+    switch (node->value.t) {
+    case STRM_VALUE_DOUBLE:
+      printf("VALUE(NUMBER): %f\n", node->value.v.d);
+      break;
+    case STRM_VALUE_STRING:
+      printf("VALUE(STRING): %s\n", node->value.v.s);
+      break;
+    }
+    break;
+  default:
+    printf("UNKNWON(%d)\n", node->type);
+    break;
+  }
+}
+
 static int
 syntax_check(FILE *f, const char *fname)
 {
@@ -502,9 +526,10 @@ syntax_check(FILE *f, const char *fname)
   yyin = f;
   n = yyparse(&state);
 
-  printf("%p\n", state.lval);
   if (n == 0 && state.nerr == 0) {
     printf("%s: Syntax OK\n", fname);
+    puts("---------");
+    dump_node(state.lval, 0);
     return 0;
   }
   else {

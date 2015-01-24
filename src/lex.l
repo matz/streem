@@ -8,7 +8,7 @@
 #include <string.h>
 #include "strm.h"
 
-#define YY_DECL    int yylex(YYSTYPE *yylval, parser_state *p)
+#define YY_DECL    int yylex(YYSTYPE *lval, parser_state *p)
 
 static int
 lex_return(parser_state *p, int c)
@@ -55,7 +55,7 @@ true{TRAIL}         LEX_RETURN(keyword_true);
 false{TRAIL}        LEX_RETURN(keyword_false);
 
 [A-Za-z_][A-Za-z0-9_]* {
-  yylval->nd = strm_string_new(yytext);
+  lval->id = node_ident_of(yytext);
   LEX_RETURN(identifier);
 };
 
@@ -68,12 +68,12 @@ false{TRAIL}        LEX_RETURN(keyword_false);
 (([1-9][0-9]*)|0)(\.[0-9]*)? {
   double temp;
   sscanf(yytext, "%lf", &temp);
-  yylval->nd = strm_double_new(temp);
+  lval->nd = node_double_new(temp);
   LEX_RETURN(lit_number);
 };
 
 \"([^\\\"]|\\.)*\"      {
-  yylval->nd = strm_string_len_new(yytext+1, strlen(yytext)-2);
+  lval->nd = node_string_len_new(yytext+1, strlen(yytext)-2);
   LEX_RETURN(lit_string);
 };
 
