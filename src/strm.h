@@ -1,6 +1,7 @@
 #ifndef _STRM_H_
 #define _STRM_H_
 #include <stdlib.h>
+#include <stdint.h>
 
 typedef enum {
   STRM_VALUE_BOOL,
@@ -28,7 +29,7 @@ typedef enum {
   STRM_NODE_OP_MINUS,
 } strm_node_type;
 
-typedef unsigned int strm_id;
+typedef intptr_t strm_id;
 typedef double strm_double;
 typedef char* strm_string;
 
