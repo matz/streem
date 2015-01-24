@@ -488,6 +488,7 @@ yyerror(parser_state *p, const char *s)
 static void
 dump_node(strm_node* node, int indent) {
   int i;
+  if (!node) return;		  
   for (i = 0; i < indent; i++)
     putchar(' ');
   switch (node->type) {
