@@ -61,6 +61,9 @@ static void yyerror(parser_state *p, const char *s);
 %token
         lit_number
         lit_string
+        lit_true
+        lit_false
+        lit_nil
         identifier
 
 /*
@@ -331,11 +334,9 @@ args            : expr
 
 primary0        : lit_number
                     {
-                      /* TODO */
                     }
                 | lit_string
                     {
-                      /* TODO */
                     }
                 | identifier
                     {
@@ -347,11 +348,11 @@ primary0        : lit_number
                     }
                 | '[' args ']'
                     {
-                      /* TODO */
+                      $$ = node_array_of($2);
                     }
                 | '[' ']'
                     {
-                      /* TODO */
+                      $$ = node_array_of(NULL);
                     }
                 | '[' map_args ']'
                     {
@@ -367,15 +368,12 @@ primary0        : lit_number
                     }
                 | keyword_nil
                     {
-                      /* TODO */
                     }
                 | keyword_true
                     {
-                      /* TODO */
                     }
                 | keyword_false
                     {
-                      /* TODO */
                     }
                 ;
 
@@ -509,6 +507,18 @@ dump_node(strm_node* node, int indent) {
       break;
     case STRM_VALUE_STRING:
       printf("VALUE(STRING): %s\n", node->value.v.s);
+      break;
+    case STRM_VALUE_BOOL:
+      printf("VALUE(BOOL): %s\n", node->value.v.i ? "true" : "false");
+      break;
+    case STRM_VALUE_NIL:
+      printf("VALUE(NIL): nil\n");
+      break;
+    case STRM_VALUE_CARRAY:
+      printf("VALUE(ARRAY): []\n");
+      break;
+    default:
+      printf("VALUE(UNKNOWN): %p\n", node->value.v.p);
       break;
     }
     break;

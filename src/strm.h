@@ -66,6 +66,7 @@ typedef struct parser_state {
 
 extern strm_node* node_value_new(strm_node*);
 extern strm_node* node_array_new();
+extern strm_node* node_array_of(strm_node*);
 extern void node_array_add(strm_node*, strm_node*);
 extern strm_node* node_let_new(strm_node*, strm_node*);
 extern strm_node* node_op_new(const char*, strm_node*, strm_node*);
@@ -75,4 +76,7 @@ extern strm_node* node_string_new(strm_string);
 extern strm_node* node_string_len_new(strm_string, size_t);
 extern strm_node* node_ident_new(strm_id);
 extern strm_id node_ident_of(const char*);
+extern strm_node* node_nil();
+extern strm_node* node_true();
+extern strm_node* node_false();
 #endif /* _STRM_H_ */

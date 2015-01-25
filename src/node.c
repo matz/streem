@@ -54,6 +54,15 @@ node_array_new()
   return node;
 }
 
+strm_node*
+node_array_of(strm_node* node)
+{
+  if (node == NULL)
+    node = node_array_new();
+  node->type = STRM_NODE_VALUE;
+  return node;
+}
+
 void
 node_array_add(strm_node* arr, strm_node* node)
 {
@@ -137,4 +146,25 @@ node_ident_of(const char* s)
 {
   /* TODO: get id of the identifier which named as s */
   return (strm_id) s;
+}
+
+strm_node*
+node_nil()
+{
+  static strm_node node = { STRM_NODE_VALUE, { STRM_VALUE_NIL, {0} } };
+  return &node;
+}
+
+strm_node*
+node_true()
+{
+  static strm_node node = { STRM_NODE_VALUE, { STRM_VALUE_BOOL, {1} } };
+  return &node;
+}
+
+strm_node*
+node_false()
+{
+  static strm_node node = { STRM_NODE_VALUE, { STRM_VALUE_BOOL, {0} } };
+  return &node;
 }
