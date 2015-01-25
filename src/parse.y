@@ -167,19 +167,19 @@ expr            : expr op_plus expr
                     }
                 | expr op_gt expr
                     {
-                      $$ = node_op_new("<", $1, $3);
+                      $$ = node_op_new(">", $1, $3);
                     }
                 | expr op_ge expr
                     {
-                      $$ = node_op_new("<=", $1, $3);
+                      $$ = node_op_new(">=", $1, $3);
                     }
                 | expr op_lt expr
                     {
-                      $$ = node_op_new(">", $1, $3);
+                      $$ = node_op_new("<", $1, $3);
                     }
                 | expr op_le expr
                     {
-                      $$ = node_op_new(">=", $1, $3);
+                      $$ = node_op_new("<=", $1, $3);
                     }
                 | expr op_eq expr
                     {
@@ -249,19 +249,19 @@ condition       : condition op_plus condition
                     }
                 | condition op_gt condition
                     {
-                      $$ = node_op_new("<", $1, $3);
+                      $$ = node_op_new(">", $1, $3);
                     }
                 | condition op_ge condition
                     {
-                      $$ = node_op_new("<=", $1, $3);
+                      $$ = node_op_new(">=", $1, $3);
                     }
                 | condition op_lt condition
                     {
-                      $$ = node_op_new(">", $1, $3);
+                      $$ = node_op_new("<", $1, $3);
                     }
                 | condition op_le condition
                     {
-                      $$ = node_op_new(">=", $1, $3);
+                      $$ = node_op_new("<=", $1, $3);
                     }
                 | condition op_eq condition
                     {
