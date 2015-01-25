@@ -75,7 +75,7 @@ strm_queue_exec(strm_queue *q)
   void *data;
 
   pthread_mutex_lock(&q->mutex);
-  if (!q->fo) {
+  while (!q->fo) {
     pthread_cond_wait(&q->cond, &q->mutex);
   }
   e = q->fo;
