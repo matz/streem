@@ -50,9 +50,18 @@ if{TRAIL}           LEX_RETURN(keyword_if);
 break{TRAIL}        LEX_RETURN(keyword_break);
 emit{TRAIL}         LEX_RETURN(keyword_emit);
 return{TRAIL}       LEX_RETURN(keyword_return);
-nil{TRAIL}          LEX_RETURN(keyword_nil);
-true{TRAIL}         LEX_RETURN(keyword_true);
-false{TRAIL}        LEX_RETURN(keyword_false);
+nil{TRAIL} {
+  lval->nd = node_nil();
+  LEX_RETURN(keyword_nil);
+}
+true{TRAIL} {
+  lval->nd = node_true();
+  LEX_RETURN(keyword_true);
+}
+false{TRAIL} {
+  lval->nd = node_false();
+  LEX_RETURN(keyword_false);
+}
 
 [A-Za-z_][A-Za-z0-9_]* {
   lval->id = node_ident_of(yytext);
