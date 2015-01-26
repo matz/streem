@@ -111,7 +111,6 @@ stmts           :
                     }
                 | error stmt
                     {
-                      /* TODO */
                     }
                 ;
 
@@ -377,9 +376,9 @@ primary0        : lit_number
                     {
                       $$ = node_map_of($2);
                     }
-                | '[' ':' '}'
+                | '[' ':' ']'
                     {
-                      /* TODO */
+                      $$ = node_map_of(NULL);
                     }
                 | keyword_if condition '{' compstmt '}' opt_else
                     {
