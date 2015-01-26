@@ -359,7 +359,7 @@ primary0        : lit_number
 					}
                 | identifier
                     {
-                      $$ = $<nd>1;
+                      $$ = node_ident_new($1);
                     }
                 | '(' expr ')'
                     {
