@@ -567,7 +567,7 @@ dump_node(strm_node* node, int indent) {
     break;
   case STRM_NODE_EMIT:
     printf("EMIT:\n");
-    dump_node((strm_node*) node->value.v.p, indent);
+    dump_node((strm_node*) node->value.v.p, indent+1);
     break;
   case STRM_NODE_OP:
     printf("OP:\n");
