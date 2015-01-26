@@ -28,7 +28,6 @@ typedef enum {
   STRM_NODE_VAR,
   STRM_NODE_CONST,
   STRM_NODE_OP,
-  STRM_NODE_FUNC,
   STRM_NODE_CALL,
 } strm_node_type;
 
@@ -82,15 +81,15 @@ typedef struct {
 } strm_node_op;
 
 typedef struct {
-  strm_node* ident;
   strm_node* args;
-  strm_node* blk;
-} strm_node_func;
+  strm_node* compstmt;
+} strm_node_block;
 
 typedef struct {
   strm_node* cond;
   strm_node* ident;
   strm_node* args;
+  strm_node* blk;
 } strm_node_call;
 
 typedef struct parser_state {
@@ -110,8 +109,8 @@ extern strm_node* node_map_new();
 extern strm_node* node_map_of(strm_node*);
 extern strm_node* node_let_new(strm_node*, strm_node*);
 extern strm_node* node_op_new(char*, strm_node*, strm_node*);
-extern strm_node* node_func_new(strm_node*, strm_node*, strm_node*);
-extern strm_node* node_call_new(strm_node*, strm_node*, strm_node*);
+extern strm_node* node_block_new(strm_node*, strm_node*);
+extern strm_node* node_call_new(strm_node*, strm_node*, strm_node*, strm_node*);
 extern strm_node* node_double_new(strm_double);
 extern strm_node* node_string_new(strm_string);
 extern strm_node* node_string_len_new(strm_string, size_t);

@@ -143,27 +143,27 @@ node_op_new(char* op, strm_node* lhs, strm_node* rhs)
 }
 
 strm_node*
-node_func_new(strm_node* ident, strm_node* args, strm_node* blk)
+node_block_new(strm_node* args, strm_node* compstmt)
 {
-  strm_node_func* node_func = malloc(sizeof(strm_node_func));
-  node_func->ident = ident;
-  node_func->args = args;
-  node_func->blk = blk;
+  strm_node_block* node_block = malloc(sizeof(strm_node_block));
+  node_block->args = args;
+  node_block->compstmt = compstmt;
 
   strm_node* node = malloc(sizeof(strm_node));
-  node->type = STRM_NODE_FUNC;
+  node->type = STRM_NODE_BLOCK;
   node->value.t = STRM_VALUE_USER;
-  node->value.v.p = node_func;
+  node->value.v.p = node_block;
   return node;
 }
 
 strm_node*
-node_call_new(strm_node* cond, strm_node* ident, strm_node* args)
+node_call_new(strm_node* cond, strm_node* ident, strm_node* args, strm_node* blk)
 {
   strm_node_call* node_call = malloc(sizeof(strm_node_call));
   node_call->cond = cond;
   node_call->ident = ident;
   node_call->args = args;
+  node_call->blk = blk;
 
   strm_node* node = malloc(sizeof(strm_node));
   node->type = STRM_NODE_CALL;
