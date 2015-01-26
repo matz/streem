@@ -9,6 +9,7 @@
 #define YYERROR_VERBOSE 1
 
 #include "strm.h"
+#include "node.h"
 %}
 
 %union {
@@ -18,7 +19,7 @@
 
 %type <nd> program compstmt
 %type <nd> stmt expr condition block cond var primary primary0
-%type <nd> stmts args opt_args opt_block f_args map map_args
+%type <nd> stmts args opt_args opt_block f_args map map_args bparam
 %type <nd> opt_else opt_elsif
 %type <id> identifier
 
@@ -111,7 +112,6 @@ stmts           :
                     }
                 | error stmt
                     {
-                      /* TODO */
                     }
                 ;
 
@@ -377,9 +377,9 @@ primary0        : lit_number
                     {
                       $$ = node_map_of($2);
                     }
-                | '[' ':' '}'
+                | '[' ':' ']'
                     {
-                      /* TODO */
+                      $$ = node_map_of(NULL);
                     }
                 | keyword_if condition '{' compstmt '}' opt_else
                     {
@@ -402,38 +402,38 @@ cond            : primary0
                     }
                 | identifier '(' opt_args ')'
                     {
-                      $$ = node_call_new(NULL, node_ident_new($1), $3);
+                      $$ = node_call_new(NULL, node_ident_new($1), $3, NULL);
                     }
                 | cond '.' identifier '(' opt_args ')'
                     {
-                      $$ = node_call_new(NULL, node_ident_new($3), $5);
+                      $$ = node_call_new(NULL, node_ident_new($3), $5, NULL);
                     }
                 | cond '.' identifier
                     {
-                      $$ = node_call_new($1, node_ident_new($3), NULL);
+                      $$ = node_call_new($1, node_ident_new($3), NULL, NULL);
                     }
                 ;
 
 primary         : primary0
                 | block
                     {
-                      $$ = node_func_new(NULL, NULL, $1);
+                      $$ = node_call_new(NULL, NULL, NULL, $1);
                     }
                 | identifier block
                     {
-                      $$ = node_func_new(node_ident_new($1), NULL, $2);
+                      $$ = node_call_new(NULL, node_ident_new($1), NULL, $2);
                     }
                 | identifier '(' opt_args ')' opt_block
                     {
-                      $$ = node_func_new(node_ident_new($1), $3, $5);
+                      $$ = node_call_new(NULL, node_ident_new($1), $3, $5);
                     }
                 | primary '.' identifier '(' opt_args ')' opt_block
                     {
-                      /* TODO */
+                      $$ = node_call_new($1, node_ident_new($3), $5, $7);
                     }
                 | primary '.' identifier opt_block
                     {
-                      /* TODO */
+                      $$ = node_call_new($1, node_ident_new($3), NULL, $4);
                     }
                 ;
 
@@ -471,21 +471,21 @@ opt_block       : /* none */
 
 block           : '{' bparam compstmt '}'
                     {
-                      /* TODO */
+                      $$ = node_block_new($2, $3);
                     }
                 | '{' compstmt '}'
                     {
-                      $$ = $2;
+                      $$ = node_block_new(NULL, $2);
                     }
                 ;
 
 bparam          : op_rasgn
                     {
-                      /* TODO */
+                      $$ = NULL;
                     }
                 | f_args op_rasgn
                     {
-                      /* TODO */
+                      $$ = $1;
                     }
                 ;
 
@@ -577,17 +577,17 @@ dump_node(strm_node* node, int indent) {
     puts(((strm_node_op*) node->value.v.p)->op);
     dump_node(((strm_node_op*) node->value.v.p)->rhs, indent+1);
     break;
-  case STRM_NODE_FUNC:
-    printf("FUNC:\n");
-    dump_node(((strm_node_func*) node->value.v.p)->ident, indent+1);
-    dump_node(((strm_node_func*) node->value.v.p)->args, indent+1);
-    dump_node(((strm_node_func*) node->value.v.p)->blk, indent+1);
+  case STRM_NODE_BLOCK:
+    printf("BLOCK:\n");
+    dump_node(((strm_node_block*) node->value.v.p)->args, indent+1);
+    dump_node(((strm_node_block*) node->value.v.p)->compstmt, indent+1);
     break;
   case STRM_NODE_CALL:
     printf("CALL:\n");
     dump_node(((strm_node_call*) node->value.v.p)->cond, indent+2);
     dump_node(((strm_node_call*) node->value.v.p)->ident, indent+2);
     dump_node(((strm_node_call*) node->value.v.p)->args, indent+2);
+    dump_node(((strm_node_call*) node->value.v.p)->blk, indent+2);
     break;
   case STRM_NODE_IDENT:
     printf("IDENT: %d\n", node->value.v.id);
