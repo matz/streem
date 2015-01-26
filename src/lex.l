@@ -7,6 +7,7 @@
 %{
 #include <string.h>
 #include "strm.h"
+#include "node.h"
 
 #define YY_DECL    int yylex(YYSTYPE *lval, parser_state *p)
 

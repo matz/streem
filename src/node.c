@@ -1,4 +1,5 @@
 #include "strm.h"
+#include "node.h"
 #include <string.h>
 
 static char*

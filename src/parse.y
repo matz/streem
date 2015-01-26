@@ -9,6 +9,7 @@
 #define YYERROR_VERBOSE 1
 
 #include "strm.h"
+#include "node.h"
 %}
 
 %union {
