@@ -1,6 +1,6 @@
 #ifndef _STRM_H_
 #define _STRM_H_
-#include <stdlib.h>
+#include <stdio.h>
 #include <stdint.h>
 
 typedef enum {
@@ -29,5 +29,18 @@ typedef struct {
     strm_id id;
   } v;
 } strm_value;
+
+typedef struct parser_state {
+  int nerr;
+  void *lval;
+  const char *fname;
+  int lineno;
+  int tline;
+} parser_state;
+
+int strm_parse_init(parser_state*);
+int strm_parse_file(parser_state*, const char*);
+int strm_parse_input(parser_state*, FILE* in, const char*);
+int strm_parse_string(parser_state*, const char*);
 
 #endif /* _STRM_H_ */
