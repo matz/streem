@@ -63,14 +63,6 @@ typedef struct {
   strm_node* blk;
 } strm_node_call;
 
-typedef struct parser_state {
-  int nerr;
-  void *lval;
-  const char *fname;
-  int lineno;
-  int tline;
-} parser_state;
-
 extern strm_node* node_value_new(strm_node*);
 extern strm_node* node_array_new();
 extern strm_node* node_array_of(strm_node*);

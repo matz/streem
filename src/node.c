@@ -1,6 +1,10 @@
 #include "strm.h"
 #include "node.h"
+#include <stdlib.h>
 #include <string.h>
+
+extern FILE *yyin, *yyout;
+extern int yyparse(parser_state*);
 
 static char*
 strdup0(const char *s)
@@ -286,4 +290,42 @@ node_break_new(strm_node* value)
 {
   static strm_node node = { STRM_NODE_BREAK };
   return &node;
+}
+
+int
+strm_parse_init(parser_state *p)
+{
+  p->nerr = 0;
+  p->lval = NULL;
+  p->fname = NULL;
+  p->lineno = 1;
+  p->tline = 1;
+  return 0;
+}
+
+int
+strm_parse_file(parser_state* p, const char* fname)
+{
+  int r;
+  FILE* fp = fopen(fname, "rb");
+  if (fp == NULL) {
+    perror("fopen");
+    return 1;
+  }
+  r = strm_parse_input(p, fp, fname);
+  fclose(fp);
+  return r;
+}
+
+int
+strm_parse_input(parser_state* p, FILE *f, const char *fname)
+{
+  int n;
+
+  yyin = f;
+  n = yyparse(p);
+  if (n == 0 && p->nerr == 0) {
+    return 0;
+  }
+  return 1;
 }
