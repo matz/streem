@@ -15,15 +15,14 @@ static pthread_cond_t pipeline_cond;
 
 static void task_init();
 
-static void
-task_push(int tid, strm_stream *s, strm_func func, void *data)
+static int
+task_tid(strm_stream *s, int tid)
 {
   int i;
 
-  assert(threads != NULL);
   if (s->tid < 0) {
     if (tid >= 0) {
-      s->tid = (tid + 1) % thread_max;
+      s->tid = tid % thread_max;
     }
     else {
       int n = 0;
@@ -45,14 +44,31 @@ task_push(int tid, strm_stream *s, strm_func func, void *data)
       }
     }
   }
+  return s->tid;
+}
+
+void
+task_push(int tid, strm_stream *s, strm_func func, void *data)
+{
+  assert(threads != NULL);
+  task_tid(s, tid);
   strm_queue_push(threads[s->tid].queue, s, func, data);
 }
 
 void
 strm_task_push(strm_stream *s, strm_func func, void *data)
 {
+  task_push(-1, s, func, data);
+}
+
+void
+strm_task_push_io(struct strm_queue_task *t)
+{
+  strm_stream *s = t->strm;
+
   assert(threads != NULL);
-  task_push(s->tid, s, func, data);
+  task_tid(s, -1);
+  strm_queue_push_io(threads[s->tid].queue, t);
 }
 
 void
@@ -61,11 +77,11 @@ strm_emit(strm_stream *strm, void *data, strm_func func)
   strm_stream *d = strm->dst;
 
   while (d) {
-    task_push(strm->tid, d, d->start_func, data);
+    task_push(strm->tid+1, d, d->start_func, data);
     d = d->nextd;
   }
   if (func) {
-    strm_task_push(strm, func, NULL);
+    strm_task_push_io(strm_queue_task(strm, func, NULL));
   }
 }
 

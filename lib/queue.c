@@ -4,14 +4,7 @@
 struct strm_queue {
   pthread_mutex_t mutex;
   pthread_cond_t cond;
-  struct strm_queue_entry *fi, *fo;
-};
-
-struct strm_queue_entry {
-  strm_stream *strm;
-  strm_func func;
-  void *data;
-  struct strm_queue_entry *next;
+  struct strm_queue_task *fi, *fm, *fo;
 };
 
 strm_queue*
@@ -21,7 +14,7 @@ strm_queue_alloc()
 
   pthread_mutex_init(&q->mutex, NULL);
   pthread_cond_init(&q->cond, NULL);
-  q->fi = q->fo = NULL;
+  q->fi = q->fm = q->fo = NULL;
   return q;
 }
 
@@ -30,13 +23,13 @@ strm_queue_free(strm_queue *q)
 {
   if (!q) return;
   if (q->fo) {
-    struct strm_queue_entry *e = q->fo;
-    struct strm_queue_entry *tmp;
+    struct strm_queue_task *t = q->fo;
+    struct strm_queue_task *tmp;
 
-    while (e) {
-      tmp = e->next;
-      free(e);
-      e = tmp;
+    while (t) {
+      tmp = t->next;
+      free(t);
+      t = tmp;
     }
   }
   pthread_mutex_destroy(&q->mutex);
@@ -44,32 +37,66 @@ strm_queue_free(strm_queue *q)
   free(q);
 }
 
+static void
+queue_push_task(strm_queue *q, struct strm_queue_task *t)
+{
+  pthread_mutex_lock(&q->mutex);
+  if (q->fi) {
+    q->fi->next = t;
+  }
+  q->fi = t;
+  if (!q->fm) {
+    q->fm = t;
+  }
+  if (!q->fo) {
+    q->fo = t;
+  }
+  pthread_cond_signal(&q->cond);
+  pthread_mutex_unlock(&q->mutex);
+}
+
+void
+strm_queue_push_io(strm_queue *q, struct strm_queue_task *t)
+{
+  if (!q) return;
+  pthread_mutex_lock(&q->mutex);
+  if (q->fm) {
+    t->next = q->fm->next;
+    q->fm->next = t;
+  }
+  if (!q->fi || q->fm == q->fi)
+    q->fi = t;
+  q->fm = t;
+  if (!q->fo) q->fo = t;
+  pthread_cond_signal(&q->cond);
+  pthread_mutex_unlock(&q->mutex);
+}
+
+struct strm_queue_task*
+strm_queue_task(strm_stream *strm, strm_func func, void *data)
+{
+  struct strm_queue_task *t;
+
+  t = malloc(sizeof(struct strm_queue_task));
+  t->strm = strm;
+  t->func = func;
+  t->data = data;
+  t->next = NULL;
+
+  return t;
+}
+
 void
 strm_queue_push(strm_queue *q, strm_stream *strm, strm_func func, void *data)
 {
-  struct strm_queue_entry *e;
-
   if (!q) return;
-
-  e = malloc(sizeof(struct strm_queue_entry));
-  pthread_mutex_lock(&q->mutex);
-  e->strm = strm;
-  e->func = func;
-  e->data = data;
-  e->next = NULL;
-  if (q->fi) {
-    q->fi->next = e;
-  }
-  q->fi = e;
-  if (!q->fo) q->fo = e;
-  pthread_cond_signal(&q->cond);
-  pthread_mutex_unlock(&q->mutex);
+  queue_push_task(q, strm_queue_task(strm, func, data));
 }
 
 int
 strm_queue_exec(strm_queue *q)
 {
-  struct strm_queue_entry *e;
+  struct strm_queue_task *t;
   strm_stream *strm;
   strm_func func;
   void *data;
@@ -78,15 +105,20 @@ strm_queue_exec(strm_queue *q)
   while (!q->fo) {
     pthread_cond_wait(&q->cond, &q->mutex);
   }
-  e = q->fo;
-  q->fo = e->next;
-  if (!q->fo) q->fi = NULL;
+  t = q->fo;
+  q->fo = t->next;
+  if (t == q->fm) {
+    q->fm = NULL;
+  }
+  if (!q->fo) {
+    q->fi = NULL;
+  }
   pthread_mutex_unlock(&q->mutex);
 
-  strm = e->strm;
-  func = e->func;
-  data = e->data;
-  free(e);
+  strm = t->strm;
+  func = t->func;
+  data = t->data;
+  free(t);
 
   (*func)(strm, data);
   return 1;
@@ -96,7 +128,7 @@ int
 strm_queue_size(strm_queue *q)
 {
   int n = 0;
-  struct strm_queue_entry *e = q->fo;
+  struct strm_queue_task *e = q->fo;
 
   while (e) {
     n++;

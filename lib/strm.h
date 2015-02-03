@@ -38,11 +38,18 @@ void strm_task_push(strm_stream *s, strm_func func, void *data);
 
 /* ----- queue */
 typedef struct strm_queue strm_queue;
-struct strm_queue_entry;
+struct strm_queue_task {
+  strm_stream *strm;
+  strm_func func;
+  void *data;
+  struct strm_queue_task *next;
+};
 
 strm_queue* strm_queue_alloc(void);
+struct strm_queue_task* strm_queue_task(strm_stream *strm, strm_func func, void *data);
 void strm_queue_free(strm_queue *q);
 void strm_queue_push(strm_queue *q, strm_stream *strm, strm_func func, void *data);
+void strm_queue_push_io(strm_queue *q, struct strm_queue_task *t); /* low priority queue */
 int strm_queue_exec(strm_queue *q);
 int strm_queue_size(strm_queue *q);
 int strm_queue_p(strm_queue *q);
