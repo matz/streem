@@ -203,22 +203,33 @@ strm_readio(int fd)
   return strm_alloc_stream(strm_task_prod, stdio_read, read_close, (void*)buf);
 }
 
+struct write_data {
+  int fd;
+};
+
 static void
 write_cb(strm_stream *strm, void *data)
 {
+  struct write_data *d = (struct write_data*)strm->data;
   const char *p = (char*)data;
 
-  write((int)strm->data, p, strlen(p));
+  write(d->fd, p, strlen(p));
 }
 
 static void
-write_close(strm_stream *strm, void *d)
+write_close(strm_stream *strm, void *data)
 {
-  close((int)strm->data);
+  struct write_data *d = (struct write_data*)strm->data;
+
+  close(d->fd);
+  free(d);
 }
 
 strm_stream*
 strm_writeio(int fd)
 {
-  return strm_alloc_stream(strm_task_cons, write_cb, write_close, (void*)fd);
+  struct write_data *d = malloc(sizeof(struct write_data));
+
+  d->fd = fd;
+  return strm_alloc_stream(strm_task_cons, write_cb, write_close, (void*)d);
 }
