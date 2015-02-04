@@ -46,13 +46,10 @@ static void
 seq_seed(strm_stream *strm, strm_value data)
 {
   struct seq_seeder *s = strm->data;
-  struct strm_string *str;
 
   if (s->n > s->end)
     return;
-  str = strm_str_new(0, 16);
-  str->len = sprintf((char*)str->ptr, "%d", s->n);
-  strm_emit(strm, strm_ptr_value(str), seq_seed);
+  strm_emit(strm, strm_int_value(s->n), seq_seed);
   s->n++;
 }
 
