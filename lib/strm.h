@@ -2,12 +2,13 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <stdint.h>
 
 /* ----- Values */
 enum strm_value_type {
-  STRM_TT_PTR,
   STRM_TT_INT,
   STRM_TT_FLT,
+  STRM_TT_PTR,
 };
 
 typedef struct strm_value {
@@ -29,8 +30,19 @@ void *strm_value_ptr(strm_value);
 long strm_value_int(strm_value);
 double strm_value_flt(strm_value);
 
+enum strm_obj_type {
+  STRM_TT_STR,
+  STRM_TT_ARY,
+  STRM_TT_MAP,
+};
+
+#define STRM_OBJ_HEADER \
+  unsigned int flags; \
+  enum strm_obj_type type
+
 /* ----- Strings */
 struct strm_string {
+  STRM_OBJ_HEADER;
   const char *ptr;
   size_t len;
 };

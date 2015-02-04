@@ -8,7 +8,6 @@
 #else
 # include <sys/select.h>
 #endif
-#include <stdint.h>
  
 #define EPOLL_CTL_ADD (1)
 #define EPOLL_CTL_DEL (2)
