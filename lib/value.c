@@ -38,6 +38,17 @@ strm_value_ptr(strm_value v)
   return v.val.p;
 }
 
+void*
+strm_value_obj(strm_value v, enum strm_obj_type t)
+{
+  struct strm_object *p;
+
+  assert(v.type == STRM_TT_PTR);
+  p = v.val.p;
+  assert(p->type == t);
+  return v.val.p;
+}
+
 long
 strm_value_int(strm_value v)
 {

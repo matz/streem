@@ -40,6 +40,12 @@ enum strm_obj_type {
   unsigned int flags; \
   enum strm_obj_type type
 
+struct strm_object {
+  STRM_OBJ_HEADER;
+};
+
+void *strm_value_obj(strm_value, enum strm_obj_type);
+
 /* ----- Strings */
 struct strm_string {
   STRM_OBJ_HEADER;
@@ -49,7 +55,7 @@ struct strm_string {
 
 struct strm_string *strm_str_new(const char*,size_t len);
 #define strm_str_value(p,len) strm_ptr_value(strm_str_new(p,len))
-#define strm_value_str(v) (struct strm_string*)strm_value_ptr(v)
+#define strm_value_str(v) (struct strm_string*)strm_value_obj(v, STRM_TT_STR)
 
 /* ----- Tasks */
 typedef enum {
