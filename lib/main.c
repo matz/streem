@@ -1,39 +1,40 @@
 #include "strm.h"
 
 static void
-map_recv(strm_stream *strm, void *data)
+map_recv(strm_stream *strm, strm_value data)
 {
   strm_map_func func = strm->data;
-  void *d;
+  strm_value d;
 
   d = (*func)(strm, data);
   strm_emit(strm, d, NULL);
 }
 
 strm_stream*
-strm_funcmap(void *(*func)(strm_stream *, void*))
+strm_funcmap(strm_map_func func)
 {
   return strm_alloc_stream(strm_task_filt, map_recv, NULL, func);
 }
 
 #include <ctype.h>
 
-static 
-void*
-str_toupper(strm_stream *strm, void *p)
+static strm_value
+str_toupper(strm_stream *strm, strm_value p)
 {
-  const char *s = p;
+  struct strm_string *str = strm_value_str(p);
+  const char *s, *send;
   char *t, *buf;
 
-  buf = malloc(strlen(s)+1);
+  s = str->ptr;
+  send = s + str->len;
+  buf = malloc(str->len);
   t = buf;
-  while (*s) {
+  while (s < send) {
     *t = toupper(*s);
     t++;
     s++;
   }
-  *t = '\0';
-  return (void*)buf;
+  return strm_str_value(buf, str->len);
 }
 
 struct seq_seeder {
@@ -42,17 +43,16 @@ struct seq_seeder {
 };
 
 static void
-seq_seed(strm_stream *strm, void *data)
+seq_seed(strm_stream *strm, strm_value data)
 {
   struct seq_seeder *s = strm->data;
-  char *buf;
+  struct strm_string *str;
 
   if (s->n > s->end)
     return;
-  buf = malloc(16);
-  *buf = '\0';
-  sprintf(buf, "%d\n", s->n);
-  strm_emit(strm, buf, seq_seed);
+  str = strm_str_new(0, 16);
+  str->len = sprintf((char*)str->ptr, "%d", s->n);
+  strm_emit(strm, strm_ptr_value(str), seq_seed);
   s->n++;
 }
 

@@ -73,7 +73,7 @@ strm_queue_push_io(strm_queue *q, struct strm_queue_task *t)
 }
 
 struct strm_queue_task*
-strm_queue_task(strm_stream *strm, strm_func func, void *data)
+strm_queue_task(strm_stream *strm, strm_func func, strm_value data)
 {
   struct strm_queue_task *t;
 
@@ -87,7 +87,7 @@ strm_queue_task(strm_stream *strm, strm_func func, void *data)
 }
 
 void
-strm_queue_push(strm_queue *q, strm_stream *strm, strm_func func, void *data)
+strm_queue_push(strm_queue *q, strm_stream *strm, strm_func func, strm_value data)
 {
   if (!q) return;
   queue_push_task(q, strm_queue_task(strm, func, data));
@@ -99,7 +99,7 @@ strm_queue_exec(strm_queue *q)
   struct strm_queue_task *t;
   strm_stream *strm;
   strm_func func;
-  void *data;
+  strm_value data;
 
   pthread_mutex_lock(&q->mutex);
   while (!q->fo) {

@@ -48,7 +48,7 @@ task_tid(strm_stream *s, int tid)
 }
 
 void
-task_push(int tid, strm_stream *s, strm_func func, void *data)
+task_push(int tid, strm_stream *s, strm_func func, strm_value data)
 {
   assert(threads != NULL);
   task_tid(s, tid);
@@ -56,7 +56,7 @@ task_push(int tid, strm_stream *s, strm_func func, void *data)
 }
 
 void
-strm_task_push(strm_stream *s, strm_func func, void *data)
+strm_task_push(strm_stream *s, strm_func func, strm_value data)
 {
   task_push(-1, s, func, data);
 }
@@ -72,7 +72,7 @@ strm_task_push_io(struct strm_queue_task *t)
 }
 
 void
-strm_emit(strm_stream *strm, void *data, strm_func func)
+strm_emit(strm_stream *strm, strm_value data, strm_func func)
 {
   strm_stream *d = strm->dst;
 
@@ -81,7 +81,7 @@ strm_emit(strm_stream *strm, void *data, strm_func func)
     d = d->nextd;
   }
   if (func) {
-    strm_task_push_io(strm_queue_task(strm, func, NULL));
+    strm_task_push_io(strm_queue_task(strm, func, strm_null_value()));
   }
 }
 
@@ -105,7 +105,7 @@ strm_connect(strm_stream *src, strm_stream *dst)
   if (src->mode == strm_task_prod) {
     task_init();
     pipeline_count++;
-    strm_task_push(src, src->start_func, NULL);
+    strm_task_push(src, src->start_func, strm_null_value());
   }
   return 1;
 }
@@ -208,7 +208,7 @@ strm_alloc_stream(strm_task_mode mode, strm_func start_func, strm_func close_fun
 }
 
 void
-pipeline_finish(strm_stream *strm, void *data)
+pipeline_finish(strm_stream *strm, strm_value data)
 {
   pthread_mutex_lock(&pipeline_mutex);
   pipeline_count--;
@@ -222,15 +222,15 @@ void
 strm_close(strm_stream *strm)
 {
   if (strm->close_func) {
-    (*strm->close_func)(strm, NULL);
+    (*strm->close_func)(strm, strm_null_value());
   }
   strm_stream *d = strm->dst;
 
   while (d) {
-    strm_task_push(d, (strm_func)strm_close, NULL);
+    strm_task_push(d, (strm_func)strm_close, strm_null_value());
     d = d->nextd;
   }
   if (strm->mode == strm_task_prod) {
-    strm_task_push(strm, pipeline_finish, NULL);
+    strm_task_push(strm, pipeline_finish, strm_null_value());
   }
 }

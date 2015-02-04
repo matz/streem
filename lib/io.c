@@ -21,7 +21,7 @@ io_push(int fd, strm_stream *strm, strm_func cb)
   struct epoll_event ev = { 0 };
 
   ev.events = EPOLLIN | EPOLLONESHOT;
-  ev.data.ptr = strm_queue_task(strm, cb, NULL);
+  ev.data.ptr = strm_queue_task(strm, cb, strm_null_value());
   return epoll_ctl(epoll_fd, EPOLL_CTL_ADD, fd, &ev);
 }
 
@@ -31,7 +31,7 @@ io_kick(int fd, strm_stream *strm, strm_func cb)
   struct epoll_event ev;
 
   ev.events = EPOLLIN | EPOLLONESHOT;
-  ev.data.ptr = strm_queue_task(strm, cb, NULL);
+  ev.data.ptr = strm_queue_task(strm, cb, strm_null_value());
   return epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &ev);
 }
 
@@ -83,7 +83,7 @@ strm_io_start(strm_stream *strm, int fd, strm_func cb, uint32_t events)
       /* fd must be a regular file */
       /* enqueue task without waiting */
       strm->flags |= STRM_IO_NOWAIT;
-      strm_task_push(strm, cb, NULL);
+      strm_task_push(strm, cb, strm_null_value());
     }
   }
 }
@@ -110,20 +110,19 @@ struct fd_read_buffer {
   char buf[1024];
 };
 
-static void readline_cb(strm_stream *strm, void *data);
+static void readline_cb(strm_stream *strm, strm_value data);
 
-static char*
+static strm_value
 read_str(const char *beg, size_t len)
 {
-  char *p = malloc(len+1);
+  char *p = malloc(len);
 
   memcpy(p, beg, len);
-  p[len] = '\0';
-  return p;
+  return strm_str_value(p, len);
 }
 
 static void
-read_cb(strm_stream *strm, void *data)
+read_cb(strm_stream *strm, strm_value data)
 {
   struct fd_read_buffer *b = strm->data;
   size_t count;
@@ -133,7 +132,7 @@ read_cb(strm_stream *strm, void *data)
   n = read(b->fd, b->end, count);
   if (n <= 0) {
     if (b->buf < b->end) {
-      char *s = read_str(b->beg, b->end-b->beg);
+      strm_value s = read_str(b->beg, b->end-b->beg);
       b->beg = b->end = b->buf;
       strm_emit(strm, s, NULL);
       io_kick(b->fd, strm, read_cb);
@@ -144,19 +143,20 @@ read_cb(strm_stream *strm, void *data)
     return;
   }
   b->end += n;
-  (*readline_cb)(strm, NULL);
+  (*readline_cb)(strm, strm_null_value());
 }
 
 static void
-readline_cb(strm_stream *strm, void *data)
+readline_cb(strm_stream *strm, strm_value data)
 {
   struct fd_read_buffer *b = strm->data;
-  char *s;
+  strm_value s;
+  char *p;
   ssize_t len = b->end-b->beg;
 
-  s = memchr(b->beg, '\n', len);
-  if (s) {
-    len = s - b->beg + 1;
+  p = memchr(b->beg, '\n', len);
+  if (p) {
+    len = p - b->beg + 1;
   }
   else {                        /* no newline */
     if (len < sizeof(b->buf)) {
@@ -165,7 +165,7 @@ readline_cb(strm_stream *strm, void *data)
       b->end = b->beg + len;
     }
     if (strm->flags & STRM_IO_NOWAIT) {
-      strm_task_push(strm, read_cb, NULL);
+      strm_task_push(strm, read_cb, strm_null_value());
     }
     else {
       io_kick(b->fd, strm, read_cb);
@@ -178,7 +178,7 @@ readline_cb(strm_stream *strm, void *data)
 }
 
 static void
-stdio_read(strm_stream *strm, void *data)
+stdio_read(strm_stream *strm, strm_value data)
 {
   struct fd_read_buffer *buf = strm->data;
 
@@ -186,7 +186,7 @@ stdio_read(strm_stream *strm, void *data)
 }
 
 static void
-read_close(strm_stream *strm, void *d)
+read_close(strm_stream *strm, strm_value d)
 {
   struct fd_read_buffer *b = strm->data;
 
@@ -208,16 +208,16 @@ struct write_data {
 };
 
 static void
-write_cb(strm_stream *strm, void *data)
+write_cb(strm_stream *strm, strm_value data)
 {
   struct write_data *d = (struct write_data*)strm->data;
-  const char *p = (char*)data;
+  struct strm_string *p = strm_value_str(data);
 
-  write(d->fd, p, strlen(p));
+  write(d->fd, p->ptr, p->len);
 }
 
 static void
-write_close(strm_stream *strm, void *data)
+write_close(strm_stream *strm, strm_value data)
 {
   struct write_data *d = (struct write_data*)strm->data;
 
