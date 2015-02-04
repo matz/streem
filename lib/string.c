@@ -25,12 +25,13 @@ strm_str_new(const char *p, size_t len)
 {
   struct strm_string *str;
 
-  str = malloc(sizeof(struct strm_string));
   if (readonly_data_p(p)) {
+    str = malloc(sizeof(struct strm_string));
     str->ptr = p;
   }
   else {
-    char *buf = malloc(len);
+    str = malloc(sizeof(struct strm_string)+len);
+    char *buf = (char*)&str[1]; 
 
     if (p) {
       memcpy(buf, p, len);
