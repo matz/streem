@@ -63,7 +63,7 @@ dump_node(strm_node* node, int indent) {
     dump_node(((strm_node_call*) node->value.v.p)->blk, indent+2);
     break;
   case STRM_NODE_IDENT:
-    printf("IDENT: %d\n", node->value.v.id);
+    printf("IDENT: %ld\n", node->value.v.id);
     break;
   case STRM_NODE_VALUE:
     switch (node->value.t) {
