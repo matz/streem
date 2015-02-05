@@ -5,6 +5,7 @@ typedef enum {
   NODE_ARGS,
   NODE_PAIR,
   NODE_VALUE,
+  NODE_CFUNC,
   NODE_BLOCK,
   NODE_IDENT,
   NODE_LET,

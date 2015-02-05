@@ -5,6 +5,7 @@
 
 extern FILE *yyin, *yyout;
 extern int yyparse(parser_state*);
+extern int yydebug;
 
 static char*
 strdup0(const char *s)
@@ -52,19 +53,19 @@ node_array_new()
   arr->max = 0;
   arr->data = NULL;
 
-  node* node = malloc(sizeof(node));
-  node->type = NODE_VALUE;
-  node->value.t = STRM_VALUE_ARRAY;
-  node->value.v.p = arr;
-  return node;
+  node* np = malloc(sizeof(node));
+  np->type = NODE_VALUE;
+  np->value.t = STRM_VALUE_ARRAY;
+  np->value.v.p = arr;
+  return np;
 }
 
 node*
-node_array_of(node* node)
+node_array_of(node* np)
 {
-  if (node == NULL)
-    node = node_array_new();
-  return node;
+  if (np == NULL)
+    np = node_array_new();
+  return np;
 }
 
 void
@@ -94,14 +95,14 @@ node_array_free(node* np)
 node*
 node_pair_new(node* key, node* value)
 {
-  node_pair* pair = malloc(sizeof(node_pair));
-  pair->key = key;
-  pair->value = value;
+  node_pair* npair = malloc(sizeof(node_pair));
+  npair->key = key;
+  npair->value = value;
 
   node* np = malloc(sizeof(node));
   np->type = NODE_PAIR;
   np->value.t = STRM_VALUE_USER;
-  np->value.v.p = pair;
+  np->value.v.p = npair;
   return np;
 }
 
@@ -148,59 +149,59 @@ node_map_free(node* np)
 node*
 node_let_new(node* lhs, node* rhs)
 {
-  node_let* node_let = malloc(sizeof(node_let));
-  node_let->lhs = lhs;
-  node_let->rhs = rhs;
+  node_let* nlet = malloc(sizeof(node_let));
+  nlet->lhs = lhs;
+  nlet->rhs = rhs;
 
   node* np = malloc(sizeof(node));
   np->type = NODE_LET;
   np->value.t = STRM_VALUE_USER;
-  np->value.v.p = node_let;
+  np->value.v.p = nlet;
   return np;
 }
 
 node*
 node_op_new(char* op, node* lhs, node* rhs)
 {
-  node_op* node_op = malloc(sizeof(node_op));
-  node_op->lhs = lhs;
-  node_op->op = op;
-  node_op->rhs = rhs;
+  node_op* nop = malloc(sizeof(node_op));
+  nop->lhs = lhs;
+  nop->op = op;
+  nop->rhs = rhs;
 
   node* np = malloc(sizeof(node));
   np->type = NODE_OP;
   np->value.t = STRM_VALUE_USER;
-  np->value.v.p = node_op;
+  np->value.v.p = nop;
   return np;
 }
 
 node*
 node_block_new(node* args, node* compstmt)
 {
-  node_block* node_block = malloc(sizeof(node_block));
-  node_block->args = args;
-  node_block->compstmt = compstmt;
+  node_block* block = malloc(sizeof(node_block));
+  block->args = args;
+  block->compstmt = compstmt;
 
   node* np = malloc(sizeof(node));
   np->type = NODE_BLOCK;
   np->value.t = STRM_VALUE_USER;
-  np->value.v.p = node_block;
+  np->value.v.p = block;
   return np;
 }
 
 node*
 node_call_new(node* cond, node* ident, node* args, node* blk)
 {
-  node_call* node_call = malloc(sizeof(node_call));
-  node_call->cond = cond;
-  node_call->ident = ident;
-  node_call->args = args;
-  node_call->blk = blk;
+  node_call* ncall = malloc(sizeof(node_call));
+  ncall->cond = cond;
+  ncall->ident = ident;
+  ncall->args = args;
+  ncall->blk = blk;
 
   node* np = malloc(sizeof(node));
   np->type = NODE_CALL;
   np->value.t = STRM_VALUE_USER;
-  np->value.v.p = node_call;
+  np->value.v.p = ncall;
   return np;
 }
 
@@ -279,15 +280,15 @@ node_false()
 node*
 node_if_new(node* cond, node* compstmt, node* opt_else)
 {
-  node_if* node_if = malloc(sizeof(node_if));
-  node_if->cond = cond;
-  node_if->compstmt = compstmt;
-  node_if->opt_else = opt_else;
+  node_if* nif = malloc(sizeof(node_if));
+  nif->cond = cond;
+  nif->compstmt = compstmt;
+  nif->opt_else = opt_else;
 
   node* np = malloc(sizeof(node));
   np->type = NODE_IF;
   np->value.t = STRM_VALUE_USER;
-  np->value.v.p = node_if;
+  np->value.v.p = nif;
   return np;
 }
 
@@ -327,6 +328,7 @@ strm_parse_init(parser_state *p)
   p->fname = NULL;
   p->lineno = 1;
   p->tline = 1;
+  p->env = kh_init(value);
   return 0;
 }
 
@@ -349,6 +351,7 @@ strm_parse_input(parser_state* p, FILE *f, const char *fname)
 {
   int n;
 
+  /* yydebug = 1; */
   yyin = f;
   n = yyparse(p);
   if (n == 0 && p->nerr == 0) {
@@ -368,28 +371,31 @@ node_free(node* np) {
     node_array_free(np);
     break;
   case NODE_IF:
-    {
-      node_free(((node_if*)np->value.v.p)->cond);
-      node_free(((node_if*)np->value.v.p)->compstmt);
-      node_free(((node_if*)np->value.v.p)->opt_else);
-    }
+    node_free(((node_if*)np->value.v.p)->cond);
+    node_free(((node_if*)np->value.v.p)->compstmt);
+    node_free(((node_if*)np->value.v.p)->opt_else);
+    free(np);
     break;
   case NODE_EMIT:
     node_free((node*) np->value.v.p);
+    free(np);
     break;
   case NODE_OP:
     node_free(((node_op*) np->value.v.p)->lhs);
     node_free(((node_op*) np->value.v.p)->rhs);
+    free(np);
     break;
   case NODE_BLOCK:
     node_free(((node_block*) np->value.v.p)->args);
     node_free(((node_block*) np->value.v.p)->compstmt);
+    free(np);
     break;
   case NODE_CALL:
     node_free(((node_call*) np->value.v.p)->cond);
     node_free(((node_call*) np->value.v.p)->ident);
     node_free(((node_call*) np->value.v.p)->args);
     node_free(((node_call*) np->value.v.p)->blk);
+    free(np);
     break;
   case NODE_IDENT:
     free(np);
