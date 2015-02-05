@@ -63,7 +63,7 @@ dump_node(node* np, int indent) {
     dump_node(((node_call*) np->value.v.p)->blk, indent+2);
     break;
   case NODE_IDENT:
-    printf("IDENT: %p\n", np->value.v.id);
+    printf("IDENT: %p\n", (void*)np->value.v.id);
     break;
   case NODE_VALUE:
     switch (np->value.t) {
