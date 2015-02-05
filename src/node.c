@@ -209,7 +209,7 @@ node*
 node_double_new(strm_double d)
 {
   node* np = malloc(sizeof(node));
-  
+
   np->type = NODE_VALUE;
   np->value.t = STRM_VALUE_DOUBLE;
   np->value.v.d = d;
@@ -458,6 +458,58 @@ node_expr(strm_env* env, node* np)
     free(np);
     break;
 */
+  case NODE_OP:
+    {
+      node_op* nop = np->value.v.p;
+      strm_value* lhs = node_expr(env, nop->lhs);
+	  if (*nop->op == '+' && *(nop->op+1) == '\0') {
+		strm_value* rhs = node_expr(env, nop->rhs);
+		if (lhs->t == STRM_VALUE_STRING && rhs->t == STRM_VALUE_STRING) {
+		  strm_value* new = malloc(sizeof(strm_value));
+		  char *p = malloc(strlen(lhs->v.s) + strlen(rhs->v.s) + 1);
+		  strcpy(p, lhs->v.s);
+		  strcat(p, rhs->v.s);
+		  new->t = STRM_VALUE_STRING;
+		  new->v.s = p;
+		  return new;
+		} else if (lhs->t == STRM_VALUE_DOUBLE && rhs->t == STRM_VALUE_DOUBLE) {
+		  strm_value* new = malloc(sizeof(strm_value));
+		  new->t = STRM_VALUE_DOUBLE;
+		  new->v.d = lhs->v.d + rhs->v.d;
+		  return new;
+		}
+	  }
+	  if (*nop->op == '-' && *(nop->op+1) == '\0') {
+		strm_value* rhs = node_expr(env, nop->rhs);
+		if (lhs->t == STRM_VALUE_DOUBLE && rhs->t == STRM_VALUE_DOUBLE) {
+		  strm_value* new = malloc(sizeof(strm_value));
+		  new->t = STRM_VALUE_DOUBLE;
+		  new->v.d = lhs->v.d - rhs->v.d;
+		  return new;
+		}
+	  }
+	  if (*nop->op == '*' && *(nop->op+1) == '\0') {
+		strm_value* rhs = node_expr(env, nop->rhs);
+		if (lhs->t == STRM_VALUE_DOUBLE && rhs->t == STRM_VALUE_DOUBLE) {
+		  strm_value* new = malloc(sizeof(strm_value));
+		  new->t = STRM_VALUE_DOUBLE;
+		  new->v.d = lhs->v.d * rhs->v.d;
+		  return new;
+		}
+	  }
+	  if (*nop->op == '/' && *(nop->op+1) == '\0') {
+		strm_value* rhs = node_expr(env, nop->rhs);
+		if (lhs->t == STRM_VALUE_DOUBLE && rhs->t == STRM_VALUE_DOUBLE) {
+		  strm_value* new = malloc(sizeof(strm_value));
+		  new->t = STRM_VALUE_DOUBLE;
+          /* TODO: zero divide */
+		  new->v.d = lhs->v.d / rhs->v.d;
+		  return new;
+		}
+	  }
+      /* TODO: invalid operator */
+    }
+    break;
   case NODE_CALL:
     {
       /* TODO: wip code of ident */
@@ -488,16 +540,20 @@ strm_puts(strm_env* env, strm_array* args) {
     if (i != 0)
       printf(", ");
     v = node_expr(env, args->data[i]);
-    switch (v->t) {
-    case STRM_VALUE_DOUBLE:
-      printf("%f", v->v.d);
-      break;
-    case STRM_VALUE_STRING:
-      printf("'%s'", v->v.s);
-      break;
-    default:
-      printf("<%p>", v->v.p);
-      break;
+    if (v != NULL) {
+      switch (v->t) {
+      case STRM_VALUE_DOUBLE:
+        printf("%f", v->v.d);
+        break;
+      case STRM_VALUE_STRING:
+        printf("'%s'", v->v.s);
+        break;
+      default:
+        printf("<%p>", v->v.p);
+        break;
+      }
+    } else {
+        printf("nil");
     }
   }
   return NULL;
