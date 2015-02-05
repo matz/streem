@@ -126,8 +126,11 @@ main(int argc, const char**argv)
       n += strm_parse_file(&state, argv[i]);
     }
   }
-  if (n == 0)
-    dump_node(state.lval, 0);
+
+  if (n == 0) {
+   /* dump_node(state.lval, 0); */
+   strm_run(&state);
+  }
   strm_parse_free(&state);
   return n > 0 ? 1 : 0;
 }

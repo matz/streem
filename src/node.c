@@ -253,7 +253,7 @@ strm_id
 node_ident_of(char* s)
 {
   /* TODO: get id of the identifier which named as s */
-  return (strm_id) s;
+  return (strm_id) strdup0(s);
 }
 
 node*
@@ -433,4 +433,92 @@ void
 strm_parse_free(parser_state* p)
 {
   node_free(p->lval);
+}
+
+strm_value*
+node_expr(strm_env* env, node* np)
+{
+  if (!np) {
+    return NULL;
+  }
+
+  switch (np->type) {
+/*
+  case NODE_ARGS:
+    break;
+  case NODE_IF:
+    break;
+  case NODE_EMIT:
+    break;
+  case NODE_OP:
+    break;
+  case NODE_BLOCK:
+    break;
+  case NODE_IDENT:
+    free(np);
+    break;
+*/
+  case NODE_CALL:
+    {
+      /* TODO: wip code of ident */
+      node_call* ncall = np->value.v.p;
+      khint_t k = kh_get(value, env, (char*) ncall->ident->value.v.id);
+      if (k != kh_end(env)) {
+        strm_value* v = kh_value(env, k);
+        if (v->t == STRM_VALUE_CFUNC) {
+          ((strm_cfunc) v->v.p)(env, ncall->args->value.v.p);
+        }
+      }
+    }
+    break;
+  case NODE_VALUE:
+    return &np->value;
+    break;
+  default:
+    break;
+  }
+  return NULL;
+}
+
+strm_value*
+strm_puts(strm_env* env, strm_array* args) {
+  int i;
+  for (i = 0; i < args->len; i++) {
+    strm_value* v;
+    if (i != 0)
+      printf(", ");
+    v = node_expr(env, args->data[i]);
+    switch (v->t) {
+    case STRM_VALUE_DOUBLE:
+      printf("%f", v->v.d);
+      break;
+    case STRM_VALUE_STRING:
+      printf("'%s'", v->v.s);
+      break;
+    default:
+      printf("<%p>", v->v.p);
+      break;
+    }
+  }
+  return NULL;
+}
+
+int
+strm_run(parser_state* p)
+{
+  int r;
+  khiter_t k;
+
+  static strm_value vputs;
+  k = kh_put(value, p->env, "puts", &r);
+  vputs.t = STRM_VALUE_CFUNC;
+  vputs.v.p = strm_puts;
+
+  kh_value(p->env, k) = &vputs;
+
+  int i;
+  node_array* arr0 = ((node*)p->lval)->value.v.p;
+  for (i = 0; i < arr0->len; i++)
+    node_expr(p->env, arr0->data[i]);
+  return 0;
 }

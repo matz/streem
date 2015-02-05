@@ -40,6 +40,8 @@ typedef struct {
 
 KHASH_MAP_INIT_STR(value, strm_value*)
 
+typedef khash_t(value) strm_env;
+
 typedef struct parser_state {
   int nerr;
   void *lval;
@@ -47,13 +49,16 @@ typedef struct parser_state {
   int lineno;
   int tline;
   /* TODO: should be separated as another context structure */
-  khash_t(value) *env;
+  strm_env *env;
 } parser_state;
+
+typedef strm_value* (*strm_cfunc)(strm_env*, strm_array*);
 
 int strm_parse_init(parser_state*);
 void strm_parse_free(parser_state*);
 int strm_parse_file(parser_state*, const char*);
 int strm_parse_input(parser_state*, FILE* in, const char*);
 int strm_parse_string(parser_state*, const char*);
+int strm_run(parser_state*);
 
 #endif /* _STRM_H_ */
