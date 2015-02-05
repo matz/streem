@@ -118,7 +118,6 @@ main(int argc, const char**argv)
 
   strm_parse_init(&state);
 
-  // yydebug = 1;
   if (argc == 1) {              /* no args */
     n = strm_parse_input(&state, stdin, "stdin");
   }
