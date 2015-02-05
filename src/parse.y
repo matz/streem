@@ -13,7 +13,7 @@
 %}
 
 %union {
-  strm_node* nd;
+  node* nd;
   strm_id id;
 }
 

@@ -5,6 +5,7 @@
 
 extern FILE *yyin, *yyout;
 extern int yyparse(parser_state*);
+extern int yydebug;
 
 static char*
 strdup0(const char *s)
@@ -36,260 +37,287 @@ strndup0(const char *s, size_t n)
   return new;
 }
 
-strm_node*
-node_value_new(strm_node* v)
+node*
+node_value_new(node* v)
 {
   /* TODO */
   return NULL;
 }
 
-strm_node*
+node*
 node_array_new()
 {
-  strm_array* arr = malloc(sizeof(strm_array));
+  node_array* arr = malloc(sizeof(node_array));
   /* TODO: error check */
   arr->len = 0;
   arr->max = 0;
   arr->data = NULL;
 
-  strm_node* node = malloc(sizeof(strm_node));
-  node->type = STRM_NODE_VALUE;
-  node->value.t = STRM_VALUE_ARRAY;
-  node->value.v.p = arr;
-  return node;
+  node* np = malloc(sizeof(node));
+  np->type = NODE_VALUE;
+  np->value.t = STRM_VALUE_ARRAY;
+  np->value.v.p = arr;
+  return np;
 }
 
-strm_node*
-node_array_of(strm_node* node)
+node*
+node_array_of(node* np)
 {
-  if (node == NULL)
-    node = node_array_new();
-  return node;
+  if (np == NULL)
+    np = node_array_new();
+  return np;
 }
 
 void
-node_array_add(strm_node* arr, strm_node* node)
+node_array_add(node* arr, node* np)
 {
   /* TODO: error check */
-  strm_array* arr0 = arr->value.v.p;
+  node_array* arr0 = arr->value.v.p;
   if (arr0->len == arr0->max) {
     arr0->max = arr0->len + 10;
-    arr0->data = realloc(arr0->data, sizeof(strm_node*) * arr0->max);
+    arr0->data = realloc(arr0->data, sizeof(node*) * arr0->max);
   }
-  arr0->data[arr0->len] = node;
+  arr0->data[arr0->len] = np;
   arr0->len++;
 }
 
-strm_node*
-node_pair_new(strm_node* key, strm_node* value)
+void
+node_array_free(node* np)
 {
-  strm_pair* pair = malloc(sizeof(strm_pair));
-  pair->key = key;
-  pair->value = value;
-
-  strm_node* node = malloc(sizeof(strm_node));
-  node->type = STRM_NODE_PAIR;
-  node->value.t = STRM_VALUE_USER;
-  node->value.v.p = pair;
-  return node;
+  int i;
+  node_array* arr0 = np->value.v.p;
+  for (i = 0; i < arr0->len; i++)
+    node_free(arr0->data[i]);
+  free(arr0);
+  free(np);
 }
 
-strm_node*
+node*
+node_pair_new(node* key, node* value)
+{
+  node_pair* npair = malloc(sizeof(node_pair));
+  npair->key = key;
+  npair->value = value;
+
+  node* np = malloc(sizeof(node));
+  np->type = NODE_PAIR;
+  np->value.t = STRM_VALUE_USER;
+  np->value.v.p = npair;
+  return np;
+}
+
+node*
 node_map_new()
 {
-  strm_array* arr = malloc(sizeof(strm_array));
+  node_array* arr = malloc(sizeof(node_array));
   /* TODO: error check */
   arr->len = 0;
   arr->max = 0;
   arr->data = NULL;
 
-  strm_node* node = malloc(sizeof(strm_node));
-  node->type = STRM_NODE_VALUE;
-  node->value.t = STRM_VALUE_MAP;
-  node->value.v.p = arr;
-  return node;
+  node* np = malloc(sizeof(node));
+  np->type = NODE_VALUE;
+  np->value.t = STRM_VALUE_MAP;
+  np->value.v.p = arr;
+  return np;
 }
 
-strm_node*
-node_map_of(strm_node* node)
+node*
+node_map_of(node* np)
 {
-  if (node == NULL)
-    node = node_map_new();
-  return node;
+  if (np == NULL)
+    np = node_map_new();
+  return np;
 }
 
-strm_node*
-node_let_new(strm_node* lhs, strm_node* rhs)
+void
+node_map_free(node* np)
 {
-  strm_node_let* node_let = malloc(sizeof(strm_node_let));
-  node_let->lhs = lhs;
-  node_let->rhs = rhs;
-
-  strm_node* node = malloc(sizeof(strm_node));
-  node->type = STRM_NODE_LET;
-  node->value.t = STRM_VALUE_USER;
-  node->value.v.p = node_let;
-  return node;
+  int i;
+  node_array* arr0 = np->value.v.p;
+  for (i = 0; i < arr0->len; i++) {
+    node* pair = arr0->data[i];
+    node_pair* pair0 = pair->value.v.p;
+    node_free(pair0->key);
+    node_free(pair0->value);
+    free(pair0);
+  }
+  free(arr0);
+  free(np);
 }
 
-strm_node*
-node_op_new(char* op, strm_node* lhs, strm_node* rhs)
+node*
+node_let_new(node* lhs, node* rhs)
 {
-  strm_node_op* node_op = malloc(sizeof(strm_node_op));
-  node_op->lhs = lhs;
-  node_op->op = op;
-  node_op->rhs = rhs;
+  node_let* nlet = malloc(sizeof(node_let));
+  nlet->lhs = lhs;
+  nlet->rhs = rhs;
 
-  strm_node* node = malloc(sizeof(strm_node));
-  node->type = STRM_NODE_OP;
-  node->value.t = STRM_VALUE_USER;
-  node->value.v.p = node_op;
-  return node;
+  node* np = malloc(sizeof(node));
+  np->type = NODE_LET;
+  np->value.t = STRM_VALUE_USER;
+  np->value.v.p = nlet;
+  return np;
 }
 
-strm_node*
-node_block_new(strm_node* args, strm_node* compstmt)
+node*
+node_op_new(char* op, node* lhs, node* rhs)
 {
-  strm_node_block* node_block = malloc(sizeof(strm_node_block));
-  node_block->args = args;
-  node_block->compstmt = compstmt;
+  node_op* nop = malloc(sizeof(node_op));
+  nop->lhs = lhs;
+  nop->op = op;
+  nop->rhs = rhs;
 
-  strm_node* node = malloc(sizeof(strm_node));
-  node->type = STRM_NODE_BLOCK;
-  node->value.t = STRM_VALUE_USER;
-  node->value.v.p = node_block;
-  return node;
+  node* np = malloc(sizeof(node));
+  np->type = NODE_OP;
+  np->value.t = STRM_VALUE_USER;
+  np->value.v.p = nop;
+  return np;
 }
 
-strm_node*
-node_call_new(strm_node* cond, strm_node* ident, strm_node* args, strm_node* blk)
+node*
+node_block_new(node* args, node* compstmt)
 {
-  strm_node_call* node_call = malloc(sizeof(strm_node_call));
-  node_call->cond = cond;
-  node_call->ident = ident;
-  node_call->args = args;
-  node_call->blk = blk;
+  node_block* block = malloc(sizeof(node_block));
+  block->args = args;
+  block->compstmt = compstmt;
 
-  strm_node* node = malloc(sizeof(strm_node));
-  node->type = STRM_NODE_CALL;
-  node->value.t = STRM_VALUE_USER;
-  node->value.v.p = node_call;
-  return node;
+  node* np = malloc(sizeof(node));
+  np->type = NODE_BLOCK;
+  np->value.t = STRM_VALUE_USER;
+  np->value.v.p = block;
+  return np;
 }
 
-strm_node*
+node*
+node_call_new(node* cond, node* ident, node* args, node* blk)
+{
+  node_call* ncall = malloc(sizeof(node_call));
+  ncall->cond = cond;
+  ncall->ident = ident;
+  ncall->args = args;
+  ncall->blk = blk;
+
+  node* np = malloc(sizeof(node));
+  np->type = NODE_CALL;
+  np->value.t = STRM_VALUE_USER;
+  np->value.v.p = ncall;
+  return np;
+}
+
+node*
 node_double_new(strm_double d)
 {
-  strm_node* node = malloc(sizeof(strm_node));
-  
-  node->type = STRM_NODE_VALUE;
-  node->value.t = STRM_VALUE_DOUBLE;
-  node->value.v.d = d;
-  return node;
+  node* np = malloc(sizeof(node));
+
+  np->type = NODE_VALUE;
+  np->value.t = STRM_VALUE_DOUBLE;
+  np->value.v.d = d;
+  return np;
 }
 
-strm_node*
+node*
 node_string_new(strm_string s)
 {
-  strm_node* node = malloc(sizeof(strm_node));
+  node* np = malloc(sizeof(node));
 
-  node->type = STRM_NODE_VALUE;
-  node->value.t = STRM_VALUE_STRING;
-  node->value.v.s = strdup0(s);
-  return node;
+  np->type = NODE_VALUE;
+  np->value.t = STRM_VALUE_STRING;
+  np->value.v.s = strdup0(s);
+  return np;
 }
 
-strm_node*
+node*
 node_string_len_new(strm_string s, size_t l)
 {
-  strm_node* node = malloc(sizeof(strm_node));
+  node* np = malloc(sizeof(node));
 
-  node->type = STRM_NODE_VALUE;
-  node->value.t = STRM_VALUE_STRING;
-  node->value.v.s = strndup0(s, l);
-  return node;
+  np->type = NODE_VALUE;
+  np->value.t = STRM_VALUE_STRING;
+  np->value.v.s = strndup0(s, l);
+  return np;
 }
 
-strm_node*
+node*
 node_ident_new(strm_id id)
 {
-  strm_node* node = malloc(sizeof(strm_node));
+  node* np = malloc(sizeof(node));
 
-  node->type = STRM_NODE_IDENT;
-  node->value.t = STRM_VALUE_FIXNUM;
-  node->value.v.id = id;
-  return node;
+  np->type = NODE_IDENT;
+  np->value.t = STRM_VALUE_FIXNUM;
+  np->value.v.id = id;
+  return np;
 }
 
 strm_id
 node_ident_of(char* s)
 {
   /* TODO: get id of the identifier which named as s */
-  return (strm_id) s;
+  return (strm_id) strdup0(s);
 }
 
-strm_node*
+node*
 node_nil()
 {
-  static strm_node node = { STRM_NODE_VALUE, { STRM_VALUE_NIL, {0} } };
-  return &node;
+  static node nd = { NODE_VALUE, { STRM_VALUE_NIL, {0} } };
+  return &nd;
 }
 
-strm_node*
+node*
 node_true()
 {
-  static strm_node node = { STRM_NODE_VALUE, { STRM_VALUE_BOOL, {1} } };
-  return &node;
+  static node nd = { NODE_VALUE, { STRM_VALUE_BOOL, {1} } };
+  return &nd;
 }
 
-strm_node*
+node*
 node_false()
 {
-  static strm_node node = { STRM_NODE_VALUE, { STRM_VALUE_BOOL, {0} } };
-  return &node;
+  static node nd = { NODE_VALUE, { STRM_VALUE_BOOL, {0} } };
+  return &nd;
 }
 
-strm_node*
-node_if_new(strm_node* cond, strm_node* compstmt, strm_node* opt_else)
+node*
+node_if_new(node* cond, node* compstmt, node* opt_else)
 {
-  strm_node_if* node_if = malloc(sizeof(strm_node_if));
-  node_if->cond = cond;
-  node_if->compstmt = compstmt;
-  node_if->opt_else = opt_else;
+  node_if* nif = malloc(sizeof(node_if));
+  nif->cond = cond;
+  nif->compstmt = compstmt;
+  nif->opt_else = opt_else;
 
-  strm_node* node = malloc(sizeof(strm_node));
-  node->type = STRM_NODE_IF;
-  node->value.t = STRM_VALUE_USER;
-  node->value.v.p = node_if;
-  return node;
+  node* np = malloc(sizeof(node));
+  np->type = NODE_IF;
+  np->value.t = STRM_VALUE_USER;
+  np->value.v.p = nif;
+  return np;
 }
 
 
-strm_node*
-node_emit_new(strm_node* value)
+node*
+node_emit_new(node* value)
 {
-  strm_node* node = malloc(sizeof(strm_node));
-  node->type = STRM_NODE_EMIT;
-  node->value.t = STRM_VALUE_USER;
-  node->value.v.p = value;
-  return node;
+  node* np = malloc(sizeof(node));
+  np->type = NODE_EMIT;
+  np->value.t = STRM_VALUE_USER;
+  np->value.v.p = value;
+  return np;
 }
 
-strm_node*
-node_return_new(strm_node* value)
+node*
+node_return_new(node* value)
 {
-  strm_node* node = malloc(sizeof(strm_node));
-  node->type = STRM_NODE_RETURN;
-  node->value.t = STRM_VALUE_USER;
-  node->value.v.p = value;
-  return node;
+  node* np = malloc(sizeof(node));
+  np->type = NODE_RETURN;
+  np->value.t = STRM_VALUE_USER;
+  np->value.v.p = value;
+  return np;
 }
 
-strm_node*
-node_break_new(strm_node* value)
+node*
+node_break_new(node* value)
 {
-  static strm_node node = { STRM_NODE_BREAK };
-  return &node;
+  static node nd = { NODE_BREAK };
+  return &nd;
 }
 
 int
@@ -300,6 +328,7 @@ strm_parse_init(parser_state *p)
   p->fname = NULL;
   p->lineno = 1;
   p->tline = 1;
+  p->env = kh_init(value);
   return 0;
 }
 
@@ -322,10 +351,230 @@ strm_parse_input(parser_state* p, FILE *f, const char *fname)
 {
   int n;
 
+  /* yydebug = 1; */
   yyin = f;
   n = yyparse(p);
   if (n == 0 && p->nerr == 0) {
     return 0;
   }
   return 1;
+}
+
+void
+node_free(node* np) {
+  if (!np) {
+    return;
+  }
+
+  switch (np->type) {
+  case NODE_ARGS:
+    node_array_free(np);
+    break;
+  case NODE_IF:
+    node_free(((node_if*)np->value.v.p)->cond);
+    node_free(((node_if*)np->value.v.p)->compstmt);
+    node_free(((node_if*)np->value.v.p)->opt_else);
+    free(np);
+    break;
+  case NODE_EMIT:
+    node_free((node*) np->value.v.p);
+    free(np);
+    break;
+  case NODE_OP:
+    node_free(((node_op*) np->value.v.p)->lhs);
+    node_free(((node_op*) np->value.v.p)->rhs);
+    free(np);
+    break;
+  case NODE_BLOCK:
+    node_free(((node_block*) np->value.v.p)->args);
+    node_free(((node_block*) np->value.v.p)->compstmt);
+    free(np);
+    break;
+  case NODE_CALL:
+    node_free(((node_call*) np->value.v.p)->cond);
+    node_free(((node_call*) np->value.v.p)->ident);
+    node_free(((node_call*) np->value.v.p)->args);
+    node_free(((node_call*) np->value.v.p)->blk);
+    free(np);
+    break;
+  case NODE_IDENT:
+    free(np);
+    break;
+  case NODE_VALUE:
+    switch (np->value.t) {
+    case STRM_VALUE_DOUBLE:
+      free(np);
+      break;
+    case STRM_VALUE_STRING:
+      free(np->value.v.s);
+      free(np);
+      break;
+    case STRM_VALUE_BOOL:
+      free(np);
+      break;
+    case STRM_VALUE_NIL:
+      break;
+    case STRM_VALUE_ARRAY:
+      node_array_free(np);
+      break;
+    case STRM_VALUE_MAP:
+      node_map_free(np);
+      break;
+    default:
+      break;
+    }
+    break;
+  default:
+    break;
+  }
+}
+
+void
+strm_parse_free(parser_state* p)
+{
+  node_free(p->lval);
+}
+
+strm_value*
+node_expr(strm_env* env, node* np)
+{
+  if (!np) {
+    return NULL;
+  }
+
+  switch (np->type) {
+/*
+  case NODE_ARGS:
+    break;
+  case NODE_IF:
+    break;
+  case NODE_EMIT:
+    break;
+  case NODE_OP:
+    break;
+  case NODE_BLOCK:
+    break;
+  case NODE_IDENT:
+    free(np);
+    break;
+*/
+  case NODE_OP:
+    {
+      node_op* nop = np->value.v.p;
+      strm_value* lhs = node_expr(env, nop->lhs);
+	  if (*nop->op == '+' && *(nop->op+1) == '\0') {
+		strm_value* rhs = node_expr(env, nop->rhs);
+		if (lhs->t == STRM_VALUE_STRING && rhs->t == STRM_VALUE_STRING) {
+		  strm_value* new = malloc(sizeof(strm_value));
+		  char *p = malloc(strlen(lhs->v.s) + strlen(rhs->v.s) + 1);
+		  strcpy(p, lhs->v.s);
+		  strcat(p, rhs->v.s);
+		  new->t = STRM_VALUE_STRING;
+		  new->v.s = p;
+		  return new;
+		} else if (lhs->t == STRM_VALUE_DOUBLE && rhs->t == STRM_VALUE_DOUBLE) {
+		  strm_value* new = malloc(sizeof(strm_value));
+		  new->t = STRM_VALUE_DOUBLE;
+		  new->v.d = lhs->v.d + rhs->v.d;
+		  return new;
+		}
+	  }
+	  if (*nop->op == '-' && *(nop->op+1) == '\0') {
+		strm_value* rhs = node_expr(env, nop->rhs);
+		if (lhs->t == STRM_VALUE_DOUBLE && rhs->t == STRM_VALUE_DOUBLE) {
+		  strm_value* new = malloc(sizeof(strm_value));
+		  new->t = STRM_VALUE_DOUBLE;
+		  new->v.d = lhs->v.d - rhs->v.d;
+		  return new;
+		}
+	  }
+	  if (*nop->op == '*' && *(nop->op+1) == '\0') {
+		strm_value* rhs = node_expr(env, nop->rhs);
+		if (lhs->t == STRM_VALUE_DOUBLE && rhs->t == STRM_VALUE_DOUBLE) {
+		  strm_value* new = malloc(sizeof(strm_value));
+		  new->t = STRM_VALUE_DOUBLE;
+		  new->v.d = lhs->v.d * rhs->v.d;
+		  return new;
+		}
+	  }
+	  if (*nop->op == '/' && *(nop->op+1) == '\0') {
+		strm_value* rhs = node_expr(env, nop->rhs);
+		if (lhs->t == STRM_VALUE_DOUBLE && rhs->t == STRM_VALUE_DOUBLE) {
+		  strm_value* new = malloc(sizeof(strm_value));
+		  new->t = STRM_VALUE_DOUBLE;
+          /* TODO: zero divide */
+		  new->v.d = lhs->v.d / rhs->v.d;
+		  return new;
+		}
+	  }
+      /* TODO: invalid operator */
+    }
+    break;
+  case NODE_CALL:
+    {
+      /* TODO: wip code of ident */
+      node_call* ncall = np->value.v.p;
+      khint_t k = kh_get(value, env, (char*) ncall->ident->value.v.id);
+      if (k != kh_end(env)) {
+        strm_value* v = kh_value(env, k);
+        if (v->t == STRM_VALUE_CFUNC) {
+          ((strm_cfunc) v->v.p)(env, ncall->args->value.v.p);
+        }
+      }
+    }
+    break;
+  case NODE_VALUE:
+    return &np->value;
+    break;
+  default:
+    break;
+  }
+  return NULL;
+}
+
+strm_value*
+strm_puts(strm_env* env, strm_array* args) {
+  int i;
+  for (i = 0; i < args->len; i++) {
+    strm_value* v;
+    if (i != 0)
+      printf(", ");
+    v = node_expr(env, args->data[i]);
+    if (v != NULL) {
+      switch (v->t) {
+      case STRM_VALUE_DOUBLE:
+        printf("%f", v->v.d);
+        break;
+      case STRM_VALUE_STRING:
+        printf("'%s'", v->v.s);
+        break;
+      default:
+        printf("<%p>", v->v.p);
+        break;
+      }
+    } else {
+        printf("nil");
+    }
+  }
+  return NULL;
+}
+
+int
+strm_run(parser_state* p)
+{
+  int r;
+  khiter_t k;
+
+  static strm_value vputs;
+  k = kh_put(value, p->env, "puts", &r);
+  vputs.t = STRM_VALUE_CFUNC;
+  vputs.v.p = strm_puts;
+
+  kh_value(p->env, k) = &vputs;
+
+  int i;
+  node_array* arr0 = ((node*)p->lval)->value.v.p;
+  for (i = 0; i < arr0->len; i++)
+    node_expr(p->env, arr0->data[i]);
+  return 0;
 }

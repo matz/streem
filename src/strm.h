@@ -2,6 +2,7 @@
 #define _STRM_H_
 #include <stdio.h>
 #include <stdint.h>
+#include "khash.h"
 
 typedef enum {
   STRM_VALUE_BOOL,
@@ -11,6 +12,7 @@ typedef enum {
   STRM_VALUE_DOUBLE,
   STRM_VALUE_FIXNUM,
   STRM_VALUE_NIL,
+  STRM_VALUE_CFUNC,
   STRM_VALUE_USER,
 } strm_value_type;
 
@@ -30,17 +32,33 @@ typedef struct {
   } v;
 } strm_value;
 
+typedef struct {
+  int len;
+  int max;
+  void** data;
+} strm_array;
+
+KHASH_MAP_INIT_STR(value, strm_value*)
+
+typedef khash_t(value) strm_env;
+
 typedef struct parser_state {
   int nerr;
   void *lval;
   const char *fname;
   int lineno;
   int tline;
+  /* TODO: should be separated as another context structure */
+  strm_env *env;
 } parser_state;
 
+typedef strm_value* (*strm_cfunc)(strm_env*, strm_array*);
+
 int strm_parse_init(parser_state*);
+void strm_parse_free(parser_state*);
 int strm_parse_file(parser_state*, const char*);
 int strm_parse_input(parser_state*, FILE* in, const char*);
 int strm_parse_string(parser_state*, const char*);
+int strm_run(parser_state*);
 
 #endif /* _STRM_H_ */
