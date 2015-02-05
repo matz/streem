@@ -462,51 +462,51 @@ node_expr(strm_env* env, node* np)
     {
       node_op* nop = np->value.v.p;
       strm_value* lhs = node_expr(env, nop->lhs);
-	  if (*nop->op == '+' && *(nop->op+1) == '\0') {
-		strm_value* rhs = node_expr(env, nop->rhs);
-		if (lhs->t == STRM_VALUE_STRING && rhs->t == STRM_VALUE_STRING) {
-		  strm_value* new = malloc(sizeof(strm_value));
-		  char *p = malloc(strlen(lhs->v.s) + strlen(rhs->v.s) + 1);
-		  strcpy(p, lhs->v.s);
-		  strcat(p, rhs->v.s);
-		  new->t = STRM_VALUE_STRING;
-		  new->v.s = p;
-		  return new;
-		} else if (lhs->t == STRM_VALUE_DOUBLE && rhs->t == STRM_VALUE_DOUBLE) {
-		  strm_value* new = malloc(sizeof(strm_value));
-		  new->t = STRM_VALUE_DOUBLE;
-		  new->v.d = lhs->v.d + rhs->v.d;
-		  return new;
-		}
-	  }
-	  if (*nop->op == '-' && *(nop->op+1) == '\0') {
-		strm_value* rhs = node_expr(env, nop->rhs);
-		if (lhs->t == STRM_VALUE_DOUBLE && rhs->t == STRM_VALUE_DOUBLE) {
-		  strm_value* new = malloc(sizeof(strm_value));
-		  new->t = STRM_VALUE_DOUBLE;
-		  new->v.d = lhs->v.d - rhs->v.d;
-		  return new;
-		}
-	  }
-	  if (*nop->op == '*' && *(nop->op+1) == '\0') {
-		strm_value* rhs = node_expr(env, nop->rhs);
-		if (lhs->t == STRM_VALUE_DOUBLE && rhs->t == STRM_VALUE_DOUBLE) {
-		  strm_value* new = malloc(sizeof(strm_value));
-		  new->t = STRM_VALUE_DOUBLE;
-		  new->v.d = lhs->v.d * rhs->v.d;
-		  return new;
-		}
-	  }
-	  if (*nop->op == '/' && *(nop->op+1) == '\0') {
-		strm_value* rhs = node_expr(env, nop->rhs);
-		if (lhs->t == STRM_VALUE_DOUBLE && rhs->t == STRM_VALUE_DOUBLE) {
-		  strm_value* new = malloc(sizeof(strm_value));
-		  new->t = STRM_VALUE_DOUBLE;
+      if (*nop->op == '+' && *(nop->op+1) == '\0') {
+        strm_value* rhs = node_expr(env, nop->rhs);
+        if (lhs->t == STRM_VALUE_STRING && rhs->t == STRM_VALUE_STRING) {
+          strm_value* new = malloc(sizeof(strm_value));
+          char *p = malloc(strlen(lhs->v.s) + strlen(rhs->v.s) + 1);
+          strcpy(p, lhs->v.s);
+          strcat(p, rhs->v.s);
+          new->t = STRM_VALUE_STRING;
+          new->v.s = p;
+          return new;
+        } else if (lhs->t == STRM_VALUE_DOUBLE && rhs->t == STRM_VALUE_DOUBLE) {
+          strm_value* new = malloc(sizeof(strm_value));
+          new->t = STRM_VALUE_DOUBLE;
+          new->v.d = lhs->v.d + rhs->v.d;
+          return new;
+        }
+      }
+      if (*nop->op == '-' && *(nop->op+1) == '\0') {
+        strm_value* rhs = node_expr(env, nop->rhs);
+        if (lhs->t == STRM_VALUE_DOUBLE && rhs->t == STRM_VALUE_DOUBLE) {
+          strm_value* new = malloc(sizeof(strm_value));
+          new->t = STRM_VALUE_DOUBLE;
+          new->v.d = lhs->v.d - rhs->v.d;
+          return new;
+        }
+      }
+      if (*nop->op == '*' && *(nop->op+1) == '\0') {
+        strm_value* rhs = node_expr(env, nop->rhs);
+        if (lhs->t == STRM_VALUE_DOUBLE && rhs->t == STRM_VALUE_DOUBLE) {
+          strm_value* new = malloc(sizeof(strm_value));
+          new->t = STRM_VALUE_DOUBLE;
+          new->v.d = lhs->v.d * rhs->v.d;
+          return new;
+        }
+      }
+      if (*nop->op == '/' && *(nop->op+1) == '\0') {
+        strm_value* rhs = node_expr(env, nop->rhs);
+        if (lhs->t == STRM_VALUE_DOUBLE && rhs->t == STRM_VALUE_DOUBLE) {
+          strm_value* new = malloc(sizeof(strm_value));
+          new->t = STRM_VALUE_DOUBLE;
           /* TODO: zero divide */
-		  new->v.d = lhs->v.d / rhs->v.d;
-		  return new;
-		}
-	  }
+          new->v.d = lhs->v.d / rhs->v.d;
+          return new;
+        }
+      }
       /* TODO: invalid operator */
     }
     break;
