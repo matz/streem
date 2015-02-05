@@ -67,6 +67,7 @@ extern node* node_value_new(node*);
 extern node* node_array_new();
 extern node* node_array_of(node*);
 extern void node_array_add(node*, node*);
+extern void node_array_free(node*);
 extern node* node_pair_new(node*, node*);
 extern node* node_map_new();
 extern node* node_map_of(node*);
@@ -86,6 +87,7 @@ extern strm_id node_ident_of(char*);
 extern node* node_nil();
 extern node* node_true();
 extern node* node_false();
+extern void node_free(node*);
 
 #endif /* _NODE_H_ */
 

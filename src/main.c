@@ -129,5 +129,6 @@ main(int argc, const char**argv)
   }
   if (n == 0)
     dump_node(state.lval, 0);
+  strm_parse_free(&state);
   return n > 0 ? 1 : 0;
 }

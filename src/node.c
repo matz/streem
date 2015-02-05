@@ -80,6 +80,17 @@ node_array_add(node* arr, node* np)
   arr0->len++;
 }
 
+void
+node_array_free(node* np)
+{
+  int i;
+  node_array* arr0 = np->value.v.p;
+  for (i = 0; i < arr0->len; i++)
+    node_free(arr0->data[i]);
+  free(arr0);
+  free(np);
+}
+
 node*
 node_pair_new(node* key, node* value)
 {
@@ -116,6 +127,22 @@ node_map_of(node* np)
   if (np == NULL)
     np = node_map_new();
   return np;
+}
+
+void
+node_map_free(node* np)
+{
+  int i;
+  node_array* arr0 = np->value.v.p;
+  for (i = 0; i < arr0->len; i++) {
+    node* pair = arr0->data[i];
+    node_pair* pair0 = pair->value.v.p;
+    node_free(pair0->key);
+    node_free(pair0->value);
+    free(pair0);
+  }
+  free(arr0);
+  free(np);
 }
 
 node*
@@ -328,4 +355,76 @@ strm_parse_input(parser_state* p, FILE *f, const char *fname)
     return 0;
   }
   return 1;
+}
+
+void
+node_free(node* np) {
+  if (!np) {
+    return;
+  }
+
+  switch (np->type) {
+  case NODE_ARGS:
+    node_array_free(np);
+    break;
+  case NODE_IF:
+    {
+      node_free(((node_if*)np->value.v.p)->cond);
+      node_free(((node_if*)np->value.v.p)->compstmt);
+      node_free(((node_if*)np->value.v.p)->opt_else);
+    }
+    break;
+  case NODE_EMIT:
+    node_free((node*) np->value.v.p);
+    break;
+  case NODE_OP:
+    node_free(((node_op*) np->value.v.p)->lhs);
+    node_free(((node_op*) np->value.v.p)->rhs);
+    break;
+  case NODE_BLOCK:
+    node_free(((node_block*) np->value.v.p)->args);
+    node_free(((node_block*) np->value.v.p)->compstmt);
+    break;
+  case NODE_CALL:
+    node_free(((node_call*) np->value.v.p)->cond);
+    node_free(((node_call*) np->value.v.p)->ident);
+    node_free(((node_call*) np->value.v.p)->args);
+    node_free(((node_call*) np->value.v.p)->blk);
+    break;
+  case NODE_IDENT:
+    free(np);
+    break;
+  case NODE_VALUE:
+    switch (np->value.t) {
+    case STRM_VALUE_DOUBLE:
+      free(np);
+      break;
+    case STRM_VALUE_STRING:
+      free(np->value.v.s);
+      free(np);
+      break;
+    case STRM_VALUE_BOOL:
+      free(np);
+      break;
+    case STRM_VALUE_NIL:
+      break;
+    case STRM_VALUE_ARRAY:
+      node_array_free(np);
+      break;
+    case STRM_VALUE_MAP:
+      node_map_free(np);
+      break;
+    default:
+      break;
+    }
+    break;
+  default:
+    break;
+  }
+}
+
+void
+strm_parse_free(parser_state* p)
+{
+  node_free(p->lval);
 }

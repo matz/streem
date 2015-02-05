@@ -30,6 +30,12 @@ typedef struct {
   } v;
 } strm_value;
 
+typedef struct {
+  int len;
+  int max;
+  void** data;
+} strm_array;
+
 typedef struct parser_state {
   int nerr;
   void *lval;
@@ -39,6 +45,7 @@ typedef struct parser_state {
 } parser_state;
 
 int strm_parse_init(parser_state*);
+void strm_parse_free(parser_state*);
 int strm_parse_file(parser_state*, const char*);
 int strm_parse_input(parser_state*, FILE* in, const char*);
 int strm_parse_string(parser_state*, const char*);
