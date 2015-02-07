@@ -328,7 +328,7 @@ strm_parse_init(parser_state *p)
   p->fname = NULL;
   p->lineno = 1;
   p->tline = 1;
-  p->env = kh_init(value);
+  p->ctx.env = kh_init(value);
   return 0;
 }
 
@@ -410,7 +410,6 @@ node_free(node* np) {
       free(np);
       break;
     case STRM_VALUE_BOOL:
-      free(np);
       break;
     case STRM_VALUE_NIL:
       break;
@@ -436,7 +435,7 @@ strm_parse_free(parser_state* p)
 }
 
 strm_value*
-node_expr(strm_env* env, node* np)
+node_expr(strm_ctx* ctx, node* np)
 {
   if (!np) {
     return NULL;
@@ -455,15 +454,14 @@ node_expr(strm_env* env, node* np)
   case NODE_BLOCK:
     break;
   case NODE_IDENT:
-    free(np);
     break;
 */
   case NODE_OP:
     {
       node_op* nop = np->value.v.p;
-      strm_value* lhs = node_expr(env, nop->lhs);
+      strm_value* lhs = node_expr(ctx, nop->lhs);
 	  if (*nop->op == '+' && *(nop->op+1) == '\0') {
-		strm_value* rhs = node_expr(env, nop->rhs);
+		strm_value* rhs = node_expr(ctx, nop->rhs);
 		if (lhs->t == STRM_VALUE_STRING && rhs->t == STRM_VALUE_STRING) {
 		  strm_value* new = malloc(sizeof(strm_value));
 		  char *p = malloc(strlen(lhs->v.s) + strlen(rhs->v.s) + 1);
@@ -480,7 +478,7 @@ node_expr(strm_env* env, node* np)
 		}
 	  }
 	  if (*nop->op == '-' && *(nop->op+1) == '\0') {
-		strm_value* rhs = node_expr(env, nop->rhs);
+		strm_value* rhs = node_expr(ctx, nop->rhs);
 		if (lhs->t == STRM_VALUE_DOUBLE && rhs->t == STRM_VALUE_DOUBLE) {
 		  strm_value* new = malloc(sizeof(strm_value));
 		  new->t = STRM_VALUE_DOUBLE;
@@ -489,7 +487,7 @@ node_expr(strm_env* env, node* np)
 		}
 	  }
 	  if (*nop->op == '*' && *(nop->op+1) == '\0') {
-		strm_value* rhs = node_expr(env, nop->rhs);
+		strm_value* rhs = node_expr(ctx, nop->rhs);
 		if (lhs->t == STRM_VALUE_DOUBLE && rhs->t == STRM_VALUE_DOUBLE) {
 		  strm_value* new = malloc(sizeof(strm_value));
 		  new->t = STRM_VALUE_DOUBLE;
@@ -498,7 +496,7 @@ node_expr(strm_env* env, node* np)
 		}
 	  }
 	  if (*nop->op == '/' && *(nop->op+1) == '\0') {
-		strm_value* rhs = node_expr(env, nop->rhs);
+		strm_value* rhs = node_expr(ctx, nop->rhs);
 		if (lhs->t == STRM_VALUE_DOUBLE && rhs->t == STRM_VALUE_DOUBLE) {
 		  strm_value* new = malloc(sizeof(strm_value));
 		  new->t = STRM_VALUE_DOUBLE;
@@ -514,11 +512,15 @@ node_expr(strm_env* env, node* np)
     {
       /* TODO: wip code of ident */
       node_call* ncall = np->value.v.p;
-      khint_t k = kh_get(value, env, (char*) ncall->ident->value.v.id);
-      if (k != kh_end(env)) {
-        strm_value* v = kh_value(env, k);
-        if (v->t == STRM_VALUE_CFUNC) {
-          ((strm_cfunc) v->v.p)(env, ncall->args->value.v.p);
+      if (ncall->ident != NULL) {
+        khint_t k = kh_get(value, ctx->env, (char*) ncall->ident->value.v.id);
+        if (k != kh_end(ctx->env)) {
+          strm_value* v = kh_value(ctx->env, k);
+          if (v->t == STRM_VALUE_CFUNC) {
+            ((strm_cfunc) v->v.p)(ctx, ncall->args->value.v.p);
+          }
+        } else {
+          strm_raise(ctx, "function not found");
         }
       }
     }
@@ -533,13 +535,13 @@ node_expr(strm_env* env, node* np)
 }
 
 strm_value*
-strm_puts(strm_env* env, strm_array* args) {
+strm_puts(strm_ctx* ctx, strm_array* args) {
   int i;
   for (i = 0; i < args->len; i++) {
     strm_value* v;
     if (i != 0)
       printf(", ");
-    v = node_expr(env, args->data[i]);
+    v = node_expr(ctx, args->data[i]);
     if (v != NULL) {
       switch (v->t) {
       case STRM_VALUE_DOUBLE:
@@ -547,6 +549,12 @@ strm_puts(strm_env* env, strm_array* args) {
         break;
       case STRM_VALUE_STRING:
         printf("'%s'", v->v.s);
+        break;
+      case STRM_VALUE_NIL:
+        printf("nil");
+        break;
+      case STRM_VALUE_BOOL:
+        printf(v->v.b ? "true" : "false");
         break;
       default:
         printf("<%p>", v->v.p);
@@ -556,6 +564,7 @@ strm_puts(strm_env* env, strm_array* args) {
         printf("nil");
     }
   }
+  printf("\n");
   return NULL;
 }
 
@@ -566,15 +575,22 @@ strm_run(parser_state* p)
   khiter_t k;
 
   static strm_value vputs;
-  k = kh_put(value, p->env, "puts", &r);
+  k = kh_put(value, p->ctx.env, "puts", &r);
   vputs.t = STRM_VALUE_CFUNC;
   vputs.v.p = strm_puts;
 
-  kh_value(p->env, k) = &vputs;
+  kh_value(p->ctx.env, k) = &vputs;
 
   int i;
   node_array* arr0 = ((node*)p->lval)->value.v.p;
   for (i = 0; i < arr0->len; i++)
-    node_expr(p->env, arr0->data[i]);
+    node_expr(&p->ctx, arr0->data[i]);
   return 0;
+}
+
+void
+strm_raise(strm_ctx* ctx, const char* msg) {
+  ctx->exc = malloc(sizeof(strm_value));
+  ctx->exc->t = STRM_VALUE_STRING;
+  ctx->exc->v.s = strdup0(msg);
 }
