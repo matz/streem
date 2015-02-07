@@ -434,6 +434,21 @@ strm_parse_free(parser_state* p)
   node_free(p->lval);
 }
 
+strm_value* node_expr(strm_ctx*, node*);
+
+strm_value*
+node_expr_stmt(strm_ctx* ctx, node* np)
+{
+  int i;
+  node_array* arr0 = np->value.v.p;
+  strm_value* v = NULL;
+  for (i = 0; i < arr0->len; i++) {
+    /* TODO: garbage correct previous value in this loop */
+    v = node_expr(ctx, arr0->data[i]);
+  }
+  return v;
+}
+
 strm_value*
 node_expr(strm_ctx* ctx, node* np)
 {
@@ -445,17 +460,26 @@ node_expr(strm_ctx* ctx, node* np)
 /*
   case NODE_ARGS:
     break;
-  case NODE_IF:
-    break;
   case NODE_EMIT:
-    break;
-  case NODE_OP:
     break;
   case NODE_BLOCK:
     break;
   case NODE_IDENT:
     break;
 */
+  case NODE_IF:
+    {
+      node_if* nif = np->value.v.p;
+      strm_value* v = node_expr(ctx, nif->cond);
+      if (v->t == STRM_VALUE_NIL || v->v.p == NULL ||
+          (v->t == STRM_VALUE_STRING && *v->v.s == 0)) {
+        if (nif->opt_else == NULL)
+          node_expr(ctx, nif->opt_else);
+      } else {
+        node_expr_stmt(ctx, nif->compstmt);
+      }
+    }
+    break;
   case NODE_OP:
     {
       node_op* nop = np->value.v.p;
@@ -578,13 +602,9 @@ strm_run(parser_state* p)
   k = kh_put(value, p->ctx.env, "puts", &r);
   vputs.t = STRM_VALUE_CFUNC;
   vputs.v.p = strm_puts;
-
   kh_value(p->ctx.env, k) = &vputs;
 
-  int i;
-  node_array* arr0 = ((node*)p->lval)->value.v.p;
-  for (i = 0; i < arr0->len; i++)
-    node_expr(&p->ctx, arr0->data[i]);
+  node_expr_stmt(&p->ctx, (node*)p->lval);
   return 0;
 }
 
