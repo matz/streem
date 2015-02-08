@@ -462,11 +462,13 @@ node_expr(strm_ctx* ctx, node* np)
     break;
   case NODE_EMIT:
     break;
-  case NODE_BLOCK:
-    break;
   case NODE_IDENT:
     break;
 */
+  case NODE_RETURN:
+    {
+      break;
+    }
   case NODE_IF:
     {
       node_if* nif = np->value.v.p;
@@ -546,6 +548,9 @@ node_expr(strm_ctx* ctx, node* np)
         } else {
           strm_raise(ctx, "function not found");
         }
+      } else {
+        node_block* nblk = ncall->blk->value.v.p;
+        node_expr_stmt(ctx, nblk->compstmt);
       }
     }
     break;
