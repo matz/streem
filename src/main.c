@@ -62,6 +62,10 @@ dump_node(node* np, int indent) {
     dump_node(((node_call*) np->value.v.p)->args, indent+2);
     dump_node(((node_call*) np->value.v.p)->blk, indent+2);
     break;
+  case NODE_RETURN:
+    printf("RETURN:\n");
+    dump_node(((node_return*) np->value.v.p)->rv, indent+1);
+    break;
   case NODE_IDENT:
     printf("IDENT: %p\n", (void*)np->value.v.id);
     break;

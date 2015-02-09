@@ -14,6 +14,7 @@ typedef enum {
   STRM_VALUE_NIL,
   STRM_VALUE_CFUNC,
   STRM_VALUE_USER,
+  STRM_VALUE_ERROR,
 } strm_value_type;
 
 typedef intptr_t strm_id;
@@ -42,6 +43,16 @@ KHASH_MAP_INIT_STR(value, strm_value*)
 
 typedef khash_t(value) strm_env;
 
+typedef struct {
+  int type;
+  strm_value* arg;
+} strm_error;
+
+typedef struct {
+  khash_t(value)* env;
+  strm_error* exc;
+} strm_ctx;
+
 typedef struct parser_state {
   int nerr;
   void *lval;
@@ -49,10 +60,10 @@ typedef struct parser_state {
   int lineno;
   int tline;
   /* TODO: should be separated as another context structure */
-  strm_env *env;
+  strm_ctx ctx;
 } parser_state;
 
-typedef strm_value* (*strm_cfunc)(strm_env*, strm_array*);
+typedef strm_value* (*strm_cfunc)(strm_ctx*, strm_array*);
 
 int strm_parse_init(parser_state*);
 void strm_parse_free(parser_state*);
@@ -60,5 +71,6 @@ int strm_parse_file(parser_state*, const char*);
 int strm_parse_input(parser_state*, FILE* in, const char*);
 int strm_parse_string(parser_state*, const char*);
 int strm_run(parser_state*);
+void strm_raise(strm_ctx*, const char*);
 
 #endif /* _STRM_H_ */
