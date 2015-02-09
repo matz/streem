@@ -6,9 +6,10 @@
 
 /* ----- Values */
 enum strm_value_type {
-  STRM_TT_INT,
-  STRM_TT_FLT,
-  STRM_TT_PTR,
+  STRM_VALUE_BOOL,
+  STRM_VALUE_INT,
+  STRM_VALUE_FLT,
+  STRM_VALUE_PTR,
 };
 
 typedef struct strm_value {
@@ -21,6 +22,7 @@ typedef struct strm_value {
 } strm_value;
 
 strm_value strm_ptr_value(void*);
+strm_value strm_bool_value(int);
 strm_value strm_int_value(long);
 strm_value strm_flt_value(double);
 
@@ -28,12 +30,15 @@ strm_value strm_flt_value(double);
 
 void *strm_value_ptr(strm_value);
 long strm_value_int(strm_value);
+int strm_value_bool(strm_value);
 double strm_value_flt(strm_value);
 
 enum strm_obj_type {
-  STRM_TT_STR,
-  STRM_TT_ARY,
-  STRM_TT_MAP,
+  STRM_OBJ_ARRAY,
+  STRM_OBJ_MAP,
+  STRM_OBJ_STRING,
+  STRM_OBJ_CFUNC,
+  STRM_OBJ_USER,
 };
 
 #define STRM_OBJ_HEADER \
@@ -55,7 +60,7 @@ struct strm_string {
 
 struct strm_string *strm_str_new(const char*,size_t len);
 #define strm_str_value(p,len) strm_ptr_value(strm_str_new(p,len))
-#define strm_value_str(v) (struct strm_string*)strm_value_obj(v, STRM_TT_STR)
+#define strm_value_str(v) (struct strm_string*)strm_value_obj(v, STRM_OBJ_STRING)
 
 /* ----- Tasks */
 typedef enum {
