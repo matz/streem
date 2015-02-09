@@ -14,6 +14,7 @@ typedef enum {
   STRM_VALUE_NIL,
   STRM_VALUE_CFUNC,
   STRM_VALUE_USER,
+  STRM_VALUE_ERROR,
 } strm_value_type;
 
 typedef intptr_t strm_id;
@@ -43,8 +44,13 @@ KHASH_MAP_INIT_STR(value, strm_value*)
 typedef khash_t(value) strm_env;
 
 typedef struct {
+  int type;
+  strm_value* arg;
+} strm_error;
+
+typedef struct {
   khash_t(value)* env;
-  strm_value* exc;
+  strm_error* exc;
 } strm_ctx;
 
 typedef struct parser_state {

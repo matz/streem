@@ -7,6 +7,9 @@ extern FILE *yyin, *yyout;
 extern int yyparse(parser_state*);
 extern int yydebug;
 
+#define STRM_ERROR_RUNTIME 0
+#define STRM_ERROR_RETURN 1
+
 static char*
 strdup0(const char *s)
 {
@@ -44,19 +47,35 @@ node_value_new(node* v)
   return NULL;
 }
 
-node*
-node_array_new()
-{
-  node_array* arr = malloc(sizeof(node_array));
+strm_array*
+strm_array_new() {
   /* TODO: error check */
+  strm_array* arr = malloc(sizeof(strm_array));
   arr->len = 0;
   arr->max = 0;
   arr->data = NULL;
+  return arr;
+}
 
+void
+strm_array_add(strm_array* arr, void* data) {
+  if (arr->len == arr->max) {
+    arr->max = arr->len + 10;
+    arr->data = realloc(arr->data, sizeof(void*) * arr->max);
+  }
+  /* TODO: error check */
+  arr->data[arr->len] = data;
+  arr->len++;
+}
+
+node*
+node_array_new()
+{
+  /* TODO: error check */
   node* np = malloc(sizeof(node));
   np->type = NODE_VALUE;
   np->value.t = STRM_VALUE_ARRAY;
-  np->value.v.p = arr;
+  np->value.v.p = strm_array_new();
   return np;
 }
 
@@ -71,24 +90,18 @@ node_array_of(node* np)
 void
 node_array_add(node* arr, node* np)
 {
-  /* TODO: error check */
   node_array* arr0 = arr->value.v.p;
-  if (arr0->len == arr0->max) {
-    arr0->max = arr0->len + 10;
-    arr0->data = realloc(arr0->data, sizeof(node*) * arr0->max);
-  }
-  arr0->data[arr0->len] = np;
-  arr0->len++;
+  strm_array_add(arr0, np);
 }
 
 void
 node_array_free(node* np)
 {
   int i;
-  node_array* arr0 = np->value.v.p;
-  for (i = 0; i < arr0->len; i++)
-    node_free(arr0->data[i]);
-  free(arr0);
+  node_array* arr = np->value.v.p;
+  for (i = 0; i < arr->len; i++)
+    node_free(arr->data[i]);
+  free(arr);
   free(np);
 }
 
@@ -134,15 +147,16 @@ void
 node_map_free(node* np)
 {
   int i;
-  node_array* arr0 = np->value.v.p;
-  for (i = 0; i < arr0->len; i++) {
-    node* pair = arr0->data[i];
-    node_pair* pair0 = pair->value.v.p;
-    node_free(pair0->key);
-    node_free(pair0->value);
-    free(pair0);
+  node_array* arr = np->value.v.p;
+  for (i = 0; i < arr->len; i++) {
+    node* pair = arr->data[i];
+    node_pair* npair = pair->value.v.p;
+    node_free(npair->key);
+    node_free(npair->value);
+    free(npair);
+    free(pair);
   }
-  free(arr0);
+  free(arr);
   free(np);
 }
 
@@ -328,6 +342,7 @@ strm_parse_init(parser_state *p)
   p->fname = NULL;
   p->lineno = 1;
   p->tline = 1;
+  p->ctx.exc = NULL;
   p->ctx.env = kh_init(value);
   return 0;
 }
@@ -397,6 +412,10 @@ node_free(node* np) {
     node_free(((node_call*) np->value.v.p)->blk);
     free(np);
     break;
+  case NODE_RETURN:
+    node_free((node*) np->value.v.p);
+    free(np);
+    break;
   case NODE_IDENT:
     free(np);
     break;
@@ -440,11 +459,14 @@ strm_value*
 node_expr_stmt(strm_ctx* ctx, node* np)
 {
   int i;
-  node_array* arr0 = np->value.v.p;
+  node_array* arr = np->value.v.p;
   strm_value* v = NULL;
-  for (i = 0; i < arr0->len; i++) {
+  for (i = 0; i < arr->len; i++) {
+    if (ctx->exc != NULL) {
+      return NULL;
+    }
     /* TODO: garbage correct previous value in this loop */
-    v = node_expr(ctx, arr0->data[i]);
+    v = node_expr(ctx, arr->data[i]);
   }
   return v;
 }
@@ -452,7 +474,11 @@ node_expr_stmt(strm_ctx* ctx, node* np)
 strm_value*
 node_expr(strm_ctx* ctx, node* np)
 {
-  if (!np) {
+  if (ctx->exc != NULL) {
+    return NULL;
+  }
+
+  if (np == NULL) {
     return NULL;
   }
 
@@ -465,18 +491,17 @@ node_expr(strm_ctx* ctx, node* np)
   case NODE_IDENT:
     break;
 */
-  case NODE_RETURN:
-    {
-      break;
-    }
   case NODE_IF:
     {
       node_if* nif = np->value.v.p;
       strm_value* v = node_expr(ctx, nif->cond);
+      if (ctx->exc != NULL) {
+        return NULL;
+      }
       if (v->t == STRM_VALUE_NIL || v->v.p == NULL ||
           (v->t == STRM_VALUE_STRING && *v->v.s == 0)) {
         if (nif->opt_else == NULL)
-          node_expr(ctx, nif->opt_else);
+          node_expr_stmt(ctx, nif->opt_else);
       } else {
         node_expr_stmt(ctx, nif->compstmt);
       }
@@ -486,52 +511,86 @@ node_expr(strm_ctx* ctx, node* np)
     {
       node_op* nop = np->value.v.p;
       strm_value* lhs = node_expr(ctx, nop->lhs);
-	  if (*nop->op == '+' && *(nop->op+1) == '\0') {
-		strm_value* rhs = node_expr(ctx, nop->rhs);
-		if (lhs->t == STRM_VALUE_STRING && rhs->t == STRM_VALUE_STRING) {
-		  strm_value* new = malloc(sizeof(strm_value));
-		  char *p = malloc(strlen(lhs->v.s) + strlen(rhs->v.s) + 1);
-		  strcpy(p, lhs->v.s);
-		  strcat(p, rhs->v.s);
-		  new->t = STRM_VALUE_STRING;
-		  new->v.s = p;
-		  return new;
-		} else if (lhs->t == STRM_VALUE_DOUBLE && rhs->t == STRM_VALUE_DOUBLE) {
-		  strm_value* new = malloc(sizeof(strm_value));
-		  new->t = STRM_VALUE_DOUBLE;
-		  new->v.d = lhs->v.d + rhs->v.d;
-		  return new;
-		}
-	  }
-	  if (*nop->op == '-' && *(nop->op+1) == '\0') {
-		strm_value* rhs = node_expr(ctx, nop->rhs);
-		if (lhs->t == STRM_VALUE_DOUBLE && rhs->t == STRM_VALUE_DOUBLE) {
-		  strm_value* new = malloc(sizeof(strm_value));
-		  new->t = STRM_VALUE_DOUBLE;
-		  new->v.d = lhs->v.d - rhs->v.d;
-		  return new;
-		}
-	  }
-	  if (*nop->op == '*' && *(nop->op+1) == '\0') {
-		strm_value* rhs = node_expr(ctx, nop->rhs);
-		if (lhs->t == STRM_VALUE_DOUBLE && rhs->t == STRM_VALUE_DOUBLE) {
-		  strm_value* new = malloc(sizeof(strm_value));
-		  new->t = STRM_VALUE_DOUBLE;
-		  new->v.d = lhs->v.d * rhs->v.d;
-		  return new;
-		}
-	  }
-	  if (*nop->op == '/' && *(nop->op+1) == '\0') {
-		strm_value* rhs = node_expr(ctx, nop->rhs);
-		if (lhs->t == STRM_VALUE_DOUBLE && rhs->t == STRM_VALUE_DOUBLE) {
-		  strm_value* new = malloc(sizeof(strm_value));
-		  new->t = STRM_VALUE_DOUBLE;
+      if (ctx->exc != NULL) return NULL;
+      if (*nop->op == '+' && *(nop->op+1) == '\0') {
+        strm_value* rhs = node_expr(ctx, nop->rhs);
+        if (ctx->exc != NULL) return NULL;
+        if (lhs->t == STRM_VALUE_STRING && rhs->t == STRM_VALUE_STRING) {
+          strm_value* new = malloc(sizeof(strm_value));
+          char *p = malloc(strlen(lhs->v.s) + strlen(rhs->v.s) + 1);
+          strcpy(p, lhs->v.s);
+          strcat(p, rhs->v.s);
+          new->t = STRM_VALUE_STRING;
+          new->v.s = p;
+          return new;
+        } else if (lhs->t == STRM_VALUE_DOUBLE && rhs->t == STRM_VALUE_DOUBLE) {
+          strm_value* new = malloc(sizeof(strm_value));
+          new->t = STRM_VALUE_DOUBLE;
+          new->v.d = lhs->v.d + rhs->v.d;
+          return new;
+        }
+      }
+      if (*nop->op == '-' && *(nop->op+1) == '\0') {
+        strm_value* rhs = node_expr(ctx, nop->rhs);
+        if (ctx->exc != NULL) return NULL;
+        if (lhs->t == STRM_VALUE_DOUBLE && rhs->t == STRM_VALUE_DOUBLE) {
+          strm_value* new = malloc(sizeof(strm_value));
+          new->t = STRM_VALUE_DOUBLE;
+          new->v.d = lhs->v.d - rhs->v.d;
+          return new;
+        }
+      }
+      if (*nop->op == '*' && *(nop->op+1) == '\0') {
+        strm_value* rhs = node_expr(ctx, nop->rhs);
+        if (ctx->exc != NULL) return NULL;
+        if (lhs->t == STRM_VALUE_DOUBLE && rhs->t == STRM_VALUE_DOUBLE) {
+          strm_value* new = malloc(sizeof(strm_value));
+          new->t = STRM_VALUE_DOUBLE;
+          new->v.d = lhs->v.d * rhs->v.d;
+          return new;
+        }
+      }
+      if (*nop->op == '/' && *(nop->op+1) == '\0') {
+        strm_value* rhs = node_expr(ctx, nop->rhs);
+        if (ctx->exc != NULL) return NULL;
+        if (lhs->t == STRM_VALUE_DOUBLE && rhs->t == STRM_VALUE_DOUBLE) {
+          strm_value* new = malloc(sizeof(strm_value));
+          new->t = STRM_VALUE_DOUBLE;
           /* TODO: zero divide */
-		  new->v.d = lhs->v.d / rhs->v.d;
-		  return new;
-		}
-	  }
+          new->v.d = lhs->v.d / rhs->v.d;
+          return new;
+        }
+      }
+      if (*nop->op == '<') {
+        strm_value* rhs = node_expr(ctx, nop->rhs);
+        if (ctx->exc != NULL) return NULL;
+        if (lhs->t == STRM_VALUE_DOUBLE && rhs->t == STRM_VALUE_DOUBLE) {
+          strm_value* new = malloc(sizeof(strm_value));
+          new->t = STRM_VALUE_BOOL;
+          /* TODO: zero divide */
+          if (*(nop->op+1) == '=')
+            new->v.b = lhs->v.d <= rhs->v.d;
+          else
+            new->v.b = lhs->v.d < rhs->v.d;
+          return new;
+        }
+      }
+      if (*nop->op == '>') {
+        strm_value* rhs = node_expr(ctx, nop->rhs);
+        if (ctx->exc != NULL) return NULL;
+        if (lhs->t == STRM_VALUE_DOUBLE && rhs->t == STRM_VALUE_DOUBLE) {
+          strm_value* new = malloc(sizeof(strm_value));
+          new->t = STRM_VALUE_BOOL;
+          /* TODO: zero divide */
+          if (*(nop->op+1) == '=')
+            new->v.b = lhs->v.d >= rhs->v.d;
+          else
+            new->v.b = lhs->v.d > rhs->v.d;
+          return new;
+        }
+      }
       /* TODO: invalid operator */
+      strm_raise(ctx, "invalid operator");
     }
     break;
   case NODE_CALL:
@@ -543,7 +602,12 @@ node_expr(strm_ctx* ctx, node* np)
         if (k != kh_end(ctx->env)) {
           strm_value* v = kh_value(ctx->env, k);
           if (v->t == STRM_VALUE_CFUNC) {
-            ((strm_cfunc) v->v.p)(ctx, ncall->args->value.v.p);
+            node_array* arr0 = ncall->args->value.v.p;
+            strm_array* arr1 = strm_array_new();
+            int i;
+            for (i = 0; i < arr0->len; i++)
+              strm_array_add(arr1, node_expr(ctx, arr0->data[i]));
+            ((strm_cfunc) v->v.p)(ctx, arr1);
           }
         } else {
           strm_raise(ctx, "function not found");
@@ -551,7 +615,22 @@ node_expr(strm_ctx* ctx, node* np)
       } else {
         node_block* nblk = ncall->blk->value.v.p;
         node_expr_stmt(ctx, nblk->compstmt);
+        if (ctx->exc != NULL && ctx->exc->type == STRM_ERROR_RETURN) {
+          strm_value* arg = ctx->exc->arg;
+          free(ctx->exc);
+          ctx->exc = NULL;
+          return arg;
+        }
       }
+    }
+    break;
+  case NODE_RETURN:
+    {
+      node_return* nreturn = np->value.v.p;
+      ctx->exc = malloc(sizeof(strm_error));
+      ctx->exc->type = STRM_ERROR_RETURN;
+      ctx->exc->arg = node_expr(ctx, nreturn->rv);
+      return NULL;
     }
     break;
   case NODE_VALUE:
@@ -564,37 +643,45 @@ node_expr(strm_ctx* ctx, node* np)
 }
 
 strm_value*
-strm_puts(strm_ctx* ctx, strm_array* args) {
+strm_cputs(strm_ctx* ctx, FILE* out, strm_array* args) {
   int i;
   for (i = 0; i < args->len; i++) {
     strm_value* v;
     if (i != 0)
-      printf(", ");
-    v = node_expr(ctx, args->data[i]);
+      fprintf(out, ", ");
+    v = args->data[i];
     if (v != NULL) {
       switch (v->t) {
       case STRM_VALUE_DOUBLE:
-        printf("%f", v->v.d);
+        fprintf(out, "%f", v->v.d);
         break;
       case STRM_VALUE_STRING:
-        printf("'%s'", v->v.s);
+        fprintf(out, "'%s'", v->v.s);
         break;
       case STRM_VALUE_NIL:
-        printf("nil");
+        fprintf(out, "nil");
         break;
       case STRM_VALUE_BOOL:
-        printf(v->v.b ? "true" : "false");
+        fprintf(out, v->v.b ? "true" : "false");
+        break;
+      case STRM_VALUE_ERROR:
+        fprintf(out, "%s", v->v.s);
         break;
       default:
-        printf("<%p>", v->v.p);
+        fprintf(out, "<%p>", v->v.p);
         break;
       }
     } else {
-        printf("nil");
+        fprintf(out, "nil");
     }
   }
-  printf("\n");
+  fprintf(out, "\n");
   return NULL;
+}
+
+strm_value*
+strm_puts(strm_ctx* ctx, strm_array* args) {
+  return strm_cputs(ctx, stdout, args);
 }
 
 int
@@ -610,12 +697,21 @@ strm_run(parser_state* p)
   kh_value(p->ctx.env, k) = &vputs;
 
   node_expr_stmt(&p->ctx, (node*)p->lval);
+  if (p->ctx.exc != NULL) {
+    strm_array* arr = strm_array_new();
+    strm_array_add(arr, p->ctx.exc->arg);
+    strm_cputs(&p->ctx, stderr, arr);
+    /* TODO: garbage correct previous exception value */
+    p->ctx.exc = NULL;
+  }
   return 0;
 }
 
 void
 strm_raise(strm_ctx* ctx, const char* msg) {
-  ctx->exc = malloc(sizeof(strm_value));
-  ctx->exc->t = STRM_VALUE_STRING;
-  ctx->exc->v.s = strdup0(msg);
+  ctx->exc = malloc(sizeof(strm_error));
+  ctx->exc->type = STRM_ERROR_RUNTIME;
+  ctx->exc->arg = malloc(sizeof(strm_value));
+  ctx->exc->arg->t = STRM_VALUE_ERROR;
+  ctx->exc->arg->v.s = strdup0(msg);
 }
