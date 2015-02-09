@@ -29,11 +29,7 @@ typedef struct {
   node* value;
 } node_pair;
 
-typedef struct {
-  int len;
-  int max;
-  node** data;
-} node_array;
+typedef strm_array node_array;
 
 typedef struct {
   node* cond;
@@ -63,6 +59,10 @@ typedef struct {
   node* args;
   node* blk;
 } node_call;
+
+typedef struct {
+  node* rv;
+} node_return;
 
 extern node* node_value_new(node*);
 extern node* node_array_new();
