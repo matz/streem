@@ -45,9 +45,6 @@ queue_push_task(strm_queue *q, struct strm_queue_task *t)
     q->fi->next = t;
   }
   q->fi = t;
-  if (!q->fm) {
-    q->fm = t;
-  }
   if (!q->fo) {
     q->fo = t;
   }
