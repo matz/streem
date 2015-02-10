@@ -44,15 +44,15 @@ push_high_task(strm_queue *q, struct strm_queue_task *t)
   if (q->hi) {
     t->next = q->hi->next;
     q->hi->next = t;
+    q->hi = t;
   }
   else {
-    if (q->fo)
-      q->fo->next = t;
+    t->next = q->fo;
     q->fo = t;
+    q->hi = t;
   }
   if (!q->fi)
     q->fi = t;
-  q->hi = t;
   pthread_cond_signal(&q->cond);
   pthread_mutex_unlock(&q->mutex);
 }
@@ -64,6 +64,8 @@ push_low_task(strm_queue *q, struct strm_queue_task *t)
   if (q->fi) {
     q->fi->next = t;
   }
+  if (!q->hi)
+    q->hi = t;
   q->fi = t;
   if (!q->fo) {
     q->fo = t;
