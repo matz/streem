@@ -73,5 +73,5 @@ main(int argc, char **argv)
   strm_connect(strm_map, strm_stdout);
   strm_loop();
 
-  return 0;
+  return EXIT_SUCCESS;
 }
