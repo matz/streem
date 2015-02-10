@@ -4,7 +4,7 @@
 struct strm_queue {
   pthread_mutex_t mutex;
   pthread_cond_t cond;
-  struct strm_queue_task *fi, *fm, *fo;
+  struct strm_queue_task *fi, *hi, *fo;
 };
 
 strm_queue*
@@ -14,7 +14,7 @@ strm_queue_alloc()
 
   pthread_mutex_init(&q->mutex, NULL);
   pthread_cond_init(&q->cond, NULL);
-  q->fi = q->fm = q->fo = NULL;
+  q->fi = q->hi = q->fo = NULL;
   return q;
 }
 
@@ -41,9 +41,9 @@ static void
 push_high_task(strm_queue *q, struct strm_queue_task *t)
 {
   pthread_mutex_lock(&q->mutex);
-  if (q->fm) {
-    t->next = q->fm->next;
-    q->fm->next = t;
+  if (q->hi) {
+    t->next = q->hi->next;
+    q->hi->next = t;
   }
   else {
     if (q->fo)
@@ -52,7 +52,7 @@ push_high_task(strm_queue *q, struct strm_queue_task *t)
   }
   if (!q->fi)
     q->fi = t;
-  q->fm = t;
+  q->hi = t;
   pthread_cond_signal(&q->cond);
   pthread_mutex_unlock(&q->mutex);
 }
@@ -111,8 +111,8 @@ strm_queue_exec(strm_queue *q)
   }
   t = q->fo;
   q->fo = t->next;
-  if (t == q->fm) {
-    q->fm = NULL;
+  if (t == q->hi) {
+    q->hi = NULL;
   }
   if (!q->fo) {
     q->fi = NULL;
