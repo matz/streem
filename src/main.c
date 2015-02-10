@@ -10,7 +10,7 @@ dump_node(node* np, int indent) {
 
   if (!np) {
     printf("NIL\n");
-    return;		  
+    return;
   }
 
   switch (np->type) {
@@ -97,7 +97,7 @@ dump_node(node* np, int indent) {
         node_array* arr0 = np->value.v.p;
         for (i = 0; i < arr0->len; i++) {
           node* pair = arr0->data[i];
-		  node_pair* pair0 = pair->value.v.p;
+          node_pair* pair0 = pair->value.v.p;
           dump_node(pair0->key, indent+1);
           dump_node(pair0->value, indent+1);
         }
@@ -132,8 +132,8 @@ main(int argc, const char**argv)
   }
 
   if (n == 0) {
-   /* dump_node(state.lval, 0); */
-   strm_run(&state);
+    /* dump_node(state.lval, 0); */
+    strm_run(&state);
   }
   strm_parse_free(&state);
   return n > 0 ? 1 : 0;
