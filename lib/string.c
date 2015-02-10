@@ -39,6 +39,7 @@ strm_str_new(const char *p, size_t len)
     str->ptr = buf;
   }
   str->len = len;
+  str->type = STRM_OBJ_STRING;
 
   return str;
 }
