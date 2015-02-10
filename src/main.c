@@ -136,5 +136,5 @@ main(int argc, const char**argv)
     strm_run(&state);
   }
   strm_parse_free(&state);
-  return n > 0 ? 1 : 0;
+  return n > 0 ? EXIT_FAILURE : EXIT_SUCCESS;
 }
