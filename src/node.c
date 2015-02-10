@@ -599,6 +599,16 @@ node_expr(strm_ctx* ctx, node* np)
           return new;
         }
       }
+      if (*nop->op == '!' && (*(nop->op+1)) == '=') {
+        strm_value* rhs = node_expr(ctx, nop->rhs);
+        if (ctx->exc != NULL) return NULL;
+        if (lhs->t == STRM_VALUE_DOUBLE && rhs->t == STRM_VALUE_DOUBLE) {
+          strm_value* new = malloc(sizeof(strm_value));
+          new->t = STRM_VALUE_BOOL;
+          new->v.b = lhs->v.d != rhs->v.d;
+          return new;
+        }
+      }
       /* TODO: invalid operator */
       strm_raise(ctx, "invalid operator");
     }
