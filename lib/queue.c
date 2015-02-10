@@ -73,7 +73,7 @@ push_low_task(strm_queue *q, struct strm_queue_task *t)
 }
 
 void
-strm_queue_push_task(strm_queue *q, struct strm_queue_task *t)
+strm_queue_push(strm_queue *q, struct strm_queue_task *t)
 {
   if (!q) return;
 
@@ -95,12 +95,6 @@ strm_queue_task(strm_stream *strm, strm_func func, strm_value data)
   t->next = NULL;
 
   return t;
-}
-
-void
-strm_queue_push(strm_queue *q, strm_stream *strm, strm_func func, strm_value data)
-{
-  strm_queue_push_task(q, strm_queue_task(strm, func, data));
 }
 
 int

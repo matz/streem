@@ -93,8 +93,6 @@ int strm_connect(strm_stream *src, strm_stream *dst);
 int strm_loop();
 void strm_close(strm_stream *strm);
 
-void strm_task_push(strm_stream *s, strm_func func, strm_value data);
-
 /* ----- queue */
 typedef struct strm_queue strm_queue;
 struct strm_queue_task {
@@ -107,11 +105,12 @@ struct strm_queue_task {
 strm_queue* strm_queue_alloc(void);
 struct strm_queue_task* strm_queue_task(strm_stream *strm, strm_func func, strm_value data);
 void strm_queue_free(strm_queue *q);
-void strm_queue_push(strm_queue *q, strm_stream *strm, strm_func func, strm_value data);
-void strm_queue_push_task(strm_queue *q, struct strm_queue_task *t);
+void strm_queue_push(strm_queue *q, struct strm_queue_task *t);
 int strm_queue_exec(strm_queue *q);
 int strm_queue_size(strm_queue *q);
 int strm_queue_p(strm_queue *q);
+
+void strm_task_push(struct strm_queue_task *t);
 
 /* ----- I/O */
 void strm_io_start_read(strm_stream *strm, int fd, strm_func cb);

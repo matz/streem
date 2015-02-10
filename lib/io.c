@@ -56,7 +56,7 @@ io_loop(void *d)
     }
     for (i=0; i<n; i++) {
       struct strm_queue_task *t = events[i].data.ptr;
-      strm_task_push_task(t);
+      strm_task_push(t);
     }
   }
   return NULL;
@@ -83,7 +83,7 @@ strm_io_start(strm_stream *strm, int fd, strm_func cb, uint32_t events)
       /* fd must be a regular file */
       /* enqueue task without waiting */
       strm->flags |= STRM_IO_NOWAIT;
-      strm_task_push(strm, cb, strm_null_value());
+      strm_task_push(strm_queue_task(strm, cb, strm_null_value()));
     }
   }
 }
@@ -165,7 +165,7 @@ readline_cb(strm_stream *strm, strm_value data)
       b->end = b->beg + len;
     }
     if (strm->flags & STRM_IO_NOWAIT) {
-      strm_task_push(strm, read_cb, strm_null_value());
+      strm_task_push(strm_queue_task(strm, read_cb, strm_null_value()));
     }
     else {
       io_kick(b->fd, strm, read_cb);

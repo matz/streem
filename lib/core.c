@@ -54,17 +54,11 @@ task_push(int tid, struct strm_queue_task *t)
 
   assert(threads != NULL);
   task_tid(s, tid);
-  strm_queue_push_task(threads[s->tid].queue, t);
+  strm_queue_push(threads[s->tid].queue, t);
 }
 
 void
-strm_task_push(strm_stream *s, strm_func func, strm_value data)
-{
-  task_push(-1, strm_queue_task(s, func, strm_null_value()));
-}
-
-void
-strm_task_push_task(struct strm_queue_task *t)
+strm_task_push(struct strm_queue_task *t)
 {
   task_push(-1, t);
 }
@@ -79,7 +73,7 @@ strm_emit(strm_stream *strm, strm_value data, strm_func func)
     d = d->nextd;
   }
   if (func) {
-    strm_task_push(strm, func, strm_null_value());
+    strm_task_push(strm_queue_task(strm, func, strm_null_value()));
   }
 }
 
@@ -103,7 +97,7 @@ strm_connect(strm_stream *src, strm_stream *dst)
   if (src->mode == strm_task_prod) {
     task_init();
     pipeline_count++;
-    strm_task_push(src, src->start_func, strm_null_value());
+    strm_task_push(strm_queue_task(src, src->start_func, strm_null_value()));
   }
   return 1;
 }
@@ -225,10 +219,10 @@ strm_close(strm_stream *strm)
   strm_stream *d = strm->dst;
 
   while (d) {
-    strm_task_push(d, (strm_func)strm_close, strm_null_value());
+    strm_task_push(strm_queue_task(d, (strm_func)strm_close, strm_null_value()));
     d = d->nextd;
   }
   if (strm->mode == strm_task_prod) {
-    strm_task_push(strm, pipeline_finish, strm_null_value());
+    strm_task_push(strm_queue_task(strm, pipeline_finish, strm_null_value()));
   }
 }
