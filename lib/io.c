@@ -41,7 +41,7 @@ io_pop(int fd)
   return epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL);
 }
 
-void strm_task_push_io(struct strm_queue_task *t);
+void strm_task_push_task(struct strm_queue_task *t);
 
 static void*
 io_loop(void *d)
@@ -56,7 +56,7 @@ io_loop(void *d)
     }
     for (i=0; i<n; i++) {
       struct strm_queue_task *t = events[i].data.ptr;
-      strm_task_push_io(t);
+      strm_task_push_task(t);
     }
   }
   return NULL;

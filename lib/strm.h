@@ -108,7 +108,7 @@ strm_queue* strm_queue_alloc(void);
 struct strm_queue_task* strm_queue_task(strm_stream *strm, strm_func func, strm_value data);
 void strm_queue_free(strm_queue *q);
 void strm_queue_push(strm_queue *q, strm_stream *strm, strm_func func, strm_value data);
-void strm_queue_push_io(strm_queue *q, struct strm_queue_task *t); /* low priority queue */
+void strm_queue_push_task(strm_queue *q, struct strm_queue_task *t);
 int strm_queue_exec(strm_queue *q);
 int strm_queue_size(strm_queue *q);
 int strm_queue_p(strm_queue *q);

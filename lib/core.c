@@ -47,28 +47,26 @@ task_tid(strm_stream *s, int tid)
   return s->tid;
 }
 
-void
-task_push(int tid, strm_stream *s, strm_func func, strm_value data)
+static void
+task_push(int tid, struct strm_queue_task *t)
 {
+  strm_stream *s = t->strm;
+
   assert(threads != NULL);
   task_tid(s, tid);
-  strm_queue_push(threads[s->tid].queue, s, func, data);
+  strm_queue_push_task(threads[s->tid].queue, t);
 }
 
 void
 strm_task_push(strm_stream *s, strm_func func, strm_value data)
 {
-  task_push(-1, s, func, data);
+  task_push(-1, strm_queue_task(s, func, strm_null_value()));
 }
 
 void
-strm_task_push_io(struct strm_queue_task *t)
+strm_task_push_task(struct strm_queue_task *t)
 {
-  strm_stream *s = t->strm;
-
-  assert(threads != NULL);
-  task_tid(s, -1);
-  strm_queue_push_io(threads[s->tid].queue, t);
+  task_push(-1, t);
 }
 
 void
@@ -77,11 +75,11 @@ strm_emit(strm_stream *strm, strm_value data, strm_func func)
   strm_stream *d = strm->dst;
 
   while (d) {
-    task_push(strm->tid+1, d, d->start_func, data);
+    task_push(strm->tid+1, strm_queue_task(d, d->start_func, data));
     d = d->nextd;
   }
   if (func) {
-    strm_task_push_io(strm_queue_task(strm, func, strm_null_value()));
+    strm_task_push(strm, func, strm_null_value());
   }
 }
 

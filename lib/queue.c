@@ -38,7 +38,27 @@ strm_queue_free(strm_queue *q)
 }
 
 static void
-queue_push_task(strm_queue *q, struct strm_queue_task *t)
+push_high_task(strm_queue *q, struct strm_queue_task *t)
+{
+  pthread_mutex_lock(&q->mutex);
+  if (q->fm) {
+    t->next = q->fm->next;
+    q->fm->next = t;
+  }
+  else {
+    if (q->fo)
+      q->fo->next = t;
+    q->fo = t;
+  }
+  if (!q->fi)
+    q->fi = t;
+  q->fm = t;
+  pthread_cond_signal(&q->cond);
+  pthread_mutex_unlock(&q->mutex);
+}
+
+static void
+push_low_task(strm_queue *q, struct strm_queue_task *t)
 {
   pthread_mutex_lock(&q->mutex);
   if (q->fi) {
@@ -53,20 +73,14 @@ queue_push_task(strm_queue *q, struct strm_queue_task *t)
 }
 
 void
-strm_queue_push_io(strm_queue *q, struct strm_queue_task *t)
+strm_queue_push_task(strm_queue *q, struct strm_queue_task *t)
 {
   if (!q) return;
-  pthread_mutex_lock(&q->mutex);
-  if (q->fm) {
-    t->next = q->fm->next;
-    q->fm->next = t;
-  }
-  if (!q->fi || q->fm == q->fi)
-    q->fi = t;
-  q->fm = t;
-  if (!q->fo) q->fo = t;
-  pthread_cond_signal(&q->cond);
-  pthread_mutex_unlock(&q->mutex);
+
+  if (t->strm->mode == strm_task_prod)
+    push_low_task(q, t);
+  else
+    push_high_task(q, t);
 }
 
 struct strm_queue_task*
@@ -86,8 +100,7 @@ strm_queue_task(strm_stream *strm, strm_func func, strm_value data)
 void
 strm_queue_push(strm_queue *q, strm_stream *strm, strm_func func, strm_value data)
 {
-  if (!q) return;
-  queue_push_task(q, strm_queue_task(strm, func, data));
+  strm_queue_push_task(q, strm_queue_task(strm, func, data));
 }
 
 int
