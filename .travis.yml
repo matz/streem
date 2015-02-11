@@ -1,3 +1,5 @@
+install:
+ - sudo apt-get -q install libgc-dev
 language: c
 compiler:
 - clang

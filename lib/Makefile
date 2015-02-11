@@ -4,7 +4,7 @@ TARGET:=$(TARGET).exe
 endif
 
 CFLAGS=-g -Wall
-LIBS=-lpthread
+LIBS=-lpthread -lgc
 SRC=$(wildcard *.c)
 OBJ=${SRC:.c=.o}
 DEPENDS=$(wildcard *.d)

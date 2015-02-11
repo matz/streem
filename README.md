@@ -49,6 +49,7 @@ it will be invoked for each element in the stream.
 * bison
 * flex
 * gcc / clang
+* libgc
 
 ### Run make
 ```
