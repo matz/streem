@@ -500,7 +500,7 @@ node_expr(strm_ctx* ctx, node* np)
       }
       if (v->t == STRM_VALUE_NIL || v->v.p == NULL ||
           (v->t == STRM_VALUE_STRING && *v->v.s == 0)) {
-        if (nif->opt_else == NULL)
+        if (nif->opt_else != NULL)
           node_expr_stmt(ctx, nif->opt_else);
       } else {
         node_expr_stmt(ctx, nif->compstmt);
