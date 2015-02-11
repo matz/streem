@@ -567,7 +567,6 @@ node_expr(strm_ctx* ctx, node* np)
         if (lhs->t == STRM_VALUE_DOUBLE && rhs->t == STRM_VALUE_DOUBLE) {
           strm_value* new = malloc(sizeof(strm_value));
           new->t = STRM_VALUE_BOOL;
-          /* TODO: zero divide */
           if (*(nop->op+1) == '=')
             new->v.b = lhs->v.d <= rhs->v.d;
           else
@@ -581,7 +580,6 @@ node_expr(strm_ctx* ctx, node* np)
         if (lhs->t == STRM_VALUE_DOUBLE && rhs->t == STRM_VALUE_DOUBLE) {
           strm_value* new = malloc(sizeof(strm_value));
           new->t = STRM_VALUE_BOOL;
-          /* TODO: zero divide */
           if (*(nop->op+1) == '=')
             new->v.b = lhs->v.d >= rhs->v.d;
           else
@@ -692,7 +690,7 @@ strm_cputs(strm_ctx* ctx, FILE* out, strm_array* args) {
         break;
       }
     } else {
-        fprintf(out, "nil");
+      fprintf(out, "nil");
     }
   }
   fprintf(out, "\n");
