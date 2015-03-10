@@ -1,4 +1,5 @@
 #include "strm.h"
+#include "khash.h"
 
 #ifdef NO_READONLY_DATA_CHECK
 
@@ -20,28 +21,31 @@ readonly_data_p(const char *p)
 }
 #endif
 
-struct strm_string*
-strm_str_new(const char *p, size_t len)
+static struct strm_string*
+strm_str_alloc(const char *p, size_t len)
 {
-  struct strm_string *str;
+  struct strm_string *str = malloc(sizeof(struct strm_string));
 
-  if (readonly_data_p(p)) {
-    str = malloc(sizeof(struct strm_string));
-    str->ptr = p;
-  }
-  else {
-    str = malloc(sizeof(struct strm_string)+len);
-    char *buf = (char*)&str[1]; 
-
-    if (p) {
-      memcpy(buf, p, len);
-    }
-    str->ptr = buf;
-  }
+  str->ptr = p;
   str->len = len;
   str->type = STRM_OBJ_STRING;
 
   return str;
+}
+
+struct strm_string*
+strm_str_new(const char *p, size_t len)
+{
+  if (readonly_data_p(p)) {
+    return strm_str_alloc(p, len);
+  }
+  else {
+    char *buf = malloc(len);
+    if (p) {
+      memcpy(buf, p, len);
+    }
+    return strm_str_alloc(buf, len);
+  }
 }
 
 int
