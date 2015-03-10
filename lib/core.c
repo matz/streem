@@ -67,10 +67,12 @@ void
 strm_emit(strm_stream *strm, strm_value data, strm_func func)
 {
   strm_stream *d = strm->dst;
+  int tid = strm->tid;
 
   while (d) {
-    task_push(strm->tid+1, strm_queue_task(d, d->start_func, data));
+    task_push(tid, strm_queue_task(d, d->start_func, data));
     d = d->nextd;
+    tid++;
   }
   if (func) {
     strm_task_push(strm_queue_task(strm, func, strm_null_value()));
