@@ -1,9 +1,9 @@
 #include "strm.h"
 
-#ifdef NO_ETEXT_EDATA
+#ifdef NO_READONLY_DATA_CHECK
 
 static inline int
-ro_data_p(const char *s)
+readonly_data_p(const char *s)
 {
   return 0;
 }
