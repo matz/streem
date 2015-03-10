@@ -43,3 +43,11 @@ strm_str_new(const char *p, size_t len)
 
   return str;
 }
+
+int
+strm_str_eq(struct strm_string *a, struct strm_string *b)
+{
+  if (a->len != b->len) return FALSE;
+  if (memcmp(a->ptr, b->ptr, a->len) == 0) return TRUE;
+  return FALSE;
+}
