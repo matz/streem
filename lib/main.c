@@ -34,6 +34,7 @@ str_toupper(strm_stream *strm, strm_value p)
     t++;
     s++;
   }
+  /* buf will be freed by libgc */
   return strm_str_value(buf, str->len);
 }
 
