@@ -21,6 +21,38 @@ readonly_data_p(const char *p)
 }
 #endif
 
+struct sym_key {
+  const char *ptr;
+  size_t len;
+};
+
+static khint_t
+sym_hash(struct sym_key key)
+{
+  const char *s = key.ptr;
+  khint_t h = (khint_t)*s;
+  size_t len = key.len;
+
+  s++;
+  while (len--) {
+    h = (h << 5) - h + (khint_t)*s++;
+  }
+  return h;
+}
+
+static khint_t
+sym_eq(struct sym_key a, struct sym_key b)
+{
+  if (a.len != b.len) return FALSE;
+  if (memcmp(a.ptr, b.ptr, a.len) == 0) return TRUE;
+  return FALSE;
+}
+
+
+KHASH_INIT(sym, struct sym_key, struct strm_string*, 1, sym_hash, sym_eq);
+
+static khash_t(sym) *sym_table;
+
 static struct strm_string*
 strm_str_alloc(const char *p, size_t len)
 {
@@ -36,15 +68,44 @@ strm_str_alloc(const char *p, size_t len)
 struct strm_string*
 strm_str_new(const char *p, size_t len)
 {
-  if (readonly_data_p(p)) {
-    return strm_str_alloc(p, len);
+  khiter_t k;
+  struct sym_key key;
+
+  if (!sym_table) {
+    sym_table = kh_init(sym);
+  }
+  key.ptr = p;
+  key.len = len;
+  k = kh_get(sym, sym_table, key);
+
+  if (k != kh_end(sym_table)) { /* found */
+    return kh_value(sym_table, k);
   }
   else {
-    char *buf = malloc(len);
-    if (p) {
-      memcpy(buf, p, len);
+    struct strm_string *str;
+    struct sym_key key;
+    int ret;
+
+    key.len = len;
+    /* allocate strm_string */
+    if (readonly_data_p(p)) {
+      key.ptr = p;
+      str = strm_str_alloc(p, len);
     }
-    return strm_str_alloc(buf, len);
+    else {
+      char *buf = malloc(len);
+      if (p) {
+        memcpy(buf, p, len);
+      }
+      else {
+        memset(buf, 0, len);
+      }
+      key.ptr = buf;
+      str = strm_str_alloc(buf, len);
+    }
+    k = kh_put(sym, sym_table, key, &ret);
+    kh_value(sym_table, k) = str;
+    return str;
   }
 }
 
