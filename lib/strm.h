@@ -4,6 +4,17 @@
 #include <string.h>
 #include <stdint.h>
 
+#ifndef FALSE
+# define FALSE 0
+#elif FALSE
+# error FALSE must be false
+#endif
+#ifndef TRUE
+# define TRUE 1
+#elif !TRUE
+# error TRUE must be true
+#endif
+
 /* ----- Values */
 enum strm_value_type {
   STRM_VALUE_BOOL,
