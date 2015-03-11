@@ -1,5 +1,6 @@
 #include "strm.h"
 #include "khash.h"
+#include <pthread.h>
 
 #ifdef NO_READONLY_DATA_CHECK
 
@@ -51,6 +52,7 @@ sym_eq(struct sym_key a, struct sym_key b)
 
 KHASH_INIT(sym, struct sym_key, struct strm_string*, 1, sym_hash, sym_eq);
 
+static pthread_mutex_t sym_mutex = PTHREAD_MUTEX_INITIALIZER;
 static khash_t(sym) *sym_table;
 
 static struct strm_string*
@@ -77,9 +79,11 @@ strm_str_new(const char *p, size_t len)
   }
   key.ptr = p;
   key.len = len;
+  pthread_mutex_lock(&sym_mutex);
   k = kh_put(sym, sym_table, key, &ret);
 
   if (ret == 0) {               /* found */
+    pthread_mutex_unlock(&sym_mutex);
     return kh_value(sym_table, k);
   }
   else {
@@ -100,6 +104,8 @@ strm_str_new(const char *p, size_t len)
       str = strm_str_alloc(buf, len);
     }
     kh_value(sym_table, k) = str;
+    pthread_mutex_unlock(&sym_mutex);
+
     return str;
   }
 }
