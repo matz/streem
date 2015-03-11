@@ -70,26 +70,23 @@ strm_str_new(const char *p, size_t len)
 {
   khiter_t k;
   struct sym_key key;
+  int ret;
 
   if (!sym_table) {
     sym_table = kh_init(sym);
   }
   key.ptr = p;
   key.len = len;
-  k = kh_get(sym, sym_table, key);
+  k = kh_put(sym, sym_table, key, &ret);
 
-  if (k != kh_end(sym_table)) { /* found */
+  if (ret == 0) {               /* found */
     return kh_value(sym_table, k);
   }
   else {
     struct strm_string *str;
-    struct sym_key key;
-    int ret;
 
-    key.len = len;
     /* allocate strm_string */
     if (readonly_data_p(p)) {
-      key.ptr = p;
       str = strm_str_alloc(p, len);
     }
     else {
@@ -100,10 +97,8 @@ strm_str_new(const char *p, size_t len)
       else {
         memset(buf, 0, len);
       }
-      key.ptr = buf;
       str = strm_str_alloc(buf, len);
     }
-    k = kh_put(sym, sym_table, key, &ret);
     kh_value(sym_table, k) = str;
     return str;
   }
@@ -112,6 +107,7 @@ strm_str_new(const char *p, size_t len)
 int
 strm_str_eq(struct strm_string *a, struct strm_string *b)
 {
+  if (a == b) return TRUE;
   if (a->len != b->len) return FALSE;
   if (memcmp(a->ptr, b->ptr, a->len) == 0) return TRUE;
   return FALSE;
