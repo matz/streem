@@ -113,8 +113,13 @@ strm_str_new(const char *p, size_t len)
 int
 strm_str_eq(struct strm_string *a, struct strm_string *b)
 {
+#ifdef NON_INTERNING_STRING  
   if (a == b) return TRUE;
   if (a->len != b->len) return FALSE;
   if (memcmp(a->ptr, b->ptr, a->len) == 0) return TRUE;
   return FALSE;
+#else
+  /* pointer comparison is OK if every string is interned */
+  return (a == b);
+#endif
 }
