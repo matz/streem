@@ -108,6 +108,7 @@ strm_str_new(const char *p, size_t len)
       str = strm_str_alloc(buf, len);
     }
     kh_value(sym_table, k) = str;
+    str->flags |= STRM_STR_INTERNED;
     pthread_mutex_unlock(&sym_mutex);
 
     return str;
@@ -117,13 +118,12 @@ strm_str_new(const char *p, size_t len)
 int
 strm_str_eq(struct strm_string *a, struct strm_string *b)
 {
-#ifdef NON_INTERNING_STRING  
   if (a == b) return TRUE;
+  if (a->flags & b->flags & STRM_STR_INTERNED) {
+    /* pointer comparison is OK if strings are interned */
+    return FALSE;
+  }
   if (a->len != b->len) return FALSE;
   if (memcmp(a->ptr, b->ptr, a->len) == 0) return TRUE;
   return FALSE;
-#else
-  /* pointer comparison is OK if every string is interned */
-  return (a == b);
-#endif
 }

@@ -69,6 +69,8 @@ struct strm_string {
   size_t len;
 };
 
+#define STRM_STR_INTERNED 1
+
 struct strm_string *strm_str_new(const char*,size_t len);
 #define strm_str_value(p,len) strm_ptr_value(strm_str_new(p,len))
 #define strm_value_str(v) (struct strm_string*)strm_value_obj(v, STRM_OBJ_STRING)
