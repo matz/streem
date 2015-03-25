@@ -81,6 +81,24 @@ strm_value_flt(strm_value v)
 }
 
 int
+strm_ptr_eq(struct strm_object *a, struct strm_object *b)
+{
+  if (a == b) return TRUE;
+  if (a == NULL) return FALSE;
+  else {
+    if (a->type != b->type) return FALSE;
+    switch (a->type) {
+    case STRM_OBJ_ARRAY:
+      return strm_ary_eq((struct strm_array*)a, (struct strm_array*)b);
+    case STRM_OBJ_STRING:
+      return strm_str_eq((struct strm_string*)a, (struct strm_string*)b);
+    default:
+      return FALSE;
+    }
+  }
+}
+
+int
 strm_value_eq(strm_value a, strm_value b)
 {
   if (a.type != b.type) return FALSE;
@@ -92,22 +110,7 @@ strm_value_eq(strm_value a, strm_value b)
   case STRM_VALUE_FLT:
     return a.val.f == b.val.f;
   case STRM_VALUE_PTR:
-    if (a.val.p == b.val.p) return TRUE;
-    else if (a.val.p == NULL) return FALSE;
-    else {
-      enum strm_obj_type a_type = ((struct strm_object*)a.val.p)->type;
-      enum strm_obj_type b_type = ((struct strm_object*)b.val.p)->type;
-
-      if (a_type != b_type) return FALSE;
-      switch (a_type) {
-      case STRM_OBJ_ARRAY:
-        return strm_ary_eq(a.val.p, b.val.p);
-      case STRM_OBJ_STRING:
-        return strm_str_eq(a.val.p, b.val.p);
-      default:
-        return FALSE;
-      }
-    }
+    return strm_ptr_eq(a.val.p, b.val.p);
   default:
     return FALSE;
   }
