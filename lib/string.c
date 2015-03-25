@@ -24,6 +24,7 @@ readonly_data_p(const char *p)
 
 struct sym_key {
   const char *ptr;
+  khint_t hash;
   size_t len;
 };
 
@@ -31,13 +32,15 @@ static khint_t
 sym_hash(struct sym_key key)
 {
   const char *s = key.ptr;
-  khint_t h = (khint_t)*s;
+  khint_t h;
   size_t len = key.len;
 
-  s++;
+  if (key.hash) return key.hash;
+  h = *s++;
   while (len--) {
     h = (h << 5) - h + (khint_t)*s++;
   }
+  key.hash = h;
   return h;
 }
 
@@ -45,10 +48,10 @@ static khint_t
 sym_eq(struct sym_key a, struct sym_key b)
 {
   if (a.len != b.len) return FALSE;
+  if (a.hash && a.hash != b.hash) return FALSE;
   if (memcmp(a.ptr, b.ptr, a.len) == 0) return TRUE;
   return FALSE;
 }
-
 
 KHASH_INIT(sym, struct sym_key, struct strm_string*, 1, sym_hash, sym_eq);
 
@@ -79,6 +82,7 @@ strm_str_new(const char *p, size_t len)
   }
   key.ptr = p;
   key.len = len;
+  key.hash = 0;
   pthread_mutex_lock(&sym_mutex);
   k = kh_put(sym, sym_table, key, &ret);
 
