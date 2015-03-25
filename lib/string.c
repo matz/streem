@@ -22,6 +22,8 @@ readonly_data_p(const char *p)
 }
 #endif
 
+extern int strm_event_loop_started;
+
 struct sym_key {
   const char *ptr;
   khint_t hash;
@@ -59,23 +61,40 @@ static pthread_mutex_t sym_mutex = PTHREAD_MUTEX_INITIALIZER;
 static khash_t(sym) *sym_table;
 
 static struct strm_string*
-strm_str_alloc(const char *p, size_t len)
+str_new(const char *p, size_t len)
 {
-  struct strm_string *str = malloc(sizeof(struct strm_string));
+  struct strm_string *str;
 
-  str->ptr = p;
+  if (readonly_data_p(p)) {
+    str = malloc(sizeof(struct strm_string));
+    str->ptr = p;
+  }
+  else {
+    char *buf;
+
+    str = malloc(sizeof(struct strm_string)+len);
+    buf = (char*)&str[1];
+    if (p) {
+      memcpy(buf, p, len);
+    }
+    else {
+      memset(buf, 0, len);
+    }
+    str->ptr = buf;
+  }
   str->len = len;
   str->type = STRM_OBJ_STRING;
 
   return str;
 }
 
-struct strm_string*
-strm_str_new(const char *p, size_t len)
+static struct strm_string*
+str_intern(const char *p, size_t len)
 {
   khiter_t k;
   struct sym_key key;
   int ret;
+  struct strm_string *str;
 
   if (!sym_table) {
     sym_table = kh_init(sym);
@@ -83,36 +102,46 @@ strm_str_new(const char *p, size_t len)
   key.ptr = p;
   key.len = len;
   key.hash = 0;
-  pthread_mutex_lock(&sym_mutex);
   k = kh_put(sym, sym_table, key, &ret);
 
   if (ret == 0) {               /* found */
-    pthread_mutex_unlock(&sym_mutex);
     return kh_value(sym_table, k);
   }
-  else {
-    struct strm_string *str;
+  str = str_new(p, len);
+  str->flags |= STRM_STR_INTERNED;
 
-    /* allocate strm_string */
-    if (readonly_data_p(p)) {
-      str = strm_str_alloc(p, len);
-    }
-    else {
-      char *buf = malloc(len);
-      if (p) {
-        memcpy(buf, p, len);
-      }
-      else {
-        memset(buf, 0, len);
-      }
-      str = strm_str_alloc(buf, len);
-    }
-    kh_value(sym_table, k) = str;
-    str->flags |= STRM_STR_INTERNED;
-    pthread_mutex_unlock(&sym_mutex);
+  return str;
+}
 
-    return str;
+#ifndef STRM_STR_INTERN_LIMIT
+#define STRM_STR_INTERN_LIMIT 64
+#endif
+
+struct strm_string*
+strm_str_new(const char *p, size_t len)
+{
+  if (!strm_event_loop_started) {
+    /* single thread mode */
+    if (len < STRM_STR_INTERN_LIMIT || readonly_data_p(p)) {
+      return str_intern(p, len);
+    }
   }
+  return str_new(p, len);
+}
+
+struct strm_string*
+strm_str_intern(const char *p, size_t len)
+{
+  struct strm_string *str;
+
+  if (!strm_event_loop_started) {
+    return str_intern(p, len);
+  }
+  pthread_mutex_lock(&sym_mutex);
+  str = str_intern(p, len);
+  pthread_mutex_unlock(&sym_mutex);
+
+  return str;
 }
 
 int

@@ -11,6 +11,9 @@ static int pipeline_count = 0;
 static pthread_mutex_t pipeline_mutex;
 static pthread_cond_t pipeline_cond;
 
+/* internal variable to tell multi-threaded mode */
+int strm_event_loop_started = FALSE;
+
 #include <assert.h>
 
 static void task_init();
@@ -151,6 +154,7 @@ task_init()
 
   if (threads) return;
 
+  strm_event_loop_started = TRUE;
   strm_init_io_loop();
 
   pthread_mutex_init(&pipeline_mutex, NULL);
