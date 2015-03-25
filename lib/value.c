@@ -79,3 +79,36 @@ strm_value_flt(strm_value v)
   assert(v.type == STRM_VALUE_FLT);
   return v.val.f;
 }
+
+int
+strm_value_eq(strm_value a, strm_value b)
+{
+  if (a.type != b.type) return FALSE;
+
+  switch (a.type) {
+  case STRM_VALUE_BOOL:
+  case STRM_VALUE_INT:
+    return a.val.i == b.val.i;
+  case STRM_VALUE_FLT:
+    return a.val.f == b.val.f;
+  case STRM_VALUE_PTR:
+    if (a.val.p == b.val.p) return TRUE;
+    else if (a.val.p == NULL) return FALSE;
+    else {
+      enum strm_obj_type a_type = ((struct strm_object*)a.val.p)->type;
+      enum strm_obj_type b_type = ((struct strm_object*)b.val.p)->type;
+
+      if (a_type != b_type) return FALSE;
+      switch (a_type) {
+      case STRM_OBJ_ARRAY:
+        return strm_ary_eq(a.val.p, b.val.p);
+      case STRM_OBJ_STRING:
+        return strm_str_eq(a.val.p, b.val.p);
+      default:
+        return FALSE;
+      }
+    }
+  default:
+    return FALSE;
+  }
+}

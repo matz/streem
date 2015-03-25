@@ -44,6 +44,8 @@ long strm_value_int(strm_value);
 int strm_value_bool(strm_value);
 double strm_value_flt(strm_value);
 
+int strm_value_eq(strm_value, strm_value);
+
 enum strm_obj_type {
   STRM_OBJ_ARRAY,
   STRM_OBJ_MAP,
@@ -74,6 +76,21 @@ struct strm_string {
 struct strm_string *strm_str_new(const char*,size_t len);
 #define strm_str_value(p,len) strm_ptr_value(strm_str_new(p,len))
 #define strm_value_str(v) (struct strm_string*)strm_value_obj(v, STRM_OBJ_STRING)
+
+int strm_str_eq(struct strm_string *a, struct strm_string *b);
+
+/* ----- Arrays */
+struct strm_array {
+  STRM_OBJ_HEADER;
+  const strm_value *ptr;
+  size_t len;
+};
+
+struct strm_array *strm_ary_new(const strm_value*,size_t len);
+#define strm_ary_value(p,len) strm_ptr_value(strm_ary_new(p,len))
+#define strm_value_ary(v) (struct strm_array*)strm_value_obj(v, STRM_OBJ_ARRAY)
+
+int strm_ary_eq(struct strm_array *a, struct strm_array *b);
 
 /* ----- Tasks */
 typedef enum {
