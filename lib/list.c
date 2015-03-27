@@ -34,7 +34,7 @@ list_ary_eq(struct strm_list *a, struct strm_array *b)
   for (i=0, len=b->len; a && i<len; i++) {
     if (!strm_value_eq(a->car, b->ptr[i])) return FALSE;
     a = a->cdr;
-    if (a->type == STRM_OBJ_ARRAY) {
+    if (a && a->type == STRM_OBJ_ARRAY) {
       for (j=0; i<len; i++, j++) {
         struct strm_array *a2 = (struct strm_array*)a;
         if (!strm_value_eq(a2->ptr[j], b->ptr[i])) return FALSE;
