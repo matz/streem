@@ -45,6 +45,7 @@ TRAIL  ([\t \n]|"#"[^\n]*"\n")*
 "<-"{TRAIL} LEX_RETURN(op_lasgn);
 "->"{TRAIL} LEX_RETURN(op_rasgn);
 "="{TRAIL}  LEX_RETURN('=');
+"::"{TRAIL} LEX_RETURN(op_colon2);
 
 if{TRAIL}           LEX_RETURN(keyword_if);
 {TRAIL}else{TRAIL}  LEX_RETURN(keyword_else);

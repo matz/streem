@@ -59,6 +59,7 @@ static void yyerror(parser_state *p, const char *s);
         op_or
         op_bar
         op_amper
+        op_colon2
 
 %token
         lit_number
