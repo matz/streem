@@ -1,6 +1,13 @@
 #include "strm.h"
 #include <assert.h>
 
+/* list is a polymorphic data structure which is either:
+   - array of strm_value (struct strm_array)
+   - linked list whose car is strm_value, and cdr is list or array or nil
+   all functions that take struct strm_list* as arguments, should work for
+   casted struct strm_array* as well.
+*/
+
 struct strm_list*
 strm_list_new(const strm_value car, struct strm_list *cdr)
 {
