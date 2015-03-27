@@ -85,3 +85,28 @@ strm_list_nth(struct strm_list *list, size_t n)
     }
   }
 }
+
+struct strm_list*
+strm_list_cons(strm_value car, strm_value cdr)
+{
+  if (cdr.type == STRM_VALUE_PTR) {
+    if (!cdr.val.p) {
+      return strm_list_new(car, NULL);
+    }
+    else {
+      struct strm_object *obj = cdr.val.p;
+      enum strm_obj_type type = obj->type;
+      if (type == STRM_OBJ_LIST || type == STRM_OBJ_ARRAY) {
+        return strm_list_new(car, strm_value_list(cdr));
+      }
+    }
+  }
+
+  {
+    strm_value buf[2];
+
+    buf[0] = car;
+    buf[1] = cdr;
+    return (struct strm_list*)strm_ary_new(buf, 2);
+  }
+}
