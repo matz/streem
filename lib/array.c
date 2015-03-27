@@ -6,7 +6,7 @@ strm_ary_new(const strm_value *p, size_t len)
   struct strm_array *ary;
   strm_value *buf;
 
-  ary = malloc(sizeof(struct strm_string)+sizeof(strm_value)*len);
+  ary = malloc(sizeof(struct strm_array)+sizeof(strm_value)*len);
   buf = (strm_value*)&ary[1];
 
   if (p) {
