@@ -117,9 +117,15 @@ dump_node(node* np, int indent) {
 int
 main(int argc, const char**argv)
 {
-  int i, n = 0;
+  int i, n = 0, verbose = 0;
   parser_state state;
 
+  if (argc > 1 && argv[1][0] == '-') {
+    if (argv[1][1] == 'v') {
+      argc--; argv++;
+      verbose = 1;
+    }
+  }
   strm_parse_init(&state);
 
   if (argc == 1) {              /* no args */
@@ -132,7 +138,9 @@ main(int argc, const char**argv)
   }
 
   if (n == 0) {
-    /* dump_node(state.lval, 0); */
+    if (verbose) {
+      dump_node(state.lval, 0);
+    }
     strm_run(&state);
   }
   strm_parse_free(&state);
