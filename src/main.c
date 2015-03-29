@@ -117,14 +117,26 @@ dump_node(node* np, int indent) {
 int
 main(int argc, const char**argv)
 {
-  int i, n = 0, verbose = 0;
+  const char *prog = argv[0];
+  int i, n = 0, verbose = 0, check = 0;
   parser_state state;
 
-  if (argc > 1 && argv[1][0] == '-') {
-    if (argv[1][1] == 'v') {
-      argc--; argv++;
-      verbose = 1;
+  while (argc > 1 && argv[1][0] == '-') {
+    const char *s = argv[1]+1;
+    while (*s) {
+      switch (*s) {
+      case 'v':
+        verbose = 1;
+        break;
+      case 'c':
+        check = 1;
+        break;
+      default:
+        fprintf(stderr, "%s: unknown option -%c\n", prog, *s);
+      }
+      s++;
     }
+    argc--; argv++;
   }
   strm_parse_init(&state);
 
@@ -141,7 +153,15 @@ main(int argc, const char**argv)
     if (verbose) {
       dump_node(state.lval, 0);
     }
-    strm_run(&state);
+    if (check) {
+      puts("Syntax OK");
+    }
+    else {
+      strm_run(&state);
+    }
+  }
+  else if (check) {
+    puts("Syntax NG");
   }
   strm_parse_free(&state);
   return n > 0 ? EXIT_FAILURE : EXIT_SUCCESS;

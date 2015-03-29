@@ -15,7 +15,7 @@ all : $(TARGET)
 .PHONY : all
 
 test : all
-	$(TARGET) $(TESTS)
+	$(TARGET) -c $(TESTS)
 
 .PHONY : test
 
