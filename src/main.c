@@ -16,7 +16,7 @@ dump_node(node* np, int indent) {
   switch (np->type) {
   case NODE_ARGS:
     {
-      node_array* arr0 = np->value.v.p;
+      node_values* arr0 = np->value.v.p;
       for (i = 0; i < arr0->len; i++)
         dump_node(arr0->data[i], indent+1);
     }
@@ -86,7 +86,7 @@ dump_node(node* np, int indent) {
     case STRM_VALUE_ARRAY:
       printf("VALUE(ARRAY):\n");
       {
-        node_array* arr0 = np->value.v.p;
+        node_values* arr0 = np->value.v.p;
         for (i = 0; i < arr0->len; i++)
           dump_node(arr0->data[i], indent+1);
       }
@@ -94,7 +94,7 @@ dump_node(node* np, int indent) {
     case STRM_VALUE_MAP:
       printf("VALUE(MAP):\n");
       {
-        node_array* arr0 = np->value.v.p;
+        node_values* arr0 = np->value.v.p;
         for (i = 0; i < arr0->len; i++) {
           node* pair = arr0->data[i];
           node_pair* pair0 = pair->value.v.p;

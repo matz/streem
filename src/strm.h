@@ -37,7 +37,7 @@ typedef struct {
   int len;
   int max;
   void** data;
-} strm_array;
+} strm_values;
 
 KHASH_MAP_INIT_STR(value, strm_value*)
 
@@ -63,7 +63,7 @@ typedef struct parser_state {
   strm_ctx ctx;
 } parser_state;
 
-typedef strm_value* (*strm_cfunc)(strm_ctx*, strm_array*);
+typedef strm_value* (*strm_cfunc)(strm_ctx*, strm_values*);
 
 int strm_parse_init(parser_state*);
 void strm_parse_free(parser_state*);

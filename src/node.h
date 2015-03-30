@@ -17,6 +17,7 @@ typedef enum {
   NODE_CONST,
   NODE_OP,
   NODE_CALL,
+  NODE_ARRAY,
 } node_type;
 
 typedef struct {
@@ -29,7 +30,7 @@ typedef struct {
   node* value;
 } node_pair;
 
-typedef strm_array node_array;
+typedef strm_values node_values;
 
 typedef struct {
   node* cond;

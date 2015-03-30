@@ -47,25 +47,25 @@ node_value_new(node* v)
   return NULL;
 }
 
-strm_array*
-strm_array_new() {
+node_values*
+node_values_new() {
   /* TODO: error check */
-  strm_array* arr = malloc(sizeof(strm_array));
-  arr->len = 0;
-  arr->max = 0;
-  arr->data = NULL;
-  return arr;
+  node_values* v = malloc(sizeof(node_values));
+  v->len = 0;
+  v->max = 0;
+  v->data = NULL;
+  return v;
 }
 
 void
-strm_array_add(strm_array* arr, void* data) {
-  if (arr->len == arr->max) {
-    arr->max = arr->len + 10;
-    arr->data = realloc(arr->data, sizeof(void*) * arr->max);
+node_values_add(node_values* v, void* data) {
+  if (v->len == v->max) {
+    v->max = v->len + 10;
+    v->data = realloc(v->data, sizeof(void*) * v->max);
   }
   /* TODO: error check */
-  arr->data[arr->len] = data;
-  arr->len++;
+  v->data[v->len] = data;
+  v->len++;
 }
 
 node*
@@ -73,9 +73,9 @@ node_array_new()
 {
   /* TODO: error check */
   node* np = malloc(sizeof(node));
-  np->type = NODE_VALUE;
-  np->value.t = STRM_VALUE_ARRAY;
-  np->value.v.p = strm_array_new();
+  np->type = NODE_ARRAY;
+  np->value.t = STRM_VALUE_USER;
+  np->value.v.p = node_values_new();
   return np;
 }
 
@@ -90,18 +90,18 @@ node_array_of(node* np)
 void
 node_array_add(node* arr, node* np)
 {
-  node_array* arr0 = arr->value.v.p;
-  strm_array_add(arr0, np);
+  node_values* v = arr->value.v.p;
+  node_values_add(v, np);
 }
 
 void
 node_array_free(node* np)
 {
   int i;
-  node_array* arr = np->value.v.p;
-  for (i = 0; i < arr->len; i++)
-    node_free(arr->data[i]);
-  free(arr);
+  node_values* v = np->value.v.p;
+  for (i = 0; i < v->len; i++)
+    node_free(v->data[i]);
+  free(v);
   free(np);
 }
 
@@ -122,16 +122,16 @@ node_pair_new(node* key, node* value)
 node*
 node_map_new()
 {
-  node_array* arr = malloc(sizeof(node_array));
+  node_values* v = malloc(sizeof(node_values));
   /* TODO: error check */
-  arr->len = 0;
-  arr->max = 0;
-  arr->data = NULL;
+  v->len = 0;
+  v->max = 0;
+  v->data = NULL;
 
   node* np = malloc(sizeof(node));
   np->type = NODE_VALUE;
   np->value.t = STRM_VALUE_MAP;
-  np->value.v.p = arr;
+  np->value.v.p = v;
   return np;
 }
 
@@ -147,16 +147,16 @@ void
 node_map_free(node* np)
 {
   int i;
-  node_array* arr = np->value.v.p;
-  for (i = 0; i < arr->len; i++) {
-    node* pair = arr->data[i];
+  node_values* v = np->value.v.p;
+  for (i = 0; i < v->len; i++) {
+    node* pair = v->data[i];
     node_pair* npair = pair->value.v.p;
     node_free(npair->key);
     node_free(npair->value);
     free(npair);
     free(pair);
   }
-  free(arr);
+  free(v);
   free(np);
 }
 
@@ -459,16 +459,16 @@ strm_value*
 node_expr_stmt(strm_ctx* ctx, node* np)
 {
   int i;
-  node_array* arr = np->value.v.p;
-  strm_value* v = NULL;
-  for (i = 0; i < arr->len; i++) {
+  node_values* v = np->value.v.p;
+  strm_value* val = NULL;
+  for (i = 0; i < v->len; i++) {
     if (ctx->exc != NULL) {
       return NULL;
     }
     /* TODO: garbage correct previous value in this loop */
-    v = node_expr(ctx, arr->data[i]);
+    val = node_expr(ctx, v->data[i]);
   }
-  return v;
+  return val;
 }
 
 strm_value*
@@ -620,12 +620,12 @@ node_expr(strm_ctx* ctx, node* np)
         if (k != kh_end(ctx->env)) {
           strm_value* v = kh_value(ctx->env, k);
           if (v->t == STRM_VALUE_CFUNC) {
-            node_array* arr0 = ncall->args->value.v.p;
-            strm_array* arr1 = strm_array_new();
+            node_values* v0 = ncall->args->value.v.p;
+            node_values* v1 = node_values_new();
             int i;
-            for (i = 0; i < arr0->len; i++)
-              strm_array_add(arr1, node_expr(ctx, arr0->data[i]));
-            ((strm_cfunc) v->v.p)(ctx, arr1);
+            for (i = 0; i < v0->len; i++)
+              node_values_add(v1, node_expr(ctx, v0->data[i]));
+            ((strm_cfunc) v->v.p)(ctx, v1);
           }
         } else {
           strm_raise(ctx, "function not found");
@@ -661,7 +661,7 @@ node_expr(strm_ctx* ctx, node* np)
 }
 
 strm_value*
-strm_cputs(strm_ctx* ctx, FILE* out, strm_array* args) {
+strm_cputs(strm_ctx* ctx, FILE* out, node_values* args) {
   int i;
   for (i = 0; i < args->len; i++) {
     strm_value* v;
@@ -698,7 +698,7 @@ strm_cputs(strm_ctx* ctx, FILE* out, strm_array* args) {
 }
 
 strm_value*
-strm_puts(strm_ctx* ctx, strm_array* args) {
+strm_puts(strm_ctx* ctx, node_values* args) {
   return strm_cputs(ctx, stdout, args);
 }
 
@@ -716,9 +716,9 @@ strm_run(parser_state* p)
 
   node_expr_stmt(&p->ctx, (node*)p->lval);
   if (p->ctx.exc != NULL) {
-    strm_array* arr = strm_array_new();
-    strm_array_add(arr, p->ctx.exc->arg);
-    strm_cputs(&p->ctx, stderr, arr);
+    node_values* v = node_values_new();
+    node_values_add(v, p->ctx.exc->arg);
+    strm_cputs(&p->ctx, stderr, v);
     /* TODO: garbage correct previous exception value */
     p->ctx.exc = NULL;
   }
