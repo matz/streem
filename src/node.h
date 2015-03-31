@@ -104,7 +104,7 @@ typedef struct {
 
 typedef struct {
   node* lhs;
-  char* op;
+  const char* op;
   node* rhs;
 } node_op;
 
@@ -136,7 +136,7 @@ extern node* node_pair_new(node*, node*);
 extern node* node_map_new();
 extern node* node_map_of(node*);
 extern node* node_let_new(node*, node*);
-extern node* node_op_new(char*, node*, node*);
+extern node* node_op_new(const char*, node*, node*);
 extern node* node_block_new(node*, node*);
 extern node* node_call_new(node*, node*, node*, node*);
 extern node* node_int_new(long);

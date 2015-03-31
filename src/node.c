@@ -142,7 +142,7 @@ node_let_new(node* lhs, node* rhs)
 }
 
 node*
-node_op_new(char* op, node* lhs, node* rhs)
+node_op_new(const char* op, node* lhs, node* rhs)
 {
   node_op* nop = malloc(sizeof(node_op));
   nop->lhs = lhs;
