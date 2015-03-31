@@ -220,7 +220,7 @@ node_call_new(node* cond, node* ident, node* args, node* blk)
 }
 
 node*
-node_double_new(strm_double d)
+node_double_new(double d)
 {
   node* np = malloc(sizeof(node));
 

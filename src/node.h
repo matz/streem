@@ -79,7 +79,7 @@ extern node* node_let_new(node*, node*);
 extern node* node_op_new(char*, node*, node*);
 extern node* node_block_new(node*, node*);
 extern node* node_call_new(node*, node*, node*, node*);
-extern node* node_double_new(strm_double);
+extern node* node_double_new(double);
 extern node* node_string_new(strm_string);
 extern node* node_string_len_new(strm_string, size_t);
 extern node* node_if_new(node*, node*, node*);
