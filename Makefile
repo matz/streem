@@ -43,7 +43,7 @@ $(TARGET) : $(OBJS)
 clean :
 	rm -f src/y.output src/y.tab.c
 	rm -f src/lex.yy.c
-	rm -f src/*.o $(TARGET)
+	rm -f src/*.d src/*.o $(TARGET)
 .PHONY : clean
 
 -include $(DEPS)
