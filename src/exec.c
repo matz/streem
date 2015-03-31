@@ -180,7 +180,7 @@ node_expr(node_ctx* ctx, node* np)
       /* TODO: wip code of ident */
       node_call* ncall = np->value.v.p;
       if (ncall->ident != NULL) {
-        khint_t k = kh_get(value, ctx->env, (char*) ncall->ident->value.v.id);
+        khint_t k = kh_get(value, ctx->env, ncall->ident->value.v.id);
         if (k != kh_end(ctx->env)) {
           node_value* v = kh_value(ctx->env, k);
           if (v->t == NODE_VALUE_CFUNC) {
@@ -275,18 +275,25 @@ node_raise(node_ctx* ctx, const char* msg) {
   ctx->exc->arg->v.s = strdup0(msg);
 }
 
-int
-node_run(parser_state* p)
+void
+node_init(node_ctx* ctx)
 {
   int r;
   khiter_t k;
 
   static node_value vputs;
-  k = kh_put(value, p->ctx.env, "puts", &r);
+  node_id puts = node_ident_of("puts");
+
+  k = kh_put(value, ctx->env, puts, &r);
   vputs.t = NODE_VALUE_CFUNC;
   vputs.v.p = node_puts;
-  kh_value(p->ctx.env, k) = &vputs;
+  kh_value(ctx->env, k) = &vputs;
+}
 
+int
+node_run(parser_state* p)
+{
+  node_init(&p->ctx);
   node_expr_stmt(&p->ctx, (node*)p->lval);
   if (p->ctx.exc != NULL) {
     node_values* v = node_values_new();

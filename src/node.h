@@ -30,7 +30,7 @@ typedef struct {
   } v;
 } node_value;
 
-KHASH_MAP_INIT_STR(value, node_value*)
+KHASH_MAP_INIT_INT64(value, node_value*)
 
 typedef khash_t(value) node_env;
 
