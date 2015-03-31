@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdint.h>
+#include <assert.h>
 
 #ifndef FALSE
 # define FALSE 0
