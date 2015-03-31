@@ -10,12 +10,19 @@ endif
 
 TESTS=$(wildcard examples/*.strm)
 
+SRCS=$(wildcard src/*.c)
+OBJS:=$(SRCS:.c=.o=)
+DEPS:=$(OBJS:.o=.d=)
+
 all : $(TARGET)
 
 .PHONY : all
 
 test : all
 	$(TARGET) -c $(TESTS)
+
+%.o: %.c
+	$(CC) $(CFLAGS) -MMD -MP -c -o $@ $<
 
 .PHONY : test
 
@@ -26,10 +33,7 @@ src/lex.yy.c : src/lex.l
 	$(LEX) -osrc/lex.yy.c src/lex.l
 
 src/parse.o : src/y.tab.c src/lex.yy.c
-	$(CC) -g -c src/y.tab.c -o src/parse.o
-
-src/main.o : src/main.c
-	$(CC) $(CFLAGS) -c src/main.c -o src/main.o
+	$(CC) -g -MMD -MP -c src/y.tab.c -o src/parse.o
 
 $(TARGET) : src/parse.o src/node.o src/main.o
 	mkdir -p "$$(dirname $(TARGET))"
@@ -40,3 +44,5 @@ clean :
 	rm -f src/lex.yy.c
 	rm -f src/*.o $(TARGET)
 .PHONY : clean
+
+-include $(DEPS)
