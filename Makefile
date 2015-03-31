@@ -1,5 +1,6 @@
 YACC = bison -y
 LEX = flex
+CC = gcc
 TARGET = bin/streem
 CFLAGS = -g -Wall
 LIBS =
@@ -10,9 +11,9 @@ endif
 
 TESTS=$(wildcard examples/*.strm)
 
-SRCS=$(wildcard src/*.c)
-OBJS:=$(SRCS:.c=.o=)
-DEPS:=$(OBJS:.o=.d=)
+SRCS=$(filter-out src/y.tab.c src/lex.yy.c, $(wildcard src/*.c))
+OBJS:=$(SRCS:.c=.o) src/parse.o
+DEPS:=$(OBJS:.o=.d)
 
 all : $(TARGET)
 
@@ -35,9 +36,9 @@ src/lex.yy.c : src/lex.l
 src/parse.o : src/y.tab.c src/lex.yy.c
 	$(CC) -g -MMD -MP -c src/y.tab.c -o src/parse.o
 
-$(TARGET) : src/parse.o src/node.o src/main.o
+$(TARGET) : $(OBJS)
 	mkdir -p "$$(dirname $(TARGET))"
-	$(CC) $(CFLAGS) src/parse.o src/node.o src/main.o -o $(TARGET) $(LIBS)
+	$(CC) $(CFLAGS) $(OBJS) -o $(TARGET) $(LIBS)
 
 clean :
 	rm -f src/y.output src/y.tab.c
