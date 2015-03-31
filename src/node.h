@@ -65,6 +65,8 @@ typedef struct {
   node* rv;
 } node_return;
 
+typedef strm_value* (*node_cfunc)(strm_ctx*, strm_values*);
+
 extern node* node_value_new(node*);
 extern node* node_array_new();
 extern node* node_array_of(node*);

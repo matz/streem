@@ -63,8 +63,6 @@ typedef struct parser_state {
   strm_ctx ctx;
 } parser_state;
 
-typedef strm_value* (*strm_cfunc)(strm_ctx*, strm_values*);
-
 int strm_parse_init(parser_state*);
 void strm_parse_free(parser_state*);
 int strm_parse_file(parser_state*, const char*);

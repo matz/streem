@@ -625,7 +625,7 @@ node_expr(strm_ctx* ctx, node* np)
             int i;
             for (i = 0; i < v0->len; i++)
               node_values_add(v1, node_expr(ctx, v0->data[i]));
-            ((strm_cfunc) v->v.p)(ctx, v1);
+            ((node_cfunc) v->v.p)(ctx, v1);
           }
         } else {
           strm_raise(ctx, "function not found");
