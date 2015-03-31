@@ -71,19 +71,19 @@ dump_node(node* np, int indent) {
     break;
   case NODE_VALUE:
     switch (np->value.t) {
-    case STRM_VALUE_DOUBLE:
+    case NODE_VALUE_DOUBLE:
       printf("VALUE(NUMBER): %f\n", np->value.v.d);
       break;
-    case STRM_VALUE_STRING:
+    case NODE_VALUE_STRING:
       printf("VALUE(STRING): %s\n", np->value.v.s);
       break;
-    case STRM_VALUE_BOOL:
+    case NODE_VALUE_BOOL:
       printf("VALUE(BOOL): %s\n", np->value.v.i ? "true" : "false");
       break;
-    case STRM_VALUE_NIL:
+    case NODE_VALUE_NIL:
       printf("VALUE(NIL): nil\n");
       break;
-    case STRM_VALUE_ARRAY:
+    case NODE_VALUE_ARRAY:
       printf("VALUE(ARRAY):\n");
       {
         node_values* arr0 = np->value.v.p;
@@ -91,7 +91,7 @@ dump_node(node* np, int indent) {
           dump_node(arr0->data[i], indent+1);
       }
       break;
-    case STRM_VALUE_MAP:
+    case NODE_VALUE_MAP:
       printf("VALUE(MAP):\n");
       {
         node_values* arr0 = np->value.v.p;
@@ -138,14 +138,14 @@ main(int argc, const char**argv)
     }
     argc--; argv++;
   }
-  strm_parse_init(&state);
+  node_parse_init(&state);
 
   if (argc == 1) {              /* no args */
-    n = strm_parse_input(&state, stdin, "stdin");
+    n = node_parse_input(&state, stdin, "stdin");
   }
   else {
     for (i=1; i<argc; i++) {
-      n += strm_parse_file(&state, argv[i]);
+      n += node_parse_file(&state, argv[i]);
     }
   }
 
@@ -157,12 +157,12 @@ main(int argc, const char**argv)
       puts("Syntax OK");
     }
     else {
-      strm_run(&state);
+      node_run(&state);
     }
   }
   else if (check) {
     puts("Syntax NG");
   }
-  strm_parse_free(&state);
+  node_parse_free(&state);
   return n > 0 ? EXIT_FAILURE : EXIT_SUCCESS;
 }

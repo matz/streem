@@ -1,5 +1,65 @@
 #ifndef _NODE_H_
 #define _NODE_H_
+#include "khash.h"
+
+typedef enum {
+  NODE_VALUE_BOOL,
+  NODE_VALUE_ARRAY,
+  NODE_VALUE_MAP,
+  NODE_VALUE_STRING,
+  NODE_VALUE_DOUBLE,
+  NODE_VALUE_FIXNUM,
+  NODE_VALUE_NIL,
+  NODE_VALUE_CFUNC,
+  NODE_VALUE_USER,
+  NODE_VALUE_ERROR,
+} node_value_type;
+
+typedef intptr_t node_id;
+
+typedef struct {
+  node_value_type t;
+  union {
+    int b;
+    int i;
+    double d;
+    char* s;
+    void* p;
+    node_id id;
+  } v;
+} node_value;
+
+KHASH_MAP_INIT_STR(value, node_value*)
+
+typedef khash_t(value) node_env;
+
+typedef struct {
+  int type;
+  node_value* arg;
+} node_error;
+
+typedef struct {
+  khash_t(value)* env;
+  node_error* exc;
+} node_ctx;
+
+typedef struct parser_state {
+  int nerr;
+  void *lval;
+  const char *fname;
+  int lineno;
+  int tline;
+  /* TODO: should be separated as another context structure */
+  node_ctx ctx;
+} parser_state;
+
+int node_parse_init(parser_state*);
+void node_parse_free(parser_state*);
+int node_parse_file(parser_state*, const char*);
+int node_parse_input(parser_state*, FILE* in, const char*);
+int node_parse_string(parser_state*, const char*);
+int node_run(parser_state*);
+void node_raise(node_ctx*, const char*);
 
 typedef enum {
   NODE_ARGS,
@@ -22,7 +82,7 @@ typedef enum {
 
 typedef struct {
   node_type type;
-  strm_value value;
+  node_value value;
 } node;
 
 typedef struct {
@@ -30,7 +90,11 @@ typedef struct {
   node* value;
 } node_pair;
 
-typedef strm_values node_values;
+typedef struct {
+  int len;
+  int max;
+  void** data;
+} node_values;
 
 typedef struct {
   node* cond;
@@ -65,7 +129,7 @@ typedef struct {
   node* rv;
 } node_return;
 
-typedef strm_value* (*node_cfunc)(strm_ctx*, strm_values*);
+typedef node_value* (*node_cfunc)(node_ctx*, node_values*);
 
 extern node* node_value_new(node*);
 extern node* node_array_new();
@@ -85,8 +149,8 @@ extern node* node_if_new(node*, node*, node*);
 extern node* node_emit_new(node*);
 extern node* node_return_new(node*);
 extern node* node_break_new();
-extern node* node_ident_new(strm_id);
-extern strm_id node_ident_of(char*);
+extern node* node_ident_new(node_id);
+extern node_id node_ident_of(char*);
 extern node* node_nil();
 extern node* node_true();
 extern node* node_false();

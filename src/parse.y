@@ -14,7 +14,7 @@
 
 %union {
   node* nd;
-  strm_id id;
+  node_id id;
 }
 
 %type <nd> program compstmt
