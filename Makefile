@@ -29,7 +29,7 @@ src/parse.o : src/y.tab.c src/lex.yy.c
 	$(CC) -g -c src/y.tab.c -o src/parse.o
 
 src/main.o : src/main.c
-	$(CC) -g -c src/main.c -o src/main.o
+	$(CC) $(CFLAGS) -c src/main.c -o src/main.o
 
 $(TARGET) : src/parse.o src/node.o src/main.o
 	mkdir -p "$$(dirname $(TARGET))"
