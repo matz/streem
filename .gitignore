@@ -20,6 +20,7 @@ gmon.out
 GPATH
 GRTAGS
 GTAGS
+TAGS
 tags
 /src/y.tab.c
 /src/lex.yy.c
