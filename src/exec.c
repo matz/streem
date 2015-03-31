@@ -125,9 +125,10 @@ exec_expr(node_ctx* ctx, node* np, strm_value* val)
     break;
   case NODE_EMIT:
     break;
-  case NODE_IDENT:
-    break;
 */
+  case NODE_IDENT:
+    *val = strm_var_get(np->value.v.id);
+    return 0;
   case NODE_IF:
     {
       strm_value v;
