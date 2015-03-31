@@ -4,9 +4,9 @@
 #define NODE_ERROR_RUNTIME 0
 #define NODE_ERROR_RETURN 1
 
-node_value* node_expr(node_ctx*, node*);
+static node_value* node_expr(node_ctx*, node*);
 
-node_value*
+static node_value*
 node_expr_stmt(node_ctx* ctx, node* np)
 {
   int i;
@@ -22,7 +22,7 @@ node_expr_stmt(node_ctx* ctx, node* np)
   return val;
 }
 
-node_value*
+static node_value*
 node_expr(node_ctx* ctx, node* np)
 {
   if (ctx->exc != NULL) {
@@ -42,6 +42,8 @@ node_expr(node_ctx* ctx, node* np)
   case NODE_IDENT:
     break;
 */
+  case NODE_IDENT:
+    break;
   case NODE_IF:
     {
       node_if* nif = np->value.v.p;
@@ -215,7 +217,7 @@ node_expr(node_ctx* ctx, node* np)
   return NULL;
 }
 
-node_value*
+static node_value*
 node_cputs(node_ctx* ctx, FILE* out, node_values* args) {
   int i;
   for (i = 0; i < args->len; i++) {
@@ -269,7 +271,7 @@ node_raise(node_ctx* ctx, const char* msg) {
   ctx->exc->arg->v.s = strm_str_new(msg, strlen(msg));
 }
 
-void
+static void
 node_init(node_ctx* ctx)
 {
   strm_var_def("puts", strm_cfunc_value(node_puts));
