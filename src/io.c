@@ -211,7 +211,7 @@ static void
 write_cb(strm_stream *strm, strm_value data)
 {
   struct write_data *d = (struct write_data*)strm->data;
-  struct strm_string *p = strm_value_str(data);
+  strm_string *p = strm_value_str(data);
 
   write(d->fd, p->ptr, p->len);
 }

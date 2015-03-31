@@ -6,7 +6,7 @@ typedef khash_t(env) strm_env;
 strm_env *globals;
 
 static void
-env_set(strm_env *env, struct strm_string* name, strm_value val)
+env_set(strm_env *env, strm_string* name, strm_value val)
 {
   int r;
   khiter_t k;
@@ -20,7 +20,7 @@ env_set(strm_env *env, struct strm_string* name, strm_value val)
 }
 
 strm_value
-env_get(strm_env *env, struct strm_string* name)
+env_get(strm_env *env, strm_string* name)
 {
   khiter_t k;
 
@@ -32,7 +32,7 @@ env_get(strm_env *env, struct strm_string* name)
 }
 
 void
-strm_var_set(struct strm_string* name, strm_value val)
+strm_var_set(strm_string* name, strm_value val)
 {
   if (!globals) {
     globals = kh_init(env);
@@ -47,7 +47,7 @@ strm_var_def(const char* name, strm_value val)
 }
 
 strm_value
-strm_var_get(struct strm_string* name)
+strm_var_get(strm_string* name)
 {
   if (!globals) {
     globals = kh_init(env);

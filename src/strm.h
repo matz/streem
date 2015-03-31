@@ -75,51 +75,51 @@ int strm_obj_eq(struct strm_object*, struct strm_object *);
 void *strm_value_obj(strm_value, enum strm_obj_type);
 
 /* ----- Strings */
-struct strm_string {
+typedef struct strm_string {
   STRM_OBJ_HEADER;
   const char *ptr;
   size_t len;
-};
+} strm_string;
 
 #define STRM_STR_INTERNED 1
 
-struct strm_string *strm_str_new(const char*,size_t len);
+strm_string *strm_str_new(const char*,size_t len);
 #define strm_str_value(p,len) strm_ptr_value(strm_str_new(p,len))
-#define strm_value_str(v) (struct strm_string*)strm_value_obj(v, STRM_OBJ_STRING)
+#define strm_value_str(v) (strm_string*)strm_value_obj(v, STRM_OBJ_STRING)
 
-struct strm_string *strm_str_intern(const char *p, size_t len);
-int strm_str_eq(struct strm_string *a, struct strm_string *b);
+strm_string *strm_str_intern(const char *p, size_t len);
+int strm_str_eq(strm_string *a, strm_string *b);
 
 /* ----- Variables */
-void strm_var_set(struct strm_string*, strm_value);
+void strm_var_set(strm_string*, strm_value);
 void strm_var_def(const char*, strm_value);
-strm_value strm_var_get(struct strm_string*);
+strm_value strm_var_get(strm_string*);
 /* ----- Arrays */
-struct strm_array {
+typedef struct strm_array {
   STRM_OBJ_HEADER;
   size_t len;
   const strm_value *ptr;
-};
+} strm_array;
 
-struct strm_array *strm_ary_new(const strm_value*,size_t len);
+strm_array *strm_ary_new(const strm_value*,size_t len);
 #define strm_ary_value(p,len) strm_ptr_value(strm_ary_new(p,len))
-#define strm_value_ary(v) (struct strm_array*)strm_value_obj(v, STRM_OBJ_ARRAY)
+#define strm_value_ary(v) (strm_array*)strm_value_obj(v, STRM_OBJ_ARRAY)
 
-int strm_ary_eq(struct strm_array *a, struct strm_array *b);
+int strm_ary_eq(strm_array *a, strm_array *b);
 
 /* ----- Lists */
-struct strm_list {
+typedef struct strm_list {
   STRM_OBJ_HEADER;
   size_t len;
   strm_value car;
   struct strm_list *cdr;
-};
+} strm_list;
 
-struct strm_list *strm_list_new(strm_value car, struct strm_list *cdr);
-#define strm_value_list(v) (struct strm_list*)strm_value_obj(v, STRM_OBJ_LIST)
+strm_list *strm_list_new(strm_value car, strm_list *cdr);
+#define strm_value_list(v) (strm_list*)strm_value_obj(v, STRM_OBJ_LIST)
 
-int strm_list_eq(struct strm_list *a, struct strm_list *b);
-strm_value strm_list_nth(struct strm_list *a, size_t n);
+int strm_list_eq(strm_list *a, strm_list *b);
+strm_value strm_list_nth(strm_list *a, size_t n);
 
 /* ----- Tasks */
 typedef enum {

@@ -1,12 +1,12 @@
 #include "strm.h"
 
-struct strm_array*
+strm_array*
 strm_ary_new(const strm_value *p, size_t len)
 {
-  struct strm_array *ary;
+  strm_array *ary;
   strm_value *buf;
 
-  ary = malloc(sizeof(struct strm_array)+sizeof(strm_value)*len);
+  ary = malloc(sizeof(strm_array)+sizeof(strm_value)*len);
   buf = (strm_value*)&ary[1];
 
   if (p) {
@@ -22,7 +22,7 @@ strm_ary_new(const strm_value *p, size_t len)
 }
 
 int
-strm_ary_eq(struct strm_array *a, struct strm_array *b)
+strm_ary_eq(strm_array *a, strm_array *b)
 {
   size_t i, len;
 

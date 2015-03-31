@@ -262,7 +262,7 @@ node_id
 node_ident_of(const char* s)
 {
   extern int strm_event_loop_started;
-  struct strm_string *str;
+  strm_string *str;
 
   assert(!strm_event_loop_started);
   str = strm_str_intern(s, strlen(s));

@@ -15,7 +15,7 @@ typedef enum {
   NODE_VALUE_ERROR,
 } node_value_type;
 
-typedef struct strm_string* node_id;
+typedef strm_string* node_id;
 
 typedef struct {
   node_value_type t;
