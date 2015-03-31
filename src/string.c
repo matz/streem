@@ -152,3 +152,12 @@ strm_str_eq(strm_string *a, strm_string *b)
   if (memcmp(a->ptr, b->ptr, a->len) == 0) return TRUE;
   return FALSE;
 }
+
+int
+strm_str_p(strm_value v)
+{
+  if (v.vtype != STRM_VALUE_PTR) return FALSE;
+  if (((struct strm_object*)v.val.p)->type == STRM_OBJ_STRING)
+    return TRUE;
+  return FALSE;
+}

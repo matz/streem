@@ -82,8 +82,10 @@ strm_value_obj(strm_value v, enum strm_obj_type t)
 int
 strm_value_bool(strm_value v)
 {
-  assert(v.vtype == STRM_VALUE_BOOL);
-  return v.val.i ? 1 : 0;
+  if (v.vtype == STRM_VALUE_BOOL) {
+    return v.val.i ? TRUE : FALSE;
+  }
+  return TRUE;
 }
 
 long
@@ -96,8 +98,41 @@ strm_value_int(strm_value v)
 double
 strm_value_flt(strm_value v)
 {
-  assert(v.vtype == STRM_VALUE_FLT);
-  return v.val.f;
+  switch (v.vtype) {
+  case STRM_VALUE_FLT:
+    return v.val.f;
+  case STRM_VALUE_INT:
+    return (double)v.val.i;
+  default:
+    assert(v.vtype == STRM_VALUE_FLT);
+    break;
+  }
+  /* not reached */
+  return 0.0;
+}
+
+int
+strm_num_p(strm_value v)
+{
+  switch (v.vtype) {
+  case STRM_VALUE_FLT:
+  case STRM_VALUE_INT:
+    return TRUE;
+  default:
+    return FALSE;
+  }
+}
+
+int
+strm_int_p(strm_value v)
+{
+  return v.vtype == STRM_VALUE_INT;
+}
+
+int
+strm_flt_p(strm_value v)
+{
+  return v.vtype == STRM_VALUE_FLT;
 }
 
 int

@@ -31,7 +31,7 @@ typedef struct {
 
 typedef struct {
   int type;
-  node_value* arg;
+  strm_value arg;
 } node_error;
 
 typedef struct {
@@ -123,8 +123,6 @@ typedef struct {
 typedef struct {
   node* rv;
 } node_return;
-
-typedef node_value* (*node_cfunc)(node_ctx*, node_values*);
 
 node_values* node_values_new();
 void node_values_add(node_values*, void*);

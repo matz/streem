@@ -53,6 +53,9 @@ int strm_value_bool(strm_value);
 double strm_value_flt(strm_value);
 
 int strm_value_eq(strm_value, strm_value);
+int strm_num_p(strm_value);
+int strm_int_p(strm_value);
+int strm_flt_p(strm_value);
 
 enum strm_obj_type {
   STRM_OBJ_ARRAY,
@@ -89,6 +92,7 @@ strm_string *strm_str_new(const char*,size_t len);
 
 strm_string *strm_str_intern(const char *p, size_t len);
 int strm_str_eq(strm_string *a, strm_string *b);
+int strm_str_p(strm_value v);
 
 /* ----- Variables */
 void strm_var_set(strm_string*, strm_value);

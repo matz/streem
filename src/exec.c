@@ -4,33 +4,119 @@
 #define NODE_ERROR_RUNTIME 0
 #define NODE_ERROR_RETURN 1
 
-static node_value* node_expr(node_ctx*, node*);
+static int exec_expr(node_ctx*, node*, strm_value*);
 
-static node_value*
-node_expr_stmt(node_ctx* ctx, node* np)
+static int
+exec_expr_stmt(node_ctx* ctx, node* np, strm_value* val)
 {
-  int i;
+  int i, n;
   node_values* v = np->value.v.p;
-  node_value* val = NULL;
   for (i = 0; i < v->len; i++) {
-    if (ctx->exc != NULL) {
-      return NULL;
-    }
-    /* TODO: garbage correct previous value in this loop */
-    val = node_expr(ctx, v->data[i]);
+    n = exec_expr(ctx, v->data[i], val);
+    if (n) return n;
   }
-  return val;
+  return 0;
 }
 
-static node_value*
-node_expr(node_ctx* ctx, node* np)
+static int
+exec_plus(strm_value* a, strm_value* b, strm_value* c)
 {
-  if (ctx->exc != NULL) {
-    return NULL;
+  if (strm_str_p(*a)) {
+    strm_string *str1 = strm_value_str(*a);
+    strm_string *str2 = strm_value_str(*b);
+    strm_string *str3 = strm_str_new(NULL, str1->len + str2->len);
+    char *p;
+
+    p = (char*)str3->ptr;
+    memcpy(p, str1->ptr, str1->len);
+    memcpy(p+str1->len, str2->ptr, str2->len);
+    p[str3->len] = '\0';
+    *c = strm_ptr_value(str3);
+    return 0;
   }
+  else if (strm_int_p(*a) && strm_int_p(*b)) {
+    *c = strm_int_value(strm_value_int(*a)+strm_value_int(*b));
+    return 0;
+  }
+  else if (strm_num_p(*a)) {
+    *c = strm_flt_value(strm_value_flt(*a)+strm_value_flt(*b));
+    return 0;
+  }
+  return 1;
+}
+
+static int
+exec_minus(strm_value* a, strm_value* b, strm_value* c)
+{
+  if (strm_int_p(*a) && strm_int_p(*b)) {
+    *c = strm_int_value(strm_value_int(*a)-strm_value_int(*b));
+    return 0;
+  }
+  else if (strm_num_p(*a)) {
+    *c = strm_flt_value(strm_value_flt(*a)-strm_value_flt(*b));
+    return 0;
+  }
+  return 1;
+}
+
+static int
+exec_mul(strm_value* a, strm_value* b, strm_value* c)
+{
+  if (strm_int_p(*a) && strm_int_p(*b)) {
+    *c = strm_int_value(strm_value_int(*a)*strm_value_int(*b));
+    return 0;
+  }
+  else if (strm_num_p(*a)) {
+    *c = strm_flt_value(strm_value_flt(*a)*strm_value_flt(*b));
+    return 0;
+  }
+  return 1;
+}
+
+static int
+exec_div(strm_value* a, strm_value* b, strm_value* c)
+{
+  *c = strm_flt_value(strm_value_flt(*a)/strm_value_flt(*b));
+  return 0;
+}
+
+static int
+exec_gt(strm_value* a, strm_value* b, strm_value* c)
+{
+  *c = strm_bool_value(strm_value_flt(*a)>strm_value_flt(*b));
+  return 0;
+}
+
+static int
+exec_ge(strm_value* a, strm_value* b, strm_value* c)
+{
+  *c = strm_bool_value(strm_value_flt(*a)>=strm_value_flt(*b));
+  return 0;
+}
+
+static int
+exec_lt(strm_value* a, strm_value* b, strm_value* c)
+{
+  *c = strm_bool_value(strm_value_flt(*a)<strm_value_flt(*b));
+  return 0;
+}
+
+static int
+exec_le(strm_value* a, strm_value* b, strm_value* c)
+{
+  *c = strm_bool_value(strm_value_flt(*a)<=strm_value_flt(*b));
+  return 0;
+}
+
+typedef int (*exec_cfunc)(node_ctx*, int, strm_value*, strm_value*);
+
+static int
+exec_expr(node_ctx* ctx, node* np, strm_value* val)
+{
+  int n;
 
   if (np == NULL) {
-    return NULL;
+    return 1;
   }
 
   switch (np->type) {
@@ -42,125 +128,64 @@ node_expr(node_ctx* ctx, node* np)
   case NODE_IDENT:
     break;
 */
-  case NODE_IDENT:
-    break;
   case NODE_IF:
     {
+      strm_value v;
       node_if* nif = np->value.v.p;
-      node_value* v = node_expr(ctx, nif->cond);
-      if (ctx->exc != NULL) {
-        return NULL;
+      n = exec_expr(ctx, nif->cond, &v);
+      if (n) return n;
+      if (strm_value_bool(v)) {
+        return exec_expr_stmt(ctx, nif->compstmt, val);
       }
-      if (v->t == NODE_VALUE_NIL || v->v.p == NULL ||
-          (v->t == NODE_VALUE_STRING && v->v.s->len == 0)) {
-        if (nif->opt_else != NULL)
-          node_expr_stmt(ctx, nif->opt_else);
-      } else {
-        node_expr_stmt(ctx, nif->compstmt);
+      else if (nif->opt_else != NULL) {
+        return exec_expr_stmt(ctx, nif->compstmt, val);
+      }
+      else {
+        *val = strm_null_value();
+        return 0;
       }
     }
     break;
   case NODE_OP:
     {
       node_op* nop = np->value.v.p;
-      node_value* lhs = node_expr(ctx, nop->lhs);
-      if (ctx->exc != NULL) return NULL;
+      strm_value lhs, rhs;
+
+      n = exec_expr(ctx, nop->lhs, &lhs);
+      if (n) return n;
+      n = exec_expr(ctx, nop->rhs, &rhs);
+      if (n) return n;
       if (*nop->op == '+' && *(nop->op+1) == '\0') {
-        node_value* rhs = node_expr(ctx, nop->rhs);
-        if (ctx->exc != NULL) return NULL;
-        if (lhs->t == NODE_VALUE_STRING && rhs->t == NODE_VALUE_STRING) {
-          node_value* new = malloc(sizeof(node_value));
-          char* p;
-          new->v.s = strm_str_new(NULL, lhs->v.s->len + rhs->v.s->len);
-          new->t = NODE_VALUE_STRING;
-          p = (char*)new->v.s->ptr;
-          memcpy(p, lhs->v.s->ptr, lhs->v.s->len);
-          memcpy(p+lhs->v.s->len, rhs->v.s, rhs->v.s->len);
-          p[new->v.s->len] = '\0';
-          return new;
-        } else if (lhs->t == NODE_VALUE_DOUBLE && rhs->t == NODE_VALUE_DOUBLE) {
-          node_value* new = malloc(sizeof(node_value));
-          new->t = NODE_VALUE_DOUBLE;
-          new->v.d = lhs->v.d + rhs->v.d;
-          return new;
-        }
+        return exec_plus(&lhs, &rhs, val);
       }
       if (*nop->op == '-' && *(nop->op+1) == '\0') {
-        node_value* rhs = node_expr(ctx, nop->rhs);
-        if (ctx->exc != NULL) return NULL;
-        if (lhs->t == NODE_VALUE_DOUBLE && rhs->t == NODE_VALUE_DOUBLE) {
-          node_value* new = malloc(sizeof(node_value));
-          new->t = NODE_VALUE_DOUBLE;
-          new->v.d = lhs->v.d - rhs->v.d;
-          return new;
-        }
+        return exec_minus(&lhs, &rhs, val);
       }
       if (*nop->op == '*' && *(nop->op+1) == '\0') {
-        node_value* rhs = node_expr(ctx, nop->rhs);
-        if (ctx->exc != NULL) return NULL;
-        if (lhs->t == NODE_VALUE_DOUBLE && rhs->t == NODE_VALUE_DOUBLE) {
-          node_value* new = malloc(sizeof(node_value));
-          new->t = NODE_VALUE_DOUBLE;
-          new->v.d = lhs->v.d * rhs->v.d;
-          return new;
-        }
+        return exec_mul(&lhs, &rhs, val);
       }
       if (*nop->op == '/' && *(nop->op+1) == '\0') {
-        node_value* rhs = node_expr(ctx, nop->rhs);
-        if (ctx->exc != NULL) return NULL;
-        if (lhs->t == NODE_VALUE_DOUBLE && rhs->t == NODE_VALUE_DOUBLE) {
-          node_value* new = malloc(sizeof(node_value));
-          new->t = NODE_VALUE_DOUBLE;
-          /* TODO: zero divide */
-          new->v.d = lhs->v.d / rhs->v.d;
-          return new;
-        }
+        return exec_div(&lhs, &rhs, val);
       }
       if (*nop->op == '<') {
-        node_value* rhs = node_expr(ctx, nop->rhs);
-        if (ctx->exc != NULL) return NULL;
-        if (lhs->t == NODE_VALUE_DOUBLE && rhs->t == NODE_VALUE_DOUBLE) {
-          node_value* new = malloc(sizeof(node_value));
-          new->t = NODE_VALUE_BOOL;
-          if (*(nop->op+1) == '=')
-            new->v.b = lhs->v.d <= rhs->v.d;
-          else
-            new->v.b = lhs->v.d < rhs->v.d;
-          return new;
-        }
+        if (*(nop->op+1) == '=')
+          return exec_le(&lhs, &rhs, val);
+        else
+          return exec_lt(&lhs, &rhs, val);
       }
       if (*nop->op == '>') {
-        node_value* rhs = node_expr(ctx, nop->rhs);
-        if (ctx->exc != NULL) return NULL;
-        if (lhs->t == NODE_VALUE_DOUBLE && rhs->t == NODE_VALUE_DOUBLE) {
-          node_value* new = malloc(sizeof(node_value));
-          new->t = NODE_VALUE_BOOL;
-          if (*(nop->op+1) == '=')
-            new->v.b = lhs->v.d >= rhs->v.d;
-          else
-            new->v.b = lhs->v.d > rhs->v.d;
-          return new;
-        }
+        if (*(nop->op+1) == '=')
+          return exec_ge(&lhs, &rhs, val);
+        else
+          return exec_gt(&lhs, &rhs, val);
       }
       if (*nop->op == '=' && (*(nop->op+1)) == '=') {
-        node_value* rhs = node_expr(ctx, nop->rhs);
-        if (ctx->exc != NULL) return NULL;
-        if (lhs->t == NODE_VALUE_DOUBLE && rhs->t == NODE_VALUE_DOUBLE) {
-          node_value* new = malloc(sizeof(node_value));
-          new->t = NODE_VALUE_BOOL;
-          new->v.b = lhs->v.d == rhs->v.d;
-          return new;
-        }
+        *val = strm_bool_value(strm_value_eq(rhs, lhs));
+        return 0;
       }
       if (*nop->op == '!' && (*(nop->op+1)) == '=') {
-        node_value* rhs = node_expr(ctx, nop->rhs);
-        if (ctx->exc != NULL) return NULL;
-        if (lhs->t == NODE_VALUE_DOUBLE && rhs->t == NODE_VALUE_DOUBLE) {
-          node_value* new = malloc(sizeof(node_value));
-          new->t = NODE_VALUE_BOOL;
-          new->v.b = lhs->v.d != rhs->v.d;
-          return new;
-        }
+        *val = strm_bool_value(!strm_value_eq(rhs, lhs));
+        return 0;
       }
       /* TODO: invalid operator */
       node_raise(ctx, "invalid operator");
@@ -175,13 +200,14 @@ node_expr(node_ctx* ctx, node* np)
 
         if (v.vtype == STRM_VALUE_CFUNC) {
           node_values* v0 = ncall->args->value.v.p;
-          node_values* v1 = node_values_new();
+          strm_value *args = malloc(sizeof(strm_value)*v0->len);
           int i;
 
           for (i = 0; i < v0->len; i++) {
-            node_values_add(v1, node_expr(ctx, v0->data[i]));
+            n = exec_expr(ctx, v0->data[i], &args[i]);
+            if (n) return n;
           }
-          ((node_cfunc)v.val.p)(ctx, v1);
+          return ((exec_cfunc)v.val.p)(ctx, v0->len, args, val);
         }
         else {
           node_raise(ctx, "function not found");
@@ -189,12 +215,13 @@ node_expr(node_ctx* ctx, node* np)
       }
       else {
         node_block* nblk = ncall->blk->value.v.p;
-        node_expr_stmt(ctx, nblk->compstmt);
-        if (ctx->exc != NULL && ctx->exc->type == NODE_ERROR_RETURN) {
-          node_value* arg = ctx->exc->arg;
+        strm_value v;
+        int n;
+        n = exec_expr_stmt(ctx, nblk->compstmt, &v);
+        if (n && ctx->exc->type == NODE_ERROR_RETURN) {
+          *val = ctx->exc->arg;
           free(ctx->exc);
-          ctx->exc = NULL;
-          return arg;
+          return 0;
         }
       }
     }
@@ -204,77 +231,124 @@ node_expr(node_ctx* ctx, node* np)
       node_return* nreturn = np->value.v.p;
       ctx->exc = malloc(sizeof(node_error));
       ctx->exc->type = NODE_ERROR_RETURN;
-      ctx->exc->arg = node_expr(ctx, nreturn->rv);
-      return NULL;
+      n = exec_expr(ctx, nreturn->rv, &ctx->exc->arg);
+      return n;
     }
     break;
   case NODE_VALUE:
-    return &np->value;
-    break;
+    switch (np->value.t) {
+    case NODE_VALUE_BOOL:
+      *val = strm_bool_value(np->value.v.b);
+      return 0;
+    case NODE_VALUE_NIL:
+      *val = strm_null_value();
+      return 0;
+    case NODE_VALUE_STRING:
+      *val = strm_ptr_value(np->value.v.s);
+      return 0;
+    case NODE_VALUE_IDENT:
+      *val = strm_ptr_value(np->value.v.id);
+      return 0;
+    case NODE_VALUE_DOUBLE:
+      *val = strm_flt_value(np->value.v.d);
+      return 0;
+    case NODE_VALUE_INT:
+      *val = strm_int_value(np->value.v.i);
+      return 0;
+      /* following type should not be evaluated */
+    case NODE_VALUE_ERROR:
+    case NODE_VALUE_USER:
+    case NODE_VALUE_ARRAY:
+    case NODE_VALUE_MAP:
+    default:
+      return 1;
+    }
   default:
     break;
   }
-  return NULL;
+  return 1;
 }
 
-static node_value*
-node_cputs(node_ctx* ctx, FILE* out, node_values* args) {
+
+static int
+cputs_ptr(node_ctx* ctx, FILE* out, struct strm_object *obj)
+{
+  if (obj == NULL) {
+    fprintf(out, "nil");
+    return 0;
+  }
+  switch (obj->type) {
+  case STRM_OBJ_ARRAY:
+  case STRM_OBJ_LIST:
+    fprintf(out, "<list:%p>", obj);
+    break;
+  case STRM_OBJ_MAP:
+    fprintf(out, "<map:%p>", obj);
+    break;
+  case STRM_OBJ_STRING:
+    {
+      strm_string* str = (strm_string*)obj;
+      fprintf(out, "%*s", str->len, str->ptr);
+      break;
+    }
+    break;
+  default:
+    fprintf(out, "<%p>", obj);
+    break;
+  }
+  return 0;
+}
+
+static int
+exec_cputs(node_ctx* ctx, FILE* out, int argc, strm_value* args, strm_value *ret)
+{
   int i;
-  for (i = 0; i < args->len; i++) {
-    node_value* v;
+  for (i = 0; i < argc; i++) {
+    strm_value v;
     if (i != 0)
       fprintf(out, ", ");
-    v = args->data[i];
-    if (v != NULL) {
-      switch (v->t) {
-      case NODE_VALUE_INT:
-        fprintf(out, "%ld", v->v.i);
-        break;
-      case NODE_VALUE_DOUBLE:
-        fprintf(out, "%g", v->v.d);
-        break;
-      case NODE_VALUE_STRING:
-        fprintf(out, "'%*s'", v->v.s->len, v->v.s->ptr);
-        break;
-      case NODE_VALUE_NIL:
-        fprintf(out, "nil");
-        break;
-      case NODE_VALUE_BOOL:
-        fprintf(out, v->v.b ? "true" : "false");
-        break;
-      case NODE_VALUE_ERROR:
-        fprintf(out, "'%*s'", v->v.s->len, v->v.s->ptr);
-        break;
-      default:
-        fprintf(out, "<%p>", v->v.p);
-        break;
-      }
-    } else {
-      fprintf(out, "nil");
+    v = args[i];
+    switch (v.vtype) {
+    case STRM_VALUE_BOOL:
+      fprintf(out, v.val.i ? "true" : "false");
+      break;
+    case STRM_VALUE_INT:
+      fprintf(out, "%ld", v.val.i);
+      break;
+    case STRM_VALUE_FLT:
+      fprintf(out, "%g", v.val.f);
+      break;
+    case STRM_VALUE_PTR:
+      cputs_ptr(ctx, out, v.val.p);
+      break;
+    case STRM_VALUE_CFUNC:
+      fprintf(out, "<cfunc:%p>", v.val.p);
+      break;
+    case STRM_VALUE_TASK:
+      fprintf(out, "<task:%p>", v.val.p);
+      break;
     }
   }
   fprintf(out, "\n");
-  return NULL;
+  return 0;
 }
 
-node_value*
-node_puts(node_ctx* ctx, node_values* args) {
-  return node_cputs(ctx, stdout, args);
+static int
+exec_puts(node_ctx* ctx, int argc, strm_value* args, strm_value *ret) {
+  return exec_cputs(ctx, stdout, argc, args, ret);
 }
 
 void
 node_raise(node_ctx* ctx, const char* msg) {
   ctx->exc = malloc(sizeof(node_error));
   ctx->exc->type = NODE_ERROR_RUNTIME;
-  ctx->exc->arg = malloc(sizeof(node_value));
-  ctx->exc->arg->t = NODE_VALUE_ERROR;
-  ctx->exc->arg->v.s = strm_str_new(msg, strlen(msg));
+  ctx->exc->arg = strm_str_value(msg, strlen(msg));
 }
 
 static void
 node_init(node_ctx* ctx)
 {
-  strm_var_def("puts", strm_cfunc_value(node_puts));
+  strm_var_def("puts", strm_cfunc_value(exec_puts));
   strm_var_def("STDIN", strm_task_value(strm_readio(0 /* stdin*/)));
   strm_var_def("STDOUT", strm_task_value(strm_writeio(1 /* stdout*/)));
   strm_var_def("STDERR", strm_task_value(strm_writeio(2 /* stdout*/)));
@@ -283,12 +357,13 @@ node_init(node_ctx* ctx)
 int
 node_run(parser_state* p)
 {
+  strm_value v;
+
   node_init(&p->ctx);
-  node_expr_stmt(&p->ctx, (node*)p->lval);
+  exec_expr_stmt(&p->ctx, (node*)p->lval, &v);
   if (p->ctx.exc != NULL) {
-    node_values* v = node_values_new();
-    node_values_add(v, p->ctx.exc->arg);
-    node_cputs(&p->ctx, stderr, v);
+    strm_value v;
+    exec_cputs(&p->ctx, stderr, 1, &p->ctx.exc->arg, &v);
     /* TODO: garbage correct previous exception value */
     p->ctx.exc = NULL;
   }
