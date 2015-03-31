@@ -76,6 +76,11 @@ false{TRAIL} {
 "\n"             LEX_RETURN('\n');
 "#"[^\n]*"\n"    LEX_RETURN('\n');
 
+(([1-9][0-9]*)|0) {
+  lval->nd = node_int_new(atol(yytext));
+  LEX_RETURN(lit_number);
+};
+
 (([1-9][0-9]*)|0)(\.[0-9]*)? {
   double temp;
   sscanf(yytext, "%lf", &temp);

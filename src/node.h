@@ -1,6 +1,5 @@
 #ifndef _NODE_H_
 #define _NODE_H_
-#include "khash.h"
 
 typedef enum {
   NODE_VALUE_BOOL,
@@ -16,13 +15,13 @@ typedef enum {
   NODE_VALUE_ERROR,
 } node_value_type;
 
-typedef intptr_t node_id;
+typedef struct strm_string* node_id;
 
 typedef struct {
   node_value_type t;
   union {
     int b;
-    int i;
+    long i;
     double d;
     char* s;
     void* p;
@@ -30,17 +29,12 @@ typedef struct {
   } v;
 } node_value;
 
-KHASH_MAP_INIT_INT64(value, node_value*)
-
-typedef khash_t(value) node_env;
-
 typedef struct {
   int type;
   node_value* arg;
 } node_error;
 
 typedef struct {
-  khash_t(value)* env;
   node_error* exc;
 } node_ctx;
 
@@ -147,6 +141,7 @@ extern node* node_let_new(node*, node*);
 extern node* node_op_new(char*, node*, node*);
 extern node* node_block_new(node*, node*);
 extern node* node_call_new(node*, node*, node*, node*);
+extern node* node_int_new(long);
 extern node* node_double_new(double);
 extern node* node_string_new(const char*, size_t);
 extern node* node_if_new(node*, node*, node*);

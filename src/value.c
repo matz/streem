@@ -12,6 +12,16 @@ strm_ptr_value(void *p)
 }
 
 strm_value
+strm_cfunc_value(void *p)
+{
+  strm_value v;
+
+  v.vtype = STRM_VALUE_CFUNC;
+  v.val.p = p;
+  return v;
+}
+
+strm_value
 strm_bool_value(int i)
 {
   strm_value v;

@@ -180,21 +180,23 @@ node_expr(node_ctx* ctx, node* np)
       /* TODO: wip code of ident */
       node_call* ncall = np->value.v.p;
       if (ncall->ident != NULL) {
-        khint_t k = kh_get(value, ctx->env, ncall->ident->value.v.id);
-        if (k != kh_end(ctx->env)) {
-          node_value* v = kh_value(ctx->env, k);
-          if (v->t == NODE_VALUE_CFUNC) {
-            node_values* v0 = ncall->args->value.v.p;
-            node_values* v1 = node_values_new();
-            int i;
-            for (i = 0; i < v0->len; i++)
-              node_values_add(v1, node_expr(ctx, v0->data[i]));
-            ((node_cfunc) v->v.p)(ctx, v1);
+        strm_value v = strm_var_getv(ncall->ident->value.v.id);
+
+        if (v.vtype == STRM_VALUE_CFUNC) {
+          node_values* v0 = ncall->args->value.v.p;
+          node_values* v1 = node_values_new();
+          int i;
+
+          for (i = 0; i < v0->len; i++) {
+            node_values_add(v1, node_expr(ctx, v0->data[i]));
           }
-        } else {
+          ((node_cfunc)v.val.p)(ctx, v1);
+        }
+        else {
           node_raise(ctx, "function not found");
         }
-      } else {
+      }
+      else {
         node_block* nblk = ncall->blk->value.v.p;
         node_expr_stmt(ctx, nblk->compstmt);
         if (ctx->exc != NULL && ctx->exc->type == NODE_ERROR_RETURN) {
@@ -234,6 +236,9 @@ node_cputs(node_ctx* ctx, FILE* out, node_values* args) {
     v = args->data[i];
     if (v != NULL) {
       switch (v->t) {
+      case NODE_VALUE_INT:
+        fprintf(out, "%ld", v->v.i);
+        break;
       case NODE_VALUE_DOUBLE:
         fprintf(out, "%f", v->v.d);
         break;
@@ -278,16 +283,10 @@ node_raise(node_ctx* ctx, const char* msg) {
 void
 node_init(node_ctx* ctx)
 {
-  int r;
-  khiter_t k;
+  strm_value v;
 
-  static node_value vputs;
-  node_id puts = node_ident_of("puts");
-
-  k = kh_put(value, ctx->env, puts, &r);
-  vputs.t = NODE_VALUE_CFUNC;
-  vputs.v.p = node_puts;
-  kh_value(ctx->env, k) = &vputs;
+  v = strm_cfunc_value(node_puts);
+  strm_var_set("puts", v);
 }
 
 int

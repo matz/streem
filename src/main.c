@@ -71,6 +71,9 @@ dump_node(node* np, int indent) {
     break;
   case NODE_VALUE:
     switch (np->value.t) {
+    case NODE_VALUE_INT:
+      printf("VALUE(NUMBER): %ld\n", np->value.v.i);
+      break;
     case NODE_VALUE_DOUBLE:
       printf("VALUE(NUMBER): %f\n", np->value.v.d);
       break;

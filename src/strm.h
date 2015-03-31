@@ -25,6 +25,7 @@ enum strm_value_type {
   STRM_VALUE_INT,
   STRM_VALUE_FLT,
   STRM_VALUE_PTR,
+  STRM_VALUE_CFUNC,
 };
 
 typedef struct strm_value {
@@ -37,6 +38,7 @@ typedef struct strm_value {
 } strm_value;
 
 strm_value strm_ptr_value(void*);
+strm_value strm_cfunc_value(void*);
 strm_value strm_bool_value(int);
 strm_value strm_int_value(long);
 strm_value strm_flt_value(double);
@@ -55,7 +57,6 @@ enum strm_obj_type {
   STRM_OBJ_LIST,
   STRM_OBJ_MAP,
   STRM_OBJ_STRING,
-  STRM_OBJ_CFUNC,
   STRM_OBJ_USER,
 };
 
@@ -87,6 +88,11 @@ struct strm_string *strm_str_new(const char*,size_t len);
 struct strm_string *strm_str_intern(const char *p, size_t len);
 int strm_str_eq(struct strm_string *a, struct strm_string *b);
 
+/* ----- Variables */
+void strm_var_setv(struct strm_string*, strm_value);
+void strm_var_set(const char*, strm_value);
+strm_value strm_var_getv(struct strm_string*);
+strm_value strm_var_get(const char*);
 /* ----- Arrays */
 struct strm_array {
   STRM_OBJ_HEADER;
@@ -145,6 +151,7 @@ int strm_connect(strm_stream *src, strm_stream *dst);
 int strm_loop();
 void strm_close(strm_stream *strm);
 
+extern int strm_event_loop_started;
 /* ----- queue */
 typedef struct strm_queue strm_queue;
 struct strm_queue_task {

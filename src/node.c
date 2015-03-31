@@ -204,6 +204,17 @@ node_call_new(node* cond, node* ident, node* args, node* blk)
 }
 
 node*
+node_int_new(long i)
+{
+  node* np = malloc(sizeof(node));
+
+  np->type = NODE_VALUE;
+  np->value.t = NODE_VALUE_INT;
+  np->value.v.i = i;
+  return np;
+}
+
+node*
 node_double_new(double d)
 {
   node* np = malloc(sizeof(node));
@@ -244,7 +255,6 @@ node_ident_of(const char* s)
 
   assert(!strm_event_loop_started);
   str = strm_str_intern(s, strlen(s));
-  /* TODO: get id of the identifier which named as s */
   return (node_id)str;
 }
 
@@ -321,7 +331,6 @@ node_parse_init(parser_state *p)
   p->lineno = 1;
   p->tline = 1;
   p->ctx.exc = NULL;
-  p->ctx.env = kh_init(value);
   return 0;
 }
 

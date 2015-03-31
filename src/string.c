@@ -22,8 +22,6 @@ readonly_data_p(const char *p)
 }
 #endif
 
-extern int strm_event_loop_started;
-
 struct sym_key {
   const char *ptr;
   size_t len;
