@@ -247,6 +247,17 @@ node_ident_new(node_id id)
   return np;
 }
 
+node*
+node_ident_str(node_id id)
+{
+  node* np = malloc(sizeof(node));
+
+  np->type = NODE_VALUE;
+  np->value.t = NODE_VALUE_STRING;
+  np->value.v.s = (char*)id->ptr;
+  return np;
+}
+
 node_id
 node_ident_of(const char* s)
 {

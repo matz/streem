@@ -445,7 +445,7 @@ map             : lit_string ':' expr
                     }
                 | identifier ':' expr
                     {
-                      $$ = node_pair_new(node_ident_new($1), $3);
+                      $$ = node_pair_new(node_ident_str($1), $3);
                     }
                 ;
 

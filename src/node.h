@@ -149,6 +149,7 @@ extern node* node_emit_new(node*);
 extern node* node_return_new(node*);
 extern node* node_break_new();
 extern node* node_ident_new(node_id);
+extern node* node_ident_str(node_id);
 extern node_id node_ident_of(const char*);
 extern node* node_nil();
 extern node* node_true();

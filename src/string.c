@@ -66,7 +66,7 @@ str_new(const char *p, size_t len)
   else {
     char *buf;
 
-    str = malloc(sizeof(struct strm_string)+len);
+    str = malloc(sizeof(struct strm_string)+len+1);
     buf = (char*)&str[1];
     if (p) {
       memcpy(buf, p, len);
@@ -74,6 +74,7 @@ str_new(const char *p, size_t len)
     else {
       memset(buf, 0, len);
     }
+    buf[len] = '\0';
     str->ptr = buf;
   }
   str->len = len;
