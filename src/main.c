@@ -118,7 +118,7 @@ int
 main(int argc, const char**argv)
 {
   const char *prog = argv[0];
-  int i, n = 0, verbose = 0, check = 0;
+  int i, n = 0, verbose = FALSE, check = FALSE;
   parser_state state;
 
   while (argc > 1 && argv[1][0] == '-') {
@@ -126,10 +126,10 @@ main(int argc, const char**argv)
     while (*s) {
       switch (*s) {
       case 'v':
-        verbose = 1;
+        verbose = TRUE;
         break;
       case 'c':
-        check = 1;
+        check = TRUE;
         break;
       default:
         fprintf(stderr, "%s: unknown option -%c\n", prog, *s);
