@@ -26,6 +26,7 @@ enum strm_value_type {
   STRM_VALUE_FLT,
   STRM_VALUE_PTR,
   STRM_VALUE_CFUNC,
+  STRM_VALUE_TASK,
 };
 
 typedef struct strm_value {
@@ -39,6 +40,7 @@ typedef struct strm_value {
 
 strm_value strm_ptr_value(void*);
 strm_value strm_cfunc_value(void*);
+strm_value strm_task_value(void*);
 strm_value strm_bool_value(int);
 strm_value strm_int_value(long);
 strm_value strm_flt_value(double);

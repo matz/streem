@@ -284,6 +284,9 @@ void
 node_init(node_ctx* ctx)
 {
   strm_var_def("puts", strm_cfunc_value(node_puts));
+  strm_var_def("STDIN", strm_task_value(strm_readio(0 /* stdin*/)));
+  strm_var_def("STDOUT", strm_task_value(strm_writeio(1 /* stdout*/)));
+  strm_var_def("STDERR", strm_task_value(strm_writeio(2 /* stdout*/)));
 }
 
 int
