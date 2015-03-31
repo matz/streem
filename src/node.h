@@ -23,8 +23,8 @@ typedef struct {
     int b;
     long i;
     double d;
-    char* s;
     void* p;
+    strm_string *s;
     node_id id;
   } v;
 } node_value;

@@ -7,23 +7,6 @@ extern FILE *yyin, *yyout;
 extern int yyparse(parser_state*);
 extern int yydebug;
 
-static char*
-strndup0(const char *s, size_t n)
-{
-  size_t i;
-  const char *p = s;
-  char *new;
-
-  for (i=0; i<n && *p; i++,p++)
-    ;
-  new = (char*)malloc(i+1);
-  if (new) {
-    memcpy(new, s, i);
-    new[i] = '\0';
-  }
-  return new;
-}
-
 node*
 node_value_new(node* v)
 {
@@ -232,7 +215,7 @@ node_string_new(const char* s, size_t l)
 
   np->type = NODE_VALUE;
   np->value.t = NODE_VALUE_STRING;
-  np->value.v.s = strndup0(s, l);
+  np->value.v.s = strm_str_new(s, l);
   return np;
 }
 
@@ -254,7 +237,7 @@ node_ident_str(node_id id)
 
   np->type = NODE_VALUE;
   np->value.t = NODE_VALUE_STRING;
-  np->value.v.s = (char*)id->ptr;
+  np->value.v.s = id;
   return np;
 }
 

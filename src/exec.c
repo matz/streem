@@ -4,19 +4,6 @@
 #define NODE_ERROR_RUNTIME 0
 #define NODE_ERROR_RETURN 1
 
-static char*
-strdup0(const char *s)
-{
-  size_t len = strlen(s);
-  char *p;
-
-  p = (char*)malloc(len+1);
-  if (p) {
-    strcpy(p, s);
-  }
-  return p;
-}
-
 node_value* node_expr(node_ctx*, node*);
 
 node_value*
@@ -63,7 +50,7 @@ node_expr(node_ctx* ctx, node* np)
         return NULL;
       }
       if (v->t == NODE_VALUE_NIL || v->v.p == NULL ||
-          (v->t == NODE_VALUE_STRING && *v->v.s == 0)) {
+          (v->t == NODE_VALUE_STRING && v->v.s->len == 0)) {
         if (nif->opt_else != NULL)
           node_expr_stmt(ctx, nif->opt_else);
       } else {
@@ -81,11 +68,13 @@ node_expr(node_ctx* ctx, node* np)
         if (ctx->exc != NULL) return NULL;
         if (lhs->t == NODE_VALUE_STRING && rhs->t == NODE_VALUE_STRING) {
           node_value* new = malloc(sizeof(node_value));
-          char *p = malloc(strlen(lhs->v.s) + strlen(rhs->v.s) + 1);
-          strcpy(p, lhs->v.s);
-          strcat(p, rhs->v.s);
+          char* p;
+          new->v.s = strm_str_new(NULL, lhs->v.s->len + rhs->v.s->len);
           new->t = NODE_VALUE_STRING;
-          new->v.s = p;
+          p = (char*)new->v.s->ptr;
+          memcpy(p, lhs->v.s->ptr, lhs->v.s->len);
+          memcpy(p+lhs->v.s->len, rhs->v.s, rhs->v.s->len);
+          p[new->v.s->len] = '\0';
           return new;
         } else if (lhs->t == NODE_VALUE_DOUBLE && rhs->t == NODE_VALUE_DOUBLE) {
           node_value* new = malloc(sizeof(node_value));
@@ -243,7 +232,7 @@ node_cputs(node_ctx* ctx, FILE* out, node_values* args) {
         fprintf(out, "%g", v->v.d);
         break;
       case NODE_VALUE_STRING:
-        fprintf(out, "'%s'", v->v.s);
+        fprintf(out, "'%*s'", v->v.s->len, v->v.s->ptr);
         break;
       case NODE_VALUE_NIL:
         fprintf(out, "nil");
@@ -252,7 +241,7 @@ node_cputs(node_ctx* ctx, FILE* out, node_values* args) {
         fprintf(out, v->v.b ? "true" : "false");
         break;
       case NODE_VALUE_ERROR:
-        fprintf(out, "%s", v->v.s);
+        fprintf(out, "'%*s'", v->v.s->len, v->v.s->ptr);
         break;
       default:
         fprintf(out, "<%p>", v->v.p);
@@ -277,7 +266,7 @@ node_raise(node_ctx* ctx, const char* msg) {
   ctx->exc->type = NODE_ERROR_RUNTIME;
   ctx->exc->arg = malloc(sizeof(node_value));
   ctx->exc->arg->t = NODE_VALUE_ERROR;
-  ctx->exc->arg->v.s = strdup0(msg);
+  ctx->exc->arg->v.s = strm_str_new(msg, strlen(msg));
 }
 
 void
