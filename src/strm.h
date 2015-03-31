@@ -18,7 +18,6 @@ typedef enum {
 } strm_value_type;
 
 typedef intptr_t strm_id;
-typedef char* strm_string;
 
 typedef struct {
   strm_value_type t;

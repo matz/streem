@@ -84,7 +84,7 @@ false{TRAIL} {
 };
 
 \"([^\\\"]|\\.)*\"      {
-  lval->nd = node_string_len_new(yytext+1, strlen(yytext)-2);
+  lval->nd = node_string_new(yytext+1, strlen(yytext)-2);
   LEX_RETURN(lit_string);
 };
 

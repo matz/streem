@@ -231,18 +231,7 @@ node_double_new(double d)
 }
 
 node*
-node_string_new(strm_string s)
-{
-  node* np = malloc(sizeof(node));
-
-  np->type = NODE_VALUE;
-  np->value.t = STRM_VALUE_STRING;
-  np->value.v.s = strdup0(s);
-  return np;
-}
-
-node*
-node_string_len_new(strm_string s, size_t l)
+node_string_new(const char* s, size_t l)
 {
   node* np = malloc(sizeof(node));
 
