@@ -240,7 +240,7 @@ node_cputs(node_ctx* ctx, FILE* out, node_values* args) {
         fprintf(out, "%ld", v->v.i);
         break;
       case NODE_VALUE_DOUBLE:
-        fprintf(out, "%f", v->v.d);
+        fprintf(out, "%g", v->v.d);
         break;
       case NODE_VALUE_STRING:
         fprintf(out, "'%s'", v->v.s);
