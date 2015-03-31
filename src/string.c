@@ -118,7 +118,7 @@ strm_str_new(const char *p, size_t len)
 {
   if (!strm_event_loop_started) {
     /* single thread mode */
-    if (len < STRM_STR_INTERN_LIMIT || readonly_data_p(p)) {
+    if (p && (len < STRM_STR_INTERN_LIMIT || readonly_data_p(p))) {
       return str_intern(p, len);
     }
   }
@@ -130,6 +130,7 @@ strm_str_intern(const char *p, size_t len)
 {
   strm_string *str;
 
+  assert(p!=NULL);
   if (!strm_event_loop_started) {
     return str_intern(p, len);
   }
