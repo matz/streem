@@ -180,7 +180,7 @@ node_expr(node_ctx* ctx, node* np)
       /* TODO: wip code of ident */
       node_call* ncall = np->value.v.p;
       if (ncall->ident != NULL) {
-        strm_value v = strm_var_getv(ncall->ident->value.v.id);
+        strm_value v = strm_var_get(ncall->ident->value.v.id);
 
         if (v.vtype == STRM_VALUE_CFUNC) {
           node_values* v0 = ncall->args->value.v.p;
@@ -283,10 +283,7 @@ node_raise(node_ctx* ctx, const char* msg) {
 void
 node_init(node_ctx* ctx)
 {
-  strm_value v;
-
-  v = strm_cfunc_value(node_puts);
-  strm_var_set("puts", v);
+  strm_var_def("puts", strm_cfunc_value(node_puts));
 }
 
 int

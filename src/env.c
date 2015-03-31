@@ -32,7 +32,7 @@ env_get(strm_env *env, struct strm_string* name)
 }
 
 void
-strm_var_setv(struct strm_string* name, strm_value val)
+strm_var_set(struct strm_string* name, strm_value val)
 {
   if (!globals) {
     globals = kh_init(env);
@@ -41,22 +41,16 @@ strm_var_setv(struct strm_string* name, strm_value val)
 }
 
 void
-strm_var_set(const char* name, strm_value val)
+strm_var_def(const char* name, strm_value val)
 {
-  strm_var_setv(strm_str_intern(name, strlen(name)), val);
+  strm_var_set(strm_str_intern(name, strlen(name)), val);
 }
 
 strm_value
-strm_var_getv(struct strm_string* name)
+strm_var_get(struct strm_string* name)
 {
   if (!globals) {
     globals = kh_init(env);
   }
   return env_get(globals, name);
-}
-
-strm_value
-strm_var_get(const char* name)
-{
-  return strm_var_getv(strm_str_intern(name, strlen(name)));
 }

@@ -89,10 +89,9 @@ struct strm_string *strm_str_intern(const char *p, size_t len);
 int strm_str_eq(struct strm_string *a, struct strm_string *b);
 
 /* ----- Variables */
-void strm_var_setv(struct strm_string*, strm_value);
-void strm_var_set(const char*, strm_value);
-strm_value strm_var_getv(struct strm_string*);
-strm_value strm_var_get(const char*);
+void strm_var_set(struct strm_string*, strm_value);
+void strm_var_def(const char*, strm_value);
+strm_value strm_var_get(struct strm_string*);
 /* ----- Arrays */
 struct strm_array {
   STRM_OBJ_HEADER;
