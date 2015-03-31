@@ -8,19 +8,6 @@ extern int yyparse(parser_state*);
 extern int yydebug;
 
 static char*
-strdup0(const char *s)
-{
-  size_t len = strlen(s);
-  char *p;
-
-  p = (char*)malloc(len+1);
-  if (p) {
-    strcpy(p, s);
-  }
-  return p;
-}
-
-static char*
 strndup0(const char *s, size_t n)
 {
   size_t i;
@@ -244,16 +231,21 @@ node_ident_new(node_id id)
   node* np = malloc(sizeof(node));
 
   np->type = NODE_IDENT;
-  np->value.t = NODE_VALUE_FIXNUM;
+  np->value.t = NODE_VALUE_IDENT;
   np->value.v.id = id;
   return np;
 }
 
 node_id
-node_ident_of(char* s)
+node_ident_of(const char* s)
 {
+  extern int strm_event_loop_started;
+  struct strm_string *str;
+
+  assert(!strm_event_loop_started);
+  str = strm_str_intern(s, strlen(s));
   /* TODO: get id of the identifier which named as s */
-  return (node_id) strdup0(s);
+  return (node_id)str;
 }
 
 node*

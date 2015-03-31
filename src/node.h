@@ -8,7 +8,8 @@ typedef enum {
   NODE_VALUE_MAP,
   NODE_VALUE_STRING,
   NODE_VALUE_DOUBLE,
-  NODE_VALUE_FIXNUM,
+  NODE_VALUE_INT,
+  NODE_VALUE_IDENT,
   NODE_VALUE_NIL,
   NODE_VALUE_CFUNC,
   NODE_VALUE_USER,
@@ -153,7 +154,7 @@ extern node* node_emit_new(node*);
 extern node* node_return_new(node*);
 extern node* node_break_new();
 extern node* node_ident_new(node_id);
-extern node_id node_ident_of(char*);
+extern node_id node_ident_of(const char*);
 extern node* node_nil();
 extern node* node_true();
 extern node* node_false();

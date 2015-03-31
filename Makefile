@@ -3,7 +3,7 @@ LEX = flex
 CC = gcc
 TARGET = bin/streem
 CFLAGS = -g -Wall
-LIBS =
+LIBS = -lpthread
 
 ifeq (Windows_NT,$(OS))
 TARGET:=$(TARGET).exe

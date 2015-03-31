@@ -84,6 +84,7 @@ struct strm_string *strm_str_new(const char*,size_t len);
 #define strm_str_value(p,len) strm_ptr_value(strm_str_new(p,len))
 #define strm_value_str(v) (struct strm_string*)strm_value_obj(v, STRM_OBJ_STRING)
 
+struct strm_string *strm_str_intern(const char *p, size_t len);
 int strm_str_eq(struct strm_string *a, struct strm_string *b);
 
 /* ----- Arrays */
