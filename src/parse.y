@@ -22,6 +22,7 @@
 %type <nd> stmts args opt_args opt_block f_args map map_args bparam
 %type <nd> opt_else opt_elsif
 %type <id> identifier
+%type <nd> lit_string lit_number
 
 %pure-parser
 %parse-param {parser_state *p}
@@ -352,12 +353,12 @@ args            : expr
 
 primary0        : lit_number
                     {
-                      $$ = $<nd>1;
+                      $$ = $1;
                     }
                 | lit_string
                     {
-                      $$ = $<nd>1;
-					}
+                      $$ = $1;
+                    }
                 | identifier
                     {
                       $$ = node_ident_new($1);
@@ -440,7 +441,7 @@ primary         : primary0
 
 map             : lit_string ':' expr
                     {
-                      $$ = node_pair_new($<nd>1, $3);
+                      $$ = node_pair_new($1, $3);
                     }
                 | identifier ':' expr
                     {
