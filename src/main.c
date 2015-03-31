@@ -108,6 +108,14 @@ dump_node(node* np, int indent) {
       break;
     }
     break;
+  case NODE_ARRAY:
+    printf("ARRAY:\n");
+    {
+      node_values* arr0 = np->value.v.p;
+      for (i = 0; i < arr0->len; i++)
+        dump_node(arr0->data[i], indent+1);
+    }
+    break;
   default:
     printf("UNKNWON(%d)\n", np->type);
     break;
