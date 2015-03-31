@@ -131,6 +131,9 @@ typedef struct {
 
 typedef node_value* (*node_cfunc)(node_ctx*, node_values*);
 
+node_values* node_values_new();
+void node_values_add(node_values*, void*);
+
 extern node* node_value_new(node*);
 extern node* node_array_new();
 extern node* node_array_of(node*);
