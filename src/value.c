@@ -136,6 +136,18 @@ strm_flt_p(strm_value v)
 }
 
 int
+strm_cfunc_p(strm_value v)
+{
+  return v.vtype == STRM_VALUE_CFUNC;
+}
+
+int
+strm_task_p(strm_value v)
+{
+  return v.vtype == STRM_VALUE_TASK;
+}
+
+int
 strm_ptr_eq(struct strm_object *a, struct strm_object *b)
 {
   if (a == b) return TRUE;

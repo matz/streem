@@ -56,6 +56,8 @@ int strm_value_eq(strm_value, strm_value);
 int strm_num_p(strm_value);
 int strm_int_p(strm_value);
 int strm_flt_p(strm_value);
+int strm_task_p(strm_value);
+int strm_cfunc_p(strm_value);
 
 enum strm_obj_type {
   STRM_OBJ_ARRAY,

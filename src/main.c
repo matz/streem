@@ -178,6 +178,7 @@ main(int argc, const char**argv)
     }
     else {
       node_run(&state);
+      strm_loop();
     }
   }
   else if (check) {

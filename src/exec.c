@@ -132,6 +132,23 @@ exec_neq(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
   return 0;
 }
 
+static int
+exec_bar(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
+{
+  assert(argc == 2);
+  if (strm_int_p(args[0]) && strm_int_p(args[1])) {
+    *ret = strm_int_value(strm_value_int(args[0])|strm_value_int(args[1]));
+    return 0;
+  }
+  if (strm_task_p(args[0]) && strm_task_p(args[1])) {
+    strm_connect((strm_stream*)args[0].val.p, (strm_stream*)args[1].val.p);
+    *ret = args[1];
+    return 0;
+  }
+  node_raise(ctx, "type error");
+  return 1;
+}
+
 typedef int (*exec_cfunc)(node_ctx*, int, strm_value*, strm_value*);
 
 static int
@@ -363,6 +380,7 @@ node_init(node_ctx* ctx)
   strm_var_def(">=", strm_cfunc_value(exec_ge));
   strm_var_def("==", strm_cfunc_value(exec_eq));
   strm_var_def("!=", strm_cfunc_value(exec_neq));
+  strm_var_def("|", strm_cfunc_value(exec_bar));
 }
 
 int
