@@ -135,7 +135,7 @@ exec_neq(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
 typedef int (*exec_cfunc)(node_ctx*, int, strm_value*, strm_value*);
 
 static int
-op_call(node_ctx* ctx, node_id id, int argc, strm_value* args, strm_value* ret)
+exec_call(node_ctx* ctx, node_id id, int argc, strm_value* args, strm_value* ret)
 {
   strm_value m = strm_var_get(id);
 
@@ -197,7 +197,7 @@ exec_expr(node_ctx* ctx, node* np, strm_value* val)
         n = exec_expr(ctx, nop->rhs, &args[i++]);
         if (n) return n;
       }
-      return op_call(ctx, nop->op, i, args, val);
+      return exec_call(ctx, nop->op, i, args, val);
     }
     break;
   case NODE_CALL:
@@ -213,7 +213,7 @@ exec_expr(node_ctx* ctx, node* np, strm_value* val)
           n = exec_expr(ctx, v0->data[i], &args[i]);
           if (n) return n;
         }
-        return op_call(ctx, ncall->ident->value.v.id, i, args, val);
+        return exec_call(ctx, ncall->ident->value.v.id, i, args, val);
       }
       else {
         node_block* nblk = ncall->blk->value.v.p;
