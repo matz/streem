@@ -49,6 +49,7 @@ exec_plus(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
 static int
 exec_minus(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
 {
+  assert(argc == 2);
   if (strm_int_p(args[0]) && strm_int_p(args[1])) {
     *ret = strm_int_value(strm_value_int(args[0])-strm_value_int(args[1]));
     return 0;
@@ -63,6 +64,7 @@ exec_minus(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
 static int
 exec_mult(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
 {
+  assert(argc == 2);
   if (strm_int_p(args[0]) && strm_int_p(args[1])) {
     *ret = strm_int_value(strm_value_int(args[0])*strm_value_int(args[1]));
     return 0;
@@ -77,6 +79,7 @@ exec_mult(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
 static int
 exec_div(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
 {
+  assert(argc == 2);
   *ret = strm_flt_value(strm_value_flt(args[0])/strm_value_flt(args[1]));
   return 0;
 }
@@ -84,6 +87,7 @@ exec_div(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
 static int
 exec_gt(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
 {
+  assert(argc == 2);
   *ret = strm_bool_value(strm_value_flt(args[0])>strm_value_flt(args[1]));
   return 0;
 }
@@ -91,6 +95,7 @@ exec_gt(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
 static int
 exec_ge(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
 {
+  assert(argc == 2);
   *ret = strm_bool_value(strm_value_flt(args[0])>=strm_value_flt(args[1]));
   return 0;
 }
@@ -98,6 +103,7 @@ exec_ge(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
 static int
 exec_lt(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
 {
+  assert(argc == 2);
   *ret = strm_bool_value(strm_value_flt(args[0])<strm_value_flt(args[1]));
   return 0;
 }
@@ -105,6 +111,7 @@ exec_lt(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
 static int
 exec_le(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
 {
+  assert(argc == 2);
   *ret = strm_bool_value(strm_value_flt(args[0])<=strm_value_flt(args[1]));
   return 0;
 }
@@ -112,6 +119,7 @@ exec_le(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
 static int
 exec_eq(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
 {
+  assert(argc == 2);
   *ret = strm_bool_value(strm_value_eq(args[0], args[1]));
   return 0;
 }
@@ -119,6 +127,7 @@ exec_eq(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
 static int
 exec_neq(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
 {
+  assert(argc == 2);
   *ret = strm_bool_value(!strm_value_eq(args[0], args[1]));
   return 0;
 }
