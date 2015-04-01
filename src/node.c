@@ -3,9 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-extern FILE *yyin, *yyout;
-extern int yyparse(parser_state*);
-extern int yydebug;
+#include "y.tab.h"
+#include "lex.yy.h"
 
 node*
 node_value_new(node* v)

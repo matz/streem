@@ -155,4 +155,3 @@ extern node* node_false();
 extern void node_free(node*);
 
 #endif /* _NODE_H_ */
-

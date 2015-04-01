@@ -24,6 +24,8 @@ TAGS
 tags
 /src/y.tab.c
 /src/lex.yy.c
+/src/y.tab.h
+/src/lex.yy.h
 /src/parse.tab.c
 /src/y.output
 /bin

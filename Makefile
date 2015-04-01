@@ -1,4 +1,4 @@
-YACC = bison -y
+YACC = bison -y -d
 LEX = flex
 CC = gcc
 TARGET = bin/streem
@@ -30,8 +30,8 @@ test : all
 src/y.tab.c : src/parse.y
 	$(YACC) -o src/y.tab.c src/parse.y
 
-src/lex.yy.c : src/lex.l
-	$(LEX) -osrc/lex.yy.c src/lex.l
+src/lex.yy.c src/lex.yy.h : src/lex.l
+	$(LEX) --header-file=src/lex.yy.h -osrc/lex.yy.c src/lex.l
 
 src/parse.o : src/y.tab.c src/lex.yy.c
 	$(CC) -g -MMD -MP -c src/y.tab.c -o src/parse.o
