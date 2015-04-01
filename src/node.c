@@ -145,7 +145,7 @@ node_op_new(const char* op, node* lhs, node* rhs)
 {
   node_op* nop = malloc(sizeof(node_op));
   nop->lhs = lhs;
-  nop->op = op;
+  nop->op = node_ident_of(op);
   nop->rhs = rhs;
 
   node* np = malloc(sizeof(node));

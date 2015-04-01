@@ -19,11 +19,12 @@ exec_expr_stmt(node_ctx* ctx, node* np, strm_value* val)
 }
 
 static int
-exec_plus(strm_value* a, strm_value* b, strm_value* c)
+exec_plus(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
 {
-  if (strm_str_p(*a)) {
-    strm_string *str1 = strm_value_str(*a);
-    strm_string *str2 = strm_value_str(*b);
+  assert(argc == 2);
+  if (strm_str_p(*args)) {
+    strm_string *str1 = strm_value_str(args[0]);
+    strm_string *str2 = strm_value_str(args[1]);
     strm_string *str3 = strm_str_new(NULL, str1->len + str2->len);
     char *p;
 
@@ -31,84 +32,110 @@ exec_plus(strm_value* a, strm_value* b, strm_value* c)
     memcpy(p, str1->ptr, str1->len);
     memcpy(p+str1->len, str2->ptr, str2->len);
     p[str3->len] = '\0';
-    *c = strm_ptr_value(str3);
+    *ret = strm_ptr_value(str3);
     return 0;
   }
-  else if (strm_int_p(*a) && strm_int_p(*b)) {
-    *c = strm_int_value(strm_value_int(*a)+strm_value_int(*b));
+  else if (strm_int_p(args[0]) && strm_int_p(args[1])) {
+    *ret = strm_int_value(strm_value_int(args[0])+strm_value_int(args[1]));
     return 0;
   }
-  else if (strm_num_p(*a)) {
-    *c = strm_flt_value(strm_value_flt(*a)+strm_value_flt(*b));
-    return 0;
-  }
-  return 1;
-}
-
-static int
-exec_minus(strm_value* a, strm_value* b, strm_value* c)
-{
-  if (strm_int_p(*a) && strm_int_p(*b)) {
-    *c = strm_int_value(strm_value_int(*a)-strm_value_int(*b));
-    return 0;
-  }
-  else if (strm_num_p(*a)) {
-    *c = strm_flt_value(strm_value_flt(*a)-strm_value_flt(*b));
+  else if (strm_num_p(args[0])) {
+    *ret = strm_flt_value(strm_value_flt(args[0])+strm_value_flt(args[1]));
     return 0;
   }
   return 1;
 }
 
 static int
-exec_mult(strm_value* a, strm_value* b, strm_value* c)
+exec_minus(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
 {
-  if (strm_int_p(*a) && strm_int_p(*b)) {
-    *c = strm_int_value(strm_value_int(*a)*strm_value_int(*b));
+  if (strm_int_p(args[0]) && strm_int_p(args[1])) {
+    *ret = strm_int_value(strm_value_int(args[0])-strm_value_int(args[1]));
     return 0;
   }
-  else if (strm_num_p(*a)) {
-    *c = strm_flt_value(strm_value_flt(*a)*strm_value_flt(*b));
+  else if (strm_num_p(args[0])) {
+    *ret = strm_flt_value(strm_value_flt(args[0])-strm_value_flt(args[1]));
     return 0;
   }
   return 1;
 }
 
 static int
-exec_div(strm_value* a, strm_value* b, strm_value* c)
+exec_mult(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
 {
-  *c = strm_flt_value(strm_value_flt(*a)/strm_value_flt(*b));
+  if (strm_int_p(args[0]) && strm_int_p(args[1])) {
+    *ret = strm_int_value(strm_value_int(args[0])*strm_value_int(args[1]));
+    return 0;
+  }
+  else if (strm_num_p(args[0])) {
+    *ret = strm_flt_value(strm_value_flt(args[0])*strm_value_flt(args[1]));
+    return 0;
+  }
+  return 1;
+}
+
+static int
+exec_div(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
+{
+  *ret = strm_flt_value(strm_value_flt(args[0])/strm_value_flt(args[1]));
   return 0;
 }
 
 static int
-exec_gt(strm_value* a, strm_value* b, strm_value* c)
+exec_gt(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
 {
-  *c = strm_bool_value(strm_value_flt(*a)>strm_value_flt(*b));
+  *ret = strm_bool_value(strm_value_flt(args[0])>strm_value_flt(args[1]));
   return 0;
 }
 
 static int
-exec_ge(strm_value* a, strm_value* b, strm_value* c)
+exec_ge(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
 {
-  *c = strm_bool_value(strm_value_flt(*a)>=strm_value_flt(*b));
+  *ret = strm_bool_value(strm_value_flt(args[0])>=strm_value_flt(args[1]));
   return 0;
 }
 
 static int
-exec_lt(strm_value* a, strm_value* b, strm_value* c)
+exec_lt(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
 {
-  *c = strm_bool_value(strm_value_flt(*a)<strm_value_flt(*b));
+  *ret = strm_bool_value(strm_value_flt(args[0])<strm_value_flt(args[1]));
   return 0;
 }
 
 static int
-exec_le(strm_value* a, strm_value* b, strm_value* c)
+exec_le(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
 {
-  *c = strm_bool_value(strm_value_flt(*a)<=strm_value_flt(*b));
+  *ret = strm_bool_value(strm_value_flt(args[0])<=strm_value_flt(args[1]));
+  return 0;
+}
+
+static int
+exec_eq(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
+{
+  *ret = strm_bool_value(strm_value_eq(args[0], args[1]));
+  return 0;
+}
+
+static int
+exec_neq(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
+{
+  *ret = strm_bool_value(!strm_value_eq(args[0], args[1]));
   return 0;
 }
 
 typedef int (*exec_cfunc)(node_ctx*, int, strm_value*, strm_value*);
+
+static int
+op_call(node_ctx* ctx, node_id id, int argc, strm_value* args, strm_value* ret)
+{
+  strm_value m = strm_var_get(id);
+
+  if (m.vtype == STRM_VALUE_CFUNC) {
+    return ((exec_cfunc)m.val.p)(ctx, argc, args, ret);
+  }
+  node_raise(ctx, "function not found");
+  return 1;
+}
 
 static int
 exec_expr(node_ctx* ctx, node* np, strm_value* val)
@@ -150,46 +177,18 @@ exec_expr(node_ctx* ctx, node* np, strm_value* val)
   case NODE_OP:
     {
       node_op* nop = np->value.v.p;
-      strm_value lhs, rhs;
+      strm_value args[2];
+      int i=0;
 
-      n = exec_expr(ctx, nop->lhs, &lhs);
-      if (n) return n;
-      n = exec_expr(ctx, nop->rhs, &rhs);
-      if (n) return n;
-      if (*nop->op == '+' && *(nop->op+1) == '\0') {
-        return exec_plus(&lhs, &rhs, val);
+      if (nop->lhs) {
+        n = exec_expr(ctx, nop->lhs, &args[i++]);
+        if (n) return n;
       }
-      if (*nop->op == '-' && *(nop->op+1) == '\0') {
-        return exec_minus(&lhs, &rhs, val);
+      if (nop->rhs) {
+        n = exec_expr(ctx, nop->rhs, &args[i++]);
+        if (n) return n;
       }
-      if (*nop->op == '*' && *(nop->op+1) == '\0') {
-        return exec_mult(&lhs, &rhs, val);
-      }
-      if (*nop->op == '/' && *(nop->op+1) == '\0') {
-        return exec_div(&lhs, &rhs, val);
-      }
-      if (*nop->op == '<') {
-        if (*(nop->op+1) == '=')
-          return exec_le(&lhs, &rhs, val);
-        else
-          return exec_lt(&lhs, &rhs, val);
-      }
-      if (*nop->op == '>') {
-        if (*(nop->op+1) == '=')
-          return exec_ge(&lhs, &rhs, val);
-        else
-          return exec_gt(&lhs, &rhs, val);
-      }
-      if (*nop->op == '=' && (*(nop->op+1)) == '=') {
-        *val = strm_bool_value(strm_value_eq(rhs, lhs));
-        return 0;
-      }
-      if (*nop->op == '!' && (*(nop->op+1)) == '=') {
-        *val = strm_bool_value(!strm_value_eq(rhs, lhs));
-        return 0;
-      }
-      /* TODO: invalid operator */
-      node_raise(ctx, "invalid operator");
+      return op_call(ctx, nop->op, i, args, val);
     }
     break;
   case NODE_CALL:
@@ -197,22 +196,15 @@ exec_expr(node_ctx* ctx, node* np, strm_value* val)
       /* TODO: wip code of ident */
       node_call* ncall = np->value.v.p;
       if (ncall->ident != NULL) {
-        strm_value v = strm_var_get(ncall->ident->value.v.id);
+        int i;
+        node_values* v0 = ncall->args->value.v.p;
+        strm_value *args = malloc(sizeof(strm_value)*v0->len);
 
-        if (v.vtype == STRM_VALUE_CFUNC) {
-          node_values* v0 = ncall->args->value.v.p;
-          strm_value *args = malloc(sizeof(strm_value)*v0->len);
-          int i;
-
-          for (i = 0; i < v0->len; i++) {
-            n = exec_expr(ctx, v0->data[i], &args[i]);
-            if (n) return n;
-          }
-          return ((exec_cfunc)v.val.p)(ctx, v0->len, args, val);
+        for (i = 0; i < v0->len; i++) {
+          n = exec_expr(ctx, v0->data[i], &args[i]);
+          if (n) return n;
         }
-        else {
-          node_raise(ctx, "function not found");
-        }
+        return op_call(ctx, ncall->ident->value.v.id, i, args, val);
       }
       else {
         node_block* nblk = ncall->blk->value.v.p;
@@ -269,7 +261,6 @@ exec_expr(node_ctx* ctx, node* np, strm_value* val)
   }
   return 1;
 }
-
 
 static int
 cputs_ptr(node_ctx* ctx, FILE* out, struct strm_object *obj)
@@ -349,10 +340,20 @@ node_raise(node_ctx* ctx, const char* msg) {
 static void
 node_init(node_ctx* ctx)
 {
-  strm_var_def("puts", strm_cfunc_value(exec_puts));
   strm_var_def("STDIN", strm_task_value(strm_readio(0 /* stdin*/)));
   strm_var_def("STDOUT", strm_task_value(strm_writeio(1 /* stdout*/)));
   strm_var_def("STDERR", strm_task_value(strm_writeio(2 /* stdout*/)));
+  strm_var_def("puts", strm_cfunc_value(exec_puts));
+  strm_var_def("+", strm_cfunc_value(exec_plus));
+  strm_var_def("-", strm_cfunc_value(exec_minus));
+  strm_var_def("*", strm_cfunc_value(exec_mult));
+  strm_var_def("/", strm_cfunc_value(exec_div));
+  strm_var_def("<", strm_cfunc_value(exec_lt));
+  strm_var_def("<=", strm_cfunc_value(exec_le));
+  strm_var_def(">", strm_cfunc_value(exec_gt));
+  strm_var_def(">=", strm_cfunc_value(exec_ge));
+  strm_var_def("==", strm_cfunc_value(exec_eq));
+  strm_var_def("!=", strm_cfunc_value(exec_neq));
 }
 
 int

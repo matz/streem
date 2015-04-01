@@ -3,6 +3,15 @@
 #include <stdio.h>
 
 static void
+print_id(const char* pre, node_id id)
+{
+  strm_string *str = id;
+
+  fputs(pre, stdout);
+  fprintf(stdout, "%*s\n", str->len, str->ptr);
+}
+
+static void
 dump_node(node* np, int indent) {
   int i;
   for (i = 0; i < indent; i++)
@@ -47,7 +56,7 @@ dump_node(node* np, int indent) {
     dump_node(((node_op*) np->value.v.p)->lhs, indent+1);
     for (i = 0; i < indent+1; i++)
       putchar(' ');
-    puts(((node_op*) np->value.v.p)->op);
+    print_id("", ((node_op*) np->value.v.p)->op);
     dump_node(((node_op*) np->value.v.p)->rhs, indent+1);
     break;
   case NODE_BLOCK:
@@ -67,7 +76,7 @@ dump_node(node* np, int indent) {
     dump_node(((node_return*) np->value.v.p)->rv, indent+1);
     break;
   case NODE_IDENT:
-    printf("IDENT: %p\n", (void*)np->value.v.id);
+    print_id("IDENT: ", np->value.v.id);
     break;
   case NODE_VALUE:
     switch (np->value.t) {

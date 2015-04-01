@@ -104,7 +104,7 @@ typedef struct {
 
 typedef struct {
   node* lhs;
-  const char* op;
+  node_id op;
   node* rhs;
 } node_op;
 
