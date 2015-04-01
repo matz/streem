@@ -60,7 +60,7 @@ exec_minus(strm_value* a, strm_value* b, strm_value* c)
 }
 
 static int
-exec_mul(strm_value* a, strm_value* b, strm_value* c)
+exec_mult(strm_value* a, strm_value* b, strm_value* c)
 {
   if (strm_int_p(*a) && strm_int_p(*b)) {
     *c = strm_int_value(strm_value_int(*a)*strm_value_int(*b));
@@ -163,7 +163,7 @@ exec_expr(node_ctx* ctx, node* np, strm_value* val)
         return exec_minus(&lhs, &rhs, val);
       }
       if (*nop->op == '*' && *(nop->op+1) == '\0') {
-        return exec_mul(&lhs, &rhs, val);
+        return exec_mult(&lhs, &rhs, val);
       }
       if (*nop->op == '/' && *(nop->op+1) == '\0') {
         return exec_div(&lhs, &rhs, val);
