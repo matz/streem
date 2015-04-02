@@ -91,8 +91,17 @@ strm_value_bool(strm_value v)
 long
 strm_value_int(strm_value v)
 {
-  assert(v.vtype == STRM_VALUE_INT);
-  return v.val.i;
+  switch (v.vtype) {
+  case STRM_VALUE_FLT:
+    return (long)v.val.f;
+  case STRM_VALUE_INT:
+    return v.val.i;
+  default:
+    assert(v.vtype == STRM_VALUE_INT);
+    break;
+  }
+  /* not reached */
+  return 0;
 }
 
 double
