@@ -191,3 +191,32 @@ strm_value_eq(strm_value a, strm_value b)
     return FALSE;
   }
 }
+
+strm_string*
+strm_to_str(strm_value v)
+{
+  char buf[32];
+  int n;
+
+  switch (v.vtype) {
+  case STRM_VALUE_FLT:
+    n = sprintf(buf, "%g", v.val.f);
+    return strm_str_new(buf, n);
+  case STRM_VALUE_INT:
+    n = sprintf(buf, "%ld", v.val.i);
+    return strm_str_new(buf, n);
+  case STRM_VALUE_PTR:
+    switch (((struct strm_object*)v.val.p)->type) {
+    case STRM_OBJ_STRING:
+      return (strm_string*)v.val.p;
+    default:
+      /* fall through */
+      break;
+    }
+  default:
+    n = sprintf(buf, "<%p>", v.val.p);
+    return strm_str_new(buf, n);
+  }
+  /* not reached */
+  return NULL;
+}
