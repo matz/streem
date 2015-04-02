@@ -383,12 +383,15 @@ node_init(node_ctx* ctx)
   strm_var_def("|", strm_cfunc_value(exec_bar));
 }
 
+void strm_seq_init();
+
 int
 node_run(parser_state* p)
 {
   strm_value v;
 
   node_init(&p->ctx);
+  strm_seq_init(&p->ctx);
   exec_expr_stmt(&p->ctx, (node*)p->lval, &v);
   if (p->ctx.exc != NULL) {
     strm_value v;
