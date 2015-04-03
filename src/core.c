@@ -19,7 +19,7 @@ int strm_event_loop_started = FALSE;
 static void task_init();
 
 static int
-task_tid(strm_stream *s, int tid)
+task_tid(strm_task *s, int tid)
 {
   int i;
 
@@ -53,7 +53,7 @@ task_tid(strm_stream *s, int tid)
 static void
 task_push(int tid, struct strm_queue_task *t)
 {
-  strm_stream *s = t->strm;
+  strm_task *s = t->strm;
 
   assert(threads != NULL);
   task_tid(s, tid);
@@ -67,9 +67,9 @@ strm_task_push(struct strm_queue_task *t)
 }
 
 void
-strm_emit(strm_stream *strm, strm_value data, strm_func func)
+strm_emit(strm_task *strm, strm_value data, strm_func func)
 {
-  strm_stream *d = strm->dst;
+  strm_task *d = strm->dst;
   int tid = strm->tid;
 
   while (d) {
@@ -83,9 +83,9 @@ strm_emit(strm_stream *strm, strm_value data, strm_func func)
 }
 
 int
-strm_connect(strm_stream *src, strm_stream *dst)
+strm_connect(strm_task *src, strm_task *dst)
 {
-  strm_stream *s;
+  strm_task *s;
 
   assert(dst->mode != strm_task_prod);
   s = src->dst;
@@ -109,7 +109,7 @@ strm_connect(strm_stream *src, strm_stream *dst)
 
 int cpu_count();
 void strm_init_io_loop();
-strm_stream *strm_io_deque();
+strm_task *strm_io_deque();
 int strm_io_waiting();
 
 static int
@@ -190,10 +190,10 @@ strm_loop()
   return 1;
 }
 
-strm_stream*
+strm_task*
 strm_alloc_stream(strm_task_mode mode, strm_func start_func, strm_func close_func, void *data)
 {
-  strm_stream *s = malloc(sizeof(strm_stream));
+  strm_task *s = malloc(sizeof(strm_task));
   s->tid = -1;                  /* -1 means uninitialized */
   s->mode = mode;
   s->start_func = start_func;
@@ -207,7 +207,7 @@ strm_alloc_stream(strm_task_mode mode, strm_func start_func, strm_func close_fun
 }
 
 void
-pipeline_finish(strm_stream *strm, strm_value data)
+pipeline_finish(strm_task *strm, strm_value data)
 {
   pthread_mutex_lock(&pipeline_mutex);
   pipeline_count--;
@@ -218,12 +218,12 @@ pipeline_finish(strm_stream *strm, strm_value data)
 }
 
 void
-strm_close(strm_stream *strm)
+strm_close(strm_task *strm)
 {
   if (strm->close_func) {
     (*strm->close_func)(strm, strm_null_value());
   }
-  strm_stream *d = strm->dst;
+  strm_task *d = strm->dst;
 
   while (d) {
     strm_task_push(strm_queue_task(d, (strm_func)strm_close, strm_null_value()));

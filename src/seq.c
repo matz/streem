@@ -8,7 +8,7 @@ struct seq_seeder {
 };
 
 static void
-seq_seed(strm_stream *strm, strm_value data)
+seq_seed(strm_task *strm, strm_value data)
 {
   struct seq_seeder *s = strm->data;
 

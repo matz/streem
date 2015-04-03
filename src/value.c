@@ -120,6 +120,13 @@ strm_value_flt(strm_value v)
   return 0.0;
 }
 
+strm_task*
+strm_value_task(strm_value v)
+{
+  assert(v.vtype == STRM_VALUE_TASK);
+  return (strm_task*)v.val.p;
+}
+
 int
 strm_num_p(strm_value v)
 {

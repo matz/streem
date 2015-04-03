@@ -141,7 +141,7 @@ exec_bar(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
     return 0;
   }
   if (strm_task_p(args[0]) && strm_task_p(args[1])) {
-    strm_connect((strm_stream*)args[0].val.p, (strm_stream*)args[1].val.p);
+    strm_connect(strm_value_task(args[0]), strm_value_task(args[1]));
     *ret = args[1];
     return 0;
   }

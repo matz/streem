@@ -135,42 +135,44 @@ typedef enum {
   strm_task_cons,               /* Consumer */
 } strm_task_mode;
 
-typedef struct strm_stream strm_stream;
-typedef void (*strm_func)(strm_stream*, strm_value);
-typedef strm_value (*strm_map_func)(strm_stream*, strm_value);
+typedef struct strm_task strm_task;
+typedef void (*strm_func)(strm_task*, strm_value);
+typedef strm_value (*strm_map_func)(strm_task*, strm_value);
 
 #define STRM_IO_NOWAIT 1
 #define STRM_IO_BFULL  2
 
-struct strm_stream {
+struct strm_task {
   int tid;
   strm_task_mode mode;
   unsigned int flags;
   strm_func start_func;
   strm_func close_func;
   void *data;
-  strm_stream *dst;
-  strm_stream *nextd;
+  strm_task *dst;
+  strm_task *nextd;
 };
 
-strm_stream* strm_alloc_stream(strm_task_mode mode, strm_func start, strm_func close, void *data);
-void strm_emit(strm_stream *strm, strm_value data, strm_func cb);
-int strm_connect(strm_stream *src, strm_stream *dst);
+strm_task* strm_alloc_stream(strm_task_mode mode, strm_func start, strm_func close, void *data);
+void strm_emit(strm_task *strm, strm_value data, strm_func cb);
+int strm_connect(strm_task *src, strm_task *dst);
 int strm_loop();
-void strm_close(strm_stream *strm);
+void strm_close(strm_task *strm);
 
 extern int strm_event_loop_started;
+strm_task* strm_value_task(strm_value);
+
 /* ----- queue */
 typedef struct strm_queue strm_queue;
 struct strm_queue_task {
-  strm_stream *strm;
+  strm_task *strm;
   strm_func func;
   strm_value data;
   struct strm_queue_task *next;
 };
 
 strm_queue* strm_queue_alloc(void);
-struct strm_queue_task* strm_queue_task(strm_stream *strm, strm_func func, strm_value data);
+struct strm_queue_task* strm_queue_task(strm_task *strm, strm_func func, strm_value data);
 void strm_queue_free(strm_queue *q);
 void strm_queue_push(strm_queue *q, struct strm_queue_task *t);
 int strm_queue_exec(strm_queue *q);
@@ -180,10 +182,10 @@ int strm_queue_p(strm_queue *q);
 void strm_task_push(struct strm_queue_task *t);
 
 /* ----- I/O */
-void strm_io_start_read(strm_stream *strm, int fd, strm_func cb);
-void strm_io_start_write(strm_stream *strm, int fd, strm_func cb);
-void strm_io_stop(strm_stream *strm, int fd);
-strm_stream* strm_readio(int fd);
-strm_stream* strm_writeio(int fd);
+void strm_io_start_read(strm_task *strm, int fd, strm_func cb);
+void strm_io_start_write(strm_task *strm, int fd, strm_func cb);
+void strm_io_stop(strm_task *strm, int fd);
+strm_task* strm_readio(int fd);
+strm_task* strm_writeio(int fd);
 
 #endif

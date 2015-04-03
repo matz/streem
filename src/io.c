@@ -16,7 +16,7 @@ strm_io_waiting()
 }
 
 static int
-io_push(int fd, strm_stream *strm, strm_func cb)
+io_push(int fd, strm_task *strm, strm_func cb)
 {
   struct epoll_event ev = { 0 };
 
@@ -26,7 +26,7 @@ io_push(int fd, strm_stream *strm, strm_func cb)
 }
 
 static int
-io_kick(int fd, strm_stream *strm, strm_func cb)
+io_kick(int fd, strm_task *strm, strm_func cb)
 {
   struct epoll_event ev;
 
@@ -70,7 +70,7 @@ strm_init_io_loop()
 }
 
 static void
-strm_io_start(strm_stream *strm, int fd, strm_func cb, uint32_t events)
+strm_io_start(strm_task *strm, int fd, strm_func cb, uint32_t events)
 {
   int n;
 
@@ -89,7 +89,7 @@ strm_io_start(strm_stream *strm, int fd, strm_func cb, uint32_t events)
 }
 
 void
-strm_io_stop(strm_stream *strm, int fd)
+strm_io_stop(strm_task *strm, int fd)
 {
   if ((strm->flags & STRM_IO_NOWAIT) == 0) {
     io_wait_num--;
@@ -99,7 +99,7 @@ strm_io_stop(strm_stream *strm, int fd)
 }
 
 void
-strm_io_start_read(strm_stream *strm, int fd, strm_func cb)
+strm_io_start_read(strm_task *strm, int fd, strm_func cb)
 {
   strm_io_start(strm, fd, cb, EPOLLIN);
 }
@@ -110,7 +110,7 @@ struct fd_read_buffer {
   char buf[1024];
 };
 
-static void readline_cb(strm_stream *strm, strm_value data);
+static void readline_cb(strm_task *strm, strm_value data);
 
 static strm_value
 read_str(const char *beg, size_t len)
@@ -122,7 +122,7 @@ read_str(const char *beg, size_t len)
 }
 
 static void
-read_cb(strm_stream *strm, strm_value data)
+read_cb(strm_task *strm, strm_value data)
 {
   struct fd_read_buffer *b = strm->data;
   size_t count;
@@ -147,7 +147,7 @@ read_cb(strm_stream *strm, strm_value data)
 }
 
 static void
-readline_cb(strm_stream *strm, strm_value data)
+readline_cb(strm_task *strm, strm_value data)
 {
   struct fd_read_buffer *b = strm->data;
   strm_value s;
@@ -178,7 +178,7 @@ readline_cb(strm_stream *strm, strm_value data)
 }
 
 static void
-stdio_read(strm_stream *strm, strm_value data)
+stdio_read(strm_task *strm, strm_value data)
 {
   struct fd_read_buffer *buf = strm->data;
 
@@ -186,14 +186,14 @@ stdio_read(strm_stream *strm, strm_value data)
 }
 
 static void
-read_close(strm_stream *strm, strm_value d)
+read_close(strm_task *strm, strm_value d)
 {
   struct fd_read_buffer *b = strm->data;
 
   close(b->fd);
 }
 
-strm_stream*
+strm_task*
 strm_readio(int fd)
 {
   struct fd_read_buffer *buf = malloc(sizeof(struct fd_read_buffer));
@@ -208,7 +208,7 @@ struct write_data {
 };
 
 static void
-write_cb(strm_stream *strm, strm_value data)
+write_cb(strm_task *strm, strm_value data)
 {
   struct write_data *d = (struct write_data*)strm->data;
   strm_string *p = strm_to_str(data);
@@ -218,7 +218,7 @@ write_cb(strm_stream *strm, strm_value data)
 }
 
 static void
-write_close(strm_stream *strm, strm_value data)
+write_close(strm_task *strm, strm_value data)
 {
   struct write_data *d = (struct write_data*)strm->data;
 
@@ -226,7 +226,7 @@ write_close(strm_stream *strm, strm_value data)
   free(d);
 }
 
-strm_stream*
+strm_task*
 strm_writeio(int fd)
 {
   struct write_data *d = malloc(sizeof(struct write_data));
