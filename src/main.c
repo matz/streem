@@ -138,6 +138,7 @@ int
 main(int argc, const char**argv)
 {
   const char *prog = argv[0];
+  const char *e_prog = NULL;
   int i, n = 0, verbose = FALSE, check = FALSE;
   parser_state state;
 
@@ -151,6 +152,16 @@ main(int argc, const char**argv)
       case 'c':
         check = TRUE;
         break;
+      case 'e':
+        if (s[1] == '\0') {
+          e_prog = argv[2];
+          argc--; argv++;
+        }
+        else {
+          e_prog = &s[1];
+          s+=strlen(s);
+        }
+        break;
       default:
         fprintf(stderr, "%s: unknown option -%c\n", prog, *s);
       }
@@ -160,7 +171,10 @@ main(int argc, const char**argv)
   }
   node_parse_init(&state);
 
-  if (argc == 1) {              /* no args */
+  if (e_prog) {
+    n += node_parse_string(&state, e_prog);
+  }
+  else if (argc == 1) {              /* no args */
     n = node_parse_input(&state, stdin, "stdin");
   }
   else {

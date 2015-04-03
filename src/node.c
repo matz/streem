@@ -347,7 +347,21 @@ node_parse_input(parser_state* p, FILE *f, const char *fname)
   int n;
 
   /* yydebug = 1; */
-  yyin = f;
+  yyrestart(f);
+  n = yyparse(p);
+  if (n == 0 && p->nerr == 0) {
+    return 0;
+  }
+  return 1;
+}
+
+int
+node_parse_string(parser_state* p, const char *prog)
+{
+  int n;
+
+  /* yydebug = 1; */
+  yy_scan_string(prog);
   n = yyparse(p);
   if (n == 0 && p->nerr == 0) {
     return 0;
