@@ -171,6 +171,7 @@ task_init()
 int
 strm_loop()
 {
+  if (pipeline_count == 0) return 0;
   task_init();
   for (;;) {
     pthread_mutex_lock(&pipeline_mutex);
