@@ -96,6 +96,7 @@ strm_string *strm_str_intern(const char *p, size_t len);
 int strm_str_eq(strm_string *a, strm_string *b);
 int strm_str_p(strm_value v);
 
+strm_string *strm_to_str(strm_value v);
 /* ----- Variables */
 void strm_var_set(strm_string*, strm_value);
 void strm_var_def(const char*, strm_value);
