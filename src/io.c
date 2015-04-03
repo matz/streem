@@ -156,7 +156,7 @@ readline_cb(strm_stream *strm, strm_value data)
 
   p = memchr(b->beg, '\n', len);
   if (p) {
-    len = p - b->beg + 1;
+    len = p - b->beg;
   }
   else {                        /* no newline */
     if (len < sizeof(b->buf)) {
@@ -173,7 +173,7 @@ readline_cb(strm_stream *strm, strm_value data)
     return;
   }
   s = read_str(b->beg, len);
-  b->beg += len;
+  b->beg += len + 1;
   strm_emit(strm, s, readline_cb);
 }
 
@@ -214,9 +214,7 @@ write_cb(strm_stream *strm, strm_value data)
   strm_string *p = strm_to_str(data);
 
   write(d->fd, p->ptr, p->len);
-  if (!strm_str_p(data)) {
-    write(d->fd, "\n", 1);
-  }
+  write(d->fd, "\n", 1);
 }
 
 static void
