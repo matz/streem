@@ -13,14 +13,15 @@ node_value_new(node* v)
   return NULL;
 }
 
-node_values*
-node_values_new() {
+node*
+node_values_new(node_type type) {
   /* TODO: error check */
   node_values* v = malloc(sizeof(node_values));
+  v->type = type;
   v->len = 0;
   v->max = 0;
   v->data = NULL;
-  return v;
+  return (node*)v;
 }
 
 void
@@ -37,12 +38,7 @@ node_values_add(node_values* v, void* data) {
 node*
 node_array_new()
 {
-  /* TODO: error check */
-  node* np = malloc(sizeof(node));
-  np->type = NODE_ARRAY;
-  np->value.t = NODE_VALUE_USER;
-  np->value.v.p = node_values_new();
-  return np;
+  return node_values_new(NODE_ARRAY);
 }
 
 node*
@@ -56,18 +52,16 @@ node_array_of(node* np)
 void
 node_array_add(node* arr, node* np)
 {
-  node_values* v = arr->value.v.p;
-  node_values_add(v, np);
+  node_values_add((node_values*)arr, np);
 }
 
 void
 node_array_free(node* np)
 {
   int i;
-  node_values* v = np->value.v.p;
+  node_values* v = (node_values*)np;
   for (i = 0; i < v->len; i++)
     node_free(v->data[i]);
-  free(v);
   free(np);
 }
 
@@ -75,30 +69,16 @@ node*
 node_pair_new(node* key, node* value)
 {
   node_pair* npair = malloc(sizeof(node_pair));
+  npair->type = NODE_PAIR; 
   npair->key = key;
   npair->value = value;
-
-  node* np = malloc(sizeof(node));
-  np->type = NODE_PAIR;
-  np->value.t = NODE_VALUE_USER;
-  np->value.v.p = npair;
-  return np;
+  return (node*)npair;
 }
 
 node*
 node_map_new()
 {
-  node_values* v = malloc(sizeof(node_values));
-  /* TODO: error check */
-  v->len = 0;
-  v->max = 0;
-  v->data = NULL;
-
-  node* np = malloc(sizeof(node));
-  np->type = NODE_VALUE;
-  np->value.t = NODE_VALUE_MAP;
-  np->value.v.p = v;
-  return np;
+  return node_values_new(NODE_MAP);
 }
 
 node*
@@ -113,16 +93,15 @@ void
 node_map_free(node* np)
 {
   int i;
-  node_values* v = np->value.v.p;
+  node_values* v = (node_values*)np;
   for (i = 0; i < v->len; i++) {
     node* pair = v->data[i];
-    node_pair* npair = pair->value.v.p;
+    node_pair* npair = (node_pair*)pair;
     node_free(npair->key);
     node_free(npair->value);
     free(npair);
     free(pair);
   }
-  free(v);
   free(np);
 }
 
@@ -130,59 +109,43 @@ node*
 node_let_new(node* lhs, node* rhs)
 {
   node_let* nlet = malloc(sizeof(node_let));
+  nlet->type = NODE_LET;
   nlet->lhs = lhs;
   nlet->rhs = rhs;
-
-  node* np = malloc(sizeof(node));
-  np->type = NODE_LET;
-  np->value.t = NODE_VALUE_USER;
-  np->value.v.p = nlet;
-  return np;
+  return (node*)nlet;
 }
 
 node*
 node_op_new(const char* op, node* lhs, node* rhs)
 {
   node_op* nop = malloc(sizeof(node_op));
+  nop->type = NODE_OP;
   nop->lhs = lhs;
   nop->op = node_ident_of(op);
   nop->rhs = rhs;
-
-  node* np = malloc(sizeof(node));
-  np->type = NODE_OP;
-  np->value.t = NODE_VALUE_USER;
-  np->value.v.p = nop;
-  return np;
+  return (node*)nop;
 }
 
 node*
 node_block_new(node* args, node* compstmt)
 {
   node_block* block = malloc(sizeof(node_block));
+  block->type = NODE_BLOCK;
   block->args = args;
   block->compstmt = compstmt;
-
-  node* np = malloc(sizeof(node));
-  np->type = NODE_BLOCK;
-  np->value.t = NODE_VALUE_USER;
-  np->value.v.p = block;
-  return np;
+  return (node*)block;
 }
 
 node*
-node_call_new(node* cond, node* ident, node* args, node* blk)
+node_call_new(node* recv, node* ident, node* args, node* blk)
 {
   node_call* ncall = malloc(sizeof(node_call));
-  ncall->cond = cond;
+  ncall->type = NODE_CALL;
+  ncall->recv = recv;
   ncall->ident = ident;
   ncall->args = args;
   ncall->blk = blk;
-
-  node* np = malloc(sizeof(node));
-  np->type = NODE_CALL;
-  np->value.t = NODE_VALUE_USER;
-  np->value.v.p = ncall;
-  return np;
+  return (node*)ncall;
 }
 
 node*
@@ -276,15 +239,11 @@ node*
 node_if_new(node* cond, node* compstmt, node* opt_else)
 {
   node_if* nif = malloc(sizeof(node_if));
+  nif->type = NODE_IF;
   nif->cond = cond;
   nif->compstmt = compstmt;
   nif->opt_else = opt_else;
-
-  node* np = malloc(sizeof(node));
-  np->type = NODE_IF;
-  np->value.t = NODE_VALUE_USER;
-  np->value.v.p = nif;
-  return np;
+  return (node*)nif;
 }
 
 
@@ -380,9 +339,9 @@ node_free(node* np) {
     node_array_free(np);
     break;
   case NODE_IF:
-    node_free(((node_if*)np->value.v.p)->cond);
-    node_free(((node_if*)np->value.v.p)->compstmt);
-    node_free(((node_if*)np->value.v.p)->opt_else);
+    node_free(((node_if*)np)->cond);
+    node_free(((node_if*)np)->compstmt);
+    node_free(((node_if*)np)->opt_else);
     free(np);
     break;
   case NODE_EMIT:
@@ -390,28 +349,34 @@ node_free(node* np) {
     free(np);
     break;
   case NODE_OP:
-    node_free(((node_op*) np->value.v.p)->lhs);
-    node_free(((node_op*) np->value.v.p)->rhs);
+    node_free(((node_op*) np)->lhs);
+    node_free(((node_op*) np)->rhs);
     free(np);
     break;
   case NODE_BLOCK:
-    node_free(((node_block*) np->value.v.p)->args);
-    node_free(((node_block*) np->value.v.p)->compstmt);
+    node_free(((node_block*) np)->args);
+    node_free(((node_block*) np)->compstmt);
     free(np);
     break;
   case NODE_CALL:
-    node_free(((node_call*) np->value.v.p)->cond);
-    node_free(((node_call*) np->value.v.p)->ident);
-    node_free(((node_call*) np->value.v.p)->args);
-    node_free(((node_call*) np->value.v.p)->blk);
+    node_free(((node_call*) np)->recv);
+    node_free(((node_call*) np)->ident);
+    node_free(((node_call*) np)->args);
+    node_free(((node_call*) np)->blk);
     free(np);
     break;
   case NODE_RETURN:
-    node_free((node*) np->value.v.p);
+    node_free((node*) np);
     free(np);
     break;
   case NODE_IDENT:
     free(np);
+    break;
+  case NODE_ARRAY:
+    node_array_free(np);
+    break;
+  case NODE_MAP:
+    node_map_free(np);
     break;
   case NODE_VALUE:
     switch (np->value.t) {
@@ -425,12 +390,6 @@ node_free(node* np) {
     case NODE_VALUE_BOOL:
       break;
     case NODE_VALUE_NIL:
-      break;
-    case NODE_VALUE_ARRAY:
-      node_array_free(np);
-      break;
-    case NODE_VALUE_MAP:
-      node_map_free(np);
       break;
     default:
       break;

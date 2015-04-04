@@ -3,14 +3,11 @@
 
 typedef enum {
   NODE_VALUE_BOOL,
-  NODE_VALUE_ARRAY,
-  NODE_VALUE_MAP,
   NODE_VALUE_STRING,
   NODE_VALUE_DOUBLE,
   NODE_VALUE_INT,
   NODE_VALUE_IDENT,
   NODE_VALUE_NIL,
-  NODE_VALUE_CFUNC,
   NODE_VALUE_USER,
   NODE_VALUE_ERROR,
 } node_value_type;
@@ -73,59 +70,67 @@ typedef enum {
   NODE_OP,
   NODE_CALL,
   NODE_ARRAY,
+  NODE_MAP,
 } node_type;
 
+#define NODE_HEADER node_type type
+
 typedef struct {
-  node_type type;
+  NODE_HEADER;
   node_value value;
 } node;
 
 typedef struct {
+  NODE_HEADER;
   node* key;
   node* value;
 } node_pair;
 
 typedef struct {
+  NODE_HEADER;
   int len;
   int max;
   void** data;
 } node_values;
 
 typedef struct {
+  NODE_HEADER;
   node* cond;
   node* compstmt;
   node* opt_else;
 } node_if;
 
 typedef struct {
+  NODE_HEADER;
   node* lhs;
   node* rhs;
 } node_let;
 
 typedef struct {
+  NODE_HEADER;
   node* lhs;
   node_id op;
   node* rhs;
 } node_op;
 
 typedef struct {
+  NODE_HEADER;
   node* args;
   node* compstmt;
 } node_block;
 
 typedef struct {
-  node* cond;
+  NODE_HEADER;
+  node* recv;
   node* ident;
   node* args;
   node* blk;
 } node_call;
 
 typedef struct {
+  NODE_HEADER;
   node* rv;
 } node_return;
-
-node_values* node_values_new();
-void node_values_add(node_values*, void*);
 
 extern node* node_value_new(node*);
 extern node* node_array_new();

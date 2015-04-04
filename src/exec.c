@@ -10,7 +10,7 @@ static int
 exec_expr_stmt(node_ctx* ctx, node* np, strm_value* val)
 {
   int i, n;
-  node_values* v = np->value.v.p;
+  node_values* v = (node_values*)np;
   for (i = 0; i < v->len; i++) {
     n = exec_expr(ctx, v->data[i], val);
     if (n) return n;
@@ -185,7 +185,7 @@ exec_expr(node_ctx* ctx, node* np, strm_value* val)
   case NODE_IF:
     {
       strm_value v;
-      node_if* nif = np->value.v.p;
+      node_if* nif = (node_if*)np;
       n = exec_expr(ctx, nif->cond, &v);
       if (n) return n;
       if (strm_value_bool(v)) {
@@ -202,7 +202,7 @@ exec_expr(node_ctx* ctx, node* np, strm_value* val)
     break;
   case NODE_OP:
     {
-      node_op* nop = np->value.v.p;
+      node_op* nop = (node_op*)np;
       strm_value args[2];
       int i=0;
 
@@ -220,10 +220,10 @@ exec_expr(node_ctx* ctx, node* np, strm_value* val)
   case NODE_CALL:
     {
       /* TODO: wip code of ident */
-      node_call* ncall = np->value.v.p;
+      node_call* ncall = (node_call*)np;
       if (ncall->ident != NULL) {
         int i;
-        node_values* v0 = ncall->args->value.v.p;
+        node_values* v0 = (node_values*)ncall->args;
         strm_value *args = malloc(sizeof(strm_value)*v0->len);
 
         for (i = 0; i < v0->len; i++) {
@@ -233,7 +233,7 @@ exec_expr(node_ctx* ctx, node* np, strm_value* val)
         return exec_call(ctx, ncall->ident->value.v.id, i, args, val);
       }
       else {
-        node_block* nblk = ncall->blk->value.v.p;
+        node_block* nblk = (node_block*)ncall;
         strm_value v;
         int n;
         n = exec_expr_stmt(ctx, nblk->compstmt, &v);
@@ -247,7 +247,7 @@ exec_expr(node_ctx* ctx, node* np, strm_value* val)
     break;
   case NODE_RETURN:
     {
-      node_return* nreturn = np->value.v.p;
+      node_return* nreturn = (node_return*)np;
       ctx->exc = malloc(sizeof(node_error));
       ctx->exc->type = NODE_ERROR_RETURN;
       n = exec_expr(ctx, nreturn->rv, &ctx->exc->arg);
@@ -277,8 +277,6 @@ exec_expr(node_ctx* ctx, node* np, strm_value* val)
       /* following type should not be evaluated */
     case NODE_VALUE_ERROR:
     case NODE_VALUE_USER:
-    case NODE_VALUE_ARRAY:
-    case NODE_VALUE_MAP:
     default:
       return 1;
     }

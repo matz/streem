@@ -25,7 +25,7 @@ dump_node(node* np, int indent) {
   switch (np->type) {
   case NODE_ARGS:
     {
-      node_values* arr0 = np->value.v.p;
+      node_values* arr0 = (node_values*)np;
       for (i = 0; i < arr0->len; i++)
         dump_node(arr0->data[i], indent+1);
     }
@@ -33,12 +33,12 @@ dump_node(node* np, int indent) {
   case NODE_IF:
     {
       printf("IF:\n");
-      dump_node(((node_if*)np->value.v.p)->cond, indent+1);
+      dump_node(((node_if*)np)->cond, indent+1);
       for (i = 0; i < indent; i++)
         putchar(' ');
       printf("THEN:\n");
-      dump_node(((node_if*)np->value.v.p)->compstmt, indent+1);
-      node* opt_else = ((node_if*)np->value.v.p)->opt_else;
+      dump_node(((node_if*)np)->compstmt, indent+1);
+      node* opt_else = ((node_if*)np)->opt_else;
       if (opt_else != NULL) {
         for (i = 0; i < indent; i++)
           putchar(' ');
@@ -53,31 +53,53 @@ dump_node(node* np, int indent) {
     break;
   case NODE_OP:
     printf("OP:\n");
-    dump_node(((node_op*) np->value.v.p)->lhs, indent+1);
+    dump_node(((node_op*) np)->lhs, indent+1);
     for (i = 0; i < indent+1; i++)
       putchar(' ');
-    print_id("", ((node_op*) np->value.v.p)->op);
-    dump_node(((node_op*) np->value.v.p)->rhs, indent+1);
+    print_id("", ((node_op*) np)->op);
+    dump_node(((node_op*) np)->rhs, indent+1);
     break;
   case NODE_BLOCK:
     printf("BLOCK:\n");
-    dump_node(((node_block*) np->value.v.p)->args, indent+1);
-    dump_node(((node_block*) np->value.v.p)->compstmt, indent+1);
+    dump_node(((node_block*) np)->args, indent+1);
+    dump_node(((node_block*) np)->compstmt, indent+1);
     break;
   case NODE_CALL:
     printf("CALL:\n");
-    dump_node(((node_call*) np->value.v.p)->cond, indent+2);
-    dump_node(((node_call*) np->value.v.p)->ident, indent+2);
-    dump_node(((node_call*) np->value.v.p)->args, indent+2);
-    dump_node(((node_call*) np->value.v.p)->blk, indent+2);
+    dump_node(((node_call*) np)->recv, indent+2);
+    dump_node(((node_call*) np)->ident, indent+2);
+    dump_node(((node_call*) np)->args, indent+2);
+    dump_node(((node_call*) np)->blk, indent+2);
     break;
   case NODE_RETURN:
     printf("RETURN:\n");
-    dump_node(((node_return*) np->value.v.p)->rv, indent+1);
+    dump_node(((node_return*) np)->rv, indent+1);
     break;
   case NODE_IDENT:
     print_id("IDENT: ", np->value.v.id);
     break;
+
+  case NODE_ARRAY:
+    printf("VALUE(ARRAY):\n");
+    {
+      node_values* arr0 = (node_values*)np;
+      for (i = 0; i < arr0->len; i++)
+        dump_node(arr0->data[i], indent+1);
+    }
+    break;
+  case NODE_MAP:
+    printf("VALUE(MAP):\n");
+    {
+      node_values* arr0 = (node_values*)np;
+      for (i = 0; i < arr0->len; i++) {
+        node* pair = arr0->data[i];
+        node_pair* pair0 = (node_pair*)pair;
+        dump_node(pair0->key, indent+1);
+        dump_node(pair0->value, indent+1);
+      }
+    }
+    break;
+
   case NODE_VALUE:
     switch (np->value.t) {
     case NODE_VALUE_INT:
@@ -95,37 +117,9 @@ dump_node(node* np, int indent) {
     case NODE_VALUE_NIL:
       printf("VALUE(NIL): nil\n");
       break;
-    case NODE_VALUE_ARRAY:
-      printf("VALUE(ARRAY):\n");
-      {
-        node_values* arr0 = np->value.v.p;
-        for (i = 0; i < arr0->len; i++)
-          dump_node(arr0->data[i], indent+1);
-      }
-      break;
-    case NODE_VALUE_MAP:
-      printf("VALUE(MAP):\n");
-      {
-        node_values* arr0 = np->value.v.p;
-        for (i = 0; i < arr0->len; i++) {
-          node* pair = arr0->data[i];
-          node_pair* pair0 = pair->value.v.p;
-          dump_node(pair0->key, indent+1);
-          dump_node(pair0->value, indent+1);
-        }
-      }
-      break;
     default:
       printf("VALUE(UNKNOWN): %p\n", np->value.v.p);
       break;
-    }
-    break;
-  case NODE_ARRAY:
-    printf("ARRAY:\n");
-    {
-      node_values* arr0 = np->value.v.p;
-      for (i = 0; i < arr0->len; i++)
-        dump_node(arr0->data[i], indent+1);
     }
     break;
   default:
