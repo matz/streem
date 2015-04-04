@@ -349,13 +349,7 @@ args            : expr
                 ;
 
 primary0        : lit_number
-                    {
-                      $$ = $1;
-                    }
                 | lit_string
-                    {
-                      $$ = $1;
-                    }
                 | identifier
                     {
                       $$ = node_ident_new($1);
