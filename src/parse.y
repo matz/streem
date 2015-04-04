@@ -386,12 +386,15 @@ primary0        : lit_number
                     }
                 | keyword_nil
                     {
+                      $$ = node_nil();
                     }
                 | keyword_true
                     {
+                      $$ = node_true();
                     }
                 | keyword_false
                     {
+                      $$ = node_false();
                     }
                 ;
 
