@@ -65,9 +65,6 @@ static void yyerror(parser_state *p, const char *s);
 %token
         lit_number
         lit_string
-        lit_true
-        lit_false
-        lit_nil
         identifier
 
 /*
