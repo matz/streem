@@ -49,6 +49,17 @@ exec_plus(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
 static int
 exec_minus(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
 {
+  if (argc == 1) {
+    if (strm_int_p(args[0])) {
+      *ret = strm_int_value(-strm_value_int(args[0]));
+      return 0;
+    }
+    if (strm_flt_p(args[0])) {
+      *ret = strm_flt_value(-strm_value_flt(args[0]));
+      return 0;
+    }
+    return 1;
+  }
   assert(argc == 2);
   if (strm_int_p(args[0]) && strm_int_p(args[1])) {
     *ret = strm_int_value(strm_value_int(args[0])-strm_value_int(args[1]));

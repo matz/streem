@@ -7,13 +7,6 @@
 #include "lex.yy.h"
 
 node*
-node_value_new(node* v)
-{
-  /* TODO */
-  return NULL;
-}
-
-node*
 node_values_new(node_type type) {
   /* TODO: error check */
   node_values* v = malloc(sizeof(node_values));

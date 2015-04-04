@@ -199,11 +199,11 @@ expr            : expr op_plus expr
                     }
                 | op_plus expr                 %prec '!'
                     {
-                      $$ = node_value_new($2);
+                      $$ = $2;
                     }
                 | op_minus expr                %prec '!'
                     {
-                      $$ = node_value_new($2);
+                      $$ = node_op_new("-", NULL, $2);
                     }
                 | '!' expr
                     {
@@ -281,11 +281,11 @@ condition       : condition op_plus condition
                     }
                 | op_plus condition            %prec '!'
                     {
-                      $$ = node_value_new($2);
+                      $$ = $2;
                     }
                 | op_minus condition           %prec '!'
                     {
-                      $$ = node_value_new($2);
+                      $$ = node_op_new("-", NULL, $2);
                     }
                 | '!' condition
                     {

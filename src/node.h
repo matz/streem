@@ -132,7 +132,6 @@ typedef struct {
   node* rv;
 } node_return;
 
-extern node* node_value_new(node*);
 extern node* node_array_new();
 extern node* node_array_of(node*);
 extern void node_array_add(node*, node*);
