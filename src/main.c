@@ -159,14 +159,14 @@ main(int argc, const char**argv)
         }
         else {
           e_prog = &s[1];
-          s+=strlen(s);
         }
-        break;
+        goto next_arg;
       default:
         fprintf(stderr, "%s: unknown option -%c\n", prog, *s);
       }
       s++;
     }
+  next_arg:
     argc--; argv++;
   }
   node_parse_init(&state);
