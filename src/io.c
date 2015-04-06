@@ -21,7 +21,7 @@ io_push(int fd, strm_task *strm, strm_func cb)
   struct epoll_event ev = { 0 };
 
   ev.events = EPOLLIN | EPOLLONESHOT;
-  ev.data.ptr = strm_queue_task(strm, cb, strm_null_value());
+  ev.data.ptr = strm_queue_task(strm, cb, strm_nil_value());
   return epoll_ctl(epoll_fd, EPOLL_CTL_ADD, fd, &ev);
 }
 
@@ -31,7 +31,7 @@ io_kick(int fd, strm_task *strm, strm_func cb)
   struct epoll_event ev;
 
   ev.events = EPOLLIN | EPOLLONESHOT;
-  ev.data.ptr = strm_queue_task(strm, cb, strm_null_value());
+  ev.data.ptr = strm_queue_task(strm, cb, strm_nil_value());
   return epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &ev);
 }
 
@@ -83,7 +83,7 @@ strm_io_start(strm_task *strm, int fd, strm_func cb, uint32_t events)
       /* fd must be a regular file */
       /* enqueue task without waiting */
       strm->flags |= STRM_IO_NOWAIT;
-      strm_task_push(strm_queue_task(strm, cb, strm_null_value()));
+      strm_task_push(strm_queue_task(strm, cb, strm_nil_value()));
     }
   }
 }
@@ -143,7 +143,7 @@ read_cb(strm_task *strm, strm_value data)
     return;
   }
   b->end += n;
-  (*readline_cb)(strm, strm_null_value());
+  (*readline_cb)(strm, strm_nil_value());
 }
 
 static void
@@ -165,7 +165,7 @@ readline_cb(strm_task *strm, strm_value data)
       b->end = b->beg + len;
     }
     if (strm->flags & STRM_IO_NOWAIT) {
-      strm_task_push(strm_queue_task(strm, read_cb, strm_null_value()));
+      strm_task_push(strm_queue_task(strm, read_cb, strm_nil_value()));
     }
     else {
       io_kick(b->fd, strm, read_cb);

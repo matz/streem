@@ -78,7 +78,7 @@ strm_emit(strm_task *strm, strm_value data, strm_func func)
     tid++;
   }
   if (func) {
-    strm_task_push(strm_queue_task(strm, func, strm_null_value()));
+    strm_task_push(strm_queue_task(strm, func, strm_nil_value()));
   }
 }
 
@@ -102,7 +102,7 @@ strm_connect(strm_task *src, strm_task *dst)
   if (src->mode == strm_task_prod) {
     task_init();
     pipeline_count++;
-    strm_task_push(strm_queue_task(src, src->start_func, strm_null_value()));
+    strm_task_push(strm_queue_task(src, src->start_func, strm_nil_value()));
   }
   return 1;
 }
@@ -221,15 +221,15 @@ void
 strm_close(strm_task *strm)
 {
   if (strm->close_func) {
-    (*strm->close_func)(strm, strm_null_value());
+    (*strm->close_func)(strm, strm_nil_value());
   }
   strm_task *d = strm->dst;
 
   while (d) {
-    strm_task_push(strm_queue_task(d, (strm_func)strm_close, strm_null_value()));
+    strm_task_push(strm_queue_task(d, (strm_func)strm_close, strm_nil_value()));
     d = d->nextd;
   }
   if (strm->mode == strm_task_prod) {
-    strm_task_push(strm_queue_task(strm, pipeline_finish, strm_null_value()));
+    strm_task_push(strm_queue_task(strm, pipeline_finish, strm_nil_value()));
   }
 }

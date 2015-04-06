@@ -192,7 +192,7 @@ exec_expr(node_ctx* ctx, node* np, strm_value* val)
         return exec_expr(ctx, nif->compstmt, val);
       }
       else {
-        *val = strm_null_value();
+        *val = strm_nil_value();
         return 0;
       }
     }
@@ -268,7 +268,7 @@ exec_expr(node_ctx* ctx, node* np, strm_value* val)
       *val = strm_bool_value(np->value.v.b);
       return 0;
     case NODE_VALUE_NIL:
-      *val = strm_null_value();
+      *val = strm_nil_value();
       return 0;
     case NODE_VALUE_STRING:
       *val = strm_ptr_value(np->value.v.s);

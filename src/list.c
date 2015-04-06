@@ -73,7 +73,7 @@ strm_list_nth(strm_list *list, size_t n)
 {
   size_t len = list->len;
 
-  if (n > len) return strm_null_value();
+  if (n > len) return strm_nil_value();
   for (;;) {
     if (n == 0) return list->car;
     n--;

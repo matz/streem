@@ -45,7 +45,7 @@ strm_value strm_bool_value(int);
 strm_value strm_int_value(long);
 strm_value strm_flt_value(double);
 
-#define strm_null_value() strm_ptr_value(NULL)
+#define strm_nil_value() strm_ptr_value(NULL)
 
 void *strm_value_ptr(strm_value);
 long strm_value_int(strm_value);
