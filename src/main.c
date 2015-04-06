@@ -3,12 +3,10 @@
 #include <stdio.h>
 
 static void
-print_id(const char* pre, node_id id)
+print_id(const char* pre, strm_string *name)
 {
-  strm_string *str = id;
-
   fputs(pre, stdout);
-  fprintf(stdout, "%*s\n", str->len, str->ptr);
+  fprintf(stdout, "%*s\n", name->len, name->ptr);
 }
 
 static void
@@ -76,7 +74,7 @@ dump_node(node* np, int indent) {
     dump_node(((node_return*) np)->rv, indent+1);
     break;
   case NODE_IDENT:
-    print_id("IDENT: ", np->value.v.id);
+    print_id("IDENT: ", np->value.v.s);
     break;
 
   case NODE_ARRAY:

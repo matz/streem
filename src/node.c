@@ -126,7 +126,7 @@ node_op_new(const char* op, node* lhs, node* rhs)
   node_op* nop = malloc(sizeof(node_op));
   nop->type = NODE_OP;
   nop->lhs = lhs;
-  nop->op = node_ident_of(op);
+  nop->op = node_id_of(op);
   nop->rhs = rhs;
   return (node*)nop;
 }
@@ -187,36 +187,36 @@ node_string_new(const char* s, size_t l)
 }
 
 node*
-node_ident_new(node_id id)
+node_id_new(strm_string* name)
 {
   node* np = malloc(sizeof(node));
 
   np->type = NODE_IDENT;
   np->value.t = NODE_VALUE_IDENT;
-  np->value.v.id = id;
+  np->value.v.s = name;
   return np;
 }
 
 node*
-node_ident_str(node_id id)
+node_id_str(strm_string *name)
 {
   node* np = malloc(sizeof(node));
 
   np->type = NODE_VALUE;
   np->value.t = NODE_VALUE_STRING;
-  np->value.v.s = id;
+  np->value.v.s = name;
   return np;
 }
 
-node_id
-node_ident_of(const char* s)
+strm_string*
+node_id_of(const char* s)
 {
   extern int strm_event_loop_started;
   strm_string *str;
 
   assert(!strm_event_loop_started);
   str = strm_str_intern(s, strlen(s));
-  return (node_id)str;
+  return str;
 }
 
 node*

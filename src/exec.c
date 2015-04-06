@@ -149,9 +149,9 @@ exec_bar(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
 typedef int (*exec_cfunc)(node_ctx*, int, strm_value*, strm_value*);
 
 static int
-exec_call(node_ctx* ctx, node_id id, int argc, strm_value* args, strm_value* ret)
+exec_call(node_ctx* ctx, strm_string *name, int argc, strm_value* args, strm_value* ret)
 {
-  strm_value m = strm_var_get(id);
+  strm_value m = strm_var_get(name);
 
   if (m.vtype == STRM_VALUE_CFUNC) {
     return ((exec_cfunc)m.val.p)(ctx, argc, args, ret);
@@ -177,7 +177,7 @@ exec_expr(node_ctx* ctx, node* np, strm_value* val)
     break;
 */
   case NODE_IDENT:
-    *val = strm_var_get(np->value.v.id);
+    *val = strm_var_get(np->value.v.s);
     return 0;
   case NODE_IF:
     {
@@ -227,7 +227,7 @@ exec_expr(node_ctx* ctx, node* np, strm_value* val)
           n = exec_expr(ctx, v0->data[i], &args[i]);
           if (n) return n;
         }
-        return exec_call(ctx, ncall->ident->value.v.id, i, args, val);
+        return exec_call(ctx, ncall->ident->value.v.s, i, args, val);
       }
       else {
         node_block* nblk = (node_block*)ncall;
@@ -271,10 +271,8 @@ exec_expr(node_ctx* ctx, node* np, strm_value* val)
       *val = strm_nil_value();
       return 0;
     case NODE_VALUE_STRING:
-      *val = strm_ptr_value(np->value.v.s);
-      return 0;
     case NODE_VALUE_IDENT:
-      *val = strm_ptr_value(np->value.v.id);
+      *val = strm_ptr_value(np->value.v.s);
       return 0;
     case NODE_VALUE_DOUBLE:
       *val = strm_flt_value(np->value.v.d);

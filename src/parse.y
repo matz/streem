@@ -14,7 +14,7 @@
 
 %union {
   node* nd;
-  node_id id;
+  strm_string* id;
 }
 
 %type <nd> program compstmt
@@ -138,7 +138,7 @@ stmt            : var '=' expr
 
 var             : identifier
                     {
-                        $$ = node_ident_new($1);
+                        $$ = node_id_new($1);
                     }
                 ;
 
@@ -352,7 +352,7 @@ primary0        : lit_number
                 | lit_string
                 | identifier
                     {
-                      $$ = node_ident_new($1);
+                      $$ = node_id_new($1);
                     }
                 | '(' expr ')'
                     {
@@ -398,15 +398,15 @@ cond            : primary0
                     }
                 | identifier '(' opt_args ')'
                     {
-                      $$ = node_call_new(NULL, node_ident_new($1), $3, NULL);
+                      $$ = node_call_new(NULL, node_id_new($1), $3, NULL);
                     }
                 | cond '.' identifier '(' opt_args ')'
                     {
-                      $$ = node_call_new(NULL, node_ident_new($3), $5, NULL);
+                      $$ = node_call_new(NULL, node_id_new($3), $5, NULL);
                     }
                 | cond '.' identifier
                     {
-                      $$ = node_call_new($1, node_ident_new($3), NULL, NULL);
+                      $$ = node_call_new($1, node_id_new($3), NULL, NULL);
                     }
                 ;
 
@@ -417,19 +417,19 @@ primary         : primary0
                     }
                 | identifier block
                     {
-                      $$ = node_call_new(NULL, node_ident_new($1), NULL, $2);
+                      $$ = node_call_new(NULL, node_id_new($1), NULL, $2);
                     }
                 | identifier '(' opt_args ')' opt_block
                     {
-                      $$ = node_call_new(NULL, node_ident_new($1), $3, $5);
+                      $$ = node_call_new(NULL, node_id_new($1), $3, $5);
                     }
                 | primary '.' identifier '(' opt_args ')' opt_block
                     {
-                      $$ = node_call_new($1, node_ident_new($3), $5, $7);
+                      $$ = node_call_new($1, node_id_new($3), $5, $7);
                     }
                 | primary '.' identifier opt_block
                     {
-                      $$ = node_call_new($1, node_ident_new($3), NULL, $4);
+                      $$ = node_call_new($1, node_id_new($3), NULL, $4);
                     }
                 ;
 
@@ -439,7 +439,7 @@ map             : lit_string ':' expr
                     }
                 | identifier ':' expr
                     {
-                      $$ = node_pair_new(node_ident_str($1), $3);
+                      $$ = node_pair_new(node_id_str($1), $3);
                     }
                 ;
 
@@ -488,12 +488,12 @@ bparam          : op_rasgn
 f_args          : identifier
                     {
                       $$ = node_array_new();
-                      node_array_add($$, node_ident_new($1));
+                      node_array_add($$, node_id_new($1));
                     }
                 | f_args ',' identifier
                     {
                       $$ = $1;
-                      node_array_add($$, node_ident_new($3));
+                      node_array_add($$, node_id_new($3));
                     }
                 ;
 

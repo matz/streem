@@ -12,8 +12,6 @@ typedef enum {
   NODE_VALUE_ERROR,
 } node_value_type;
 
-typedef strm_string* node_id;
-
 typedef struct {
   node_value_type t;
   union {
@@ -22,7 +20,6 @@ typedef struct {
     double d;
     void* p;
     strm_string *s;
-    node_id id;
   } v;
 } node_value;
 
@@ -109,7 +106,7 @@ typedef struct {
 
 typedef struct {
   NODE_HEADER;
-  node_id op;
+  strm_string* op;
   node* lhs;
   node* rhs;
 } node_op;
@@ -153,9 +150,9 @@ extern node* node_if_new(node*, node*, node*);
 extern node* node_emit_new(node*);
 extern node* node_return_new(node*);
 extern node* node_break_new();
-extern node* node_ident_new(node_id);
-extern node* node_ident_str(node_id);
-extern node_id node_ident_of(const char*);
+extern node* node_id_new(strm_string*);
+extern node* node_id_str(strm_string*);
+extern strm_string* node_id_of(const char*);
 extern node* node_nil();
 extern node* node_true();
 extern node* node_false();
