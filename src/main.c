@@ -56,7 +56,7 @@ dump_node(node* np, int indent) {
     dump_node(((node_op*) np)->lhs, indent+1);
     for (i = 0; i < indent+1; i++)
       putchar(' ');
-    print_id("", ((node_op*) np)->op);
+    print_id("op: ", ((node_op*) np)->op);
     dump_node(((node_op*) np)->rhs, indent+1);
     break;
   case NODE_BLOCK:
@@ -80,7 +80,7 @@ dump_node(node* np, int indent) {
     break;
 
   case NODE_ARRAY:
-    printf("VALUE(ARRAY):\n");
+    printf("ARRAY:\n");
     {
       node_values* arr0 = (node_values*)np;
       for (i = 0; i < arr0->len; i++)
@@ -88,7 +88,7 @@ dump_node(node* np, int indent) {
     }
     break;
   case NODE_MAP:
-    printf("VALUE(MAP):\n");
+    printf("MAP:\n");
     {
       node_values* arr0 = (node_values*)np;
       for (i = 0; i < arr0->len; i++) {
