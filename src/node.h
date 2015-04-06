@@ -109,8 +109,8 @@ typedef struct {
 
 typedef struct {
   NODE_HEADER;
-  node* lhs;
   node_id op;
+  node* lhs;
   node* rhs;
 } node_op;
 
