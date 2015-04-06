@@ -97,17 +97,17 @@ compstmt        : stmts opt_terms
 
 stmts           :
                     {
-                      $$ = node_array_new();
+                      $$ = node_stmts_new();
                     }
                 | stmt
                     {
-                      $$ = node_array_new();
-                      node_array_add($$, $1);
+                      $$ = node_stmts_new();
+                      node_stmts_add($$, $1);
                     }
                 | stmts terms stmt
                     {
                       $$ = $1;
-                      node_array_add($1, $3);
+                      node_stmts_add($1, $3);
                     }
                 | error stmt
                     {

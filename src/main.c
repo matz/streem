@@ -99,6 +99,14 @@ dump_node(node* np, int indent) {
       }
     }
     break;
+  case NODE_STMTS:
+    printf("STMTS:\n");
+    {
+      node_values* arr0 = (node_values*)np;
+      for (i = 0; i < arr0->len; i++)
+        dump_node(arr0->data[i], indent+1);
+    }
+    break;
 
   case NODE_VALUE:
     switch (np->value.t) {

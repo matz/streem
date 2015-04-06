@@ -59,6 +59,18 @@ node_array_free(node* np)
 }
 
 node*
+node_stmts_new()
+{
+  return node_values_new(NODE_STMTS);
+}
+
+void
+node_stmts_add(node* arr, node* np)
+{
+  node_array_add(arr, np);
+}
+
+node*
 node_pair_new(node* key, node* value)
 {
   node_pair* npair = malloc(sizeof(node_pair));

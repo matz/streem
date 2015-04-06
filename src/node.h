@@ -71,6 +71,7 @@ typedef enum {
   NODE_CALL,
   NODE_ARRAY,
   NODE_MAP,
+  NODE_STMTS,
 } node_type;
 
 #define NODE_HEADER node_type type
@@ -136,6 +137,8 @@ extern node* node_array_new();
 extern node* node_array_of(node*);
 extern void node_array_add(node*, node*);
 extern void node_array_free(node*);
+extern node* node_stmts_new();
+extern void node_stmts_add(node*, node*);
 extern node* node_pair_new(node*, node*);
 extern node* node_map_new();
 extern node* node_map_of(node*);

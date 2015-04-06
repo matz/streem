@@ -4,20 +4,6 @@
 #define NODE_ERROR_RUNTIME 0
 #define NODE_ERROR_RETURN 1
 
-static int exec_expr(node_ctx*, node*, strm_value*);
-
-static int
-exec_expr_stmt(node_ctx* ctx, node* np, strm_value* val)
-{
-  int i, n;
-  node_values* v = (node_values*)np;
-  for (i = 0; i < v->len; i++) {
-    n = exec_expr(ctx, v->data[i], val);
-    if (n) return n;
-  }
-  return 0;
-}
-
 static int
 exec_plus(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
 {
@@ -200,10 +186,10 @@ exec_expr(node_ctx* ctx, node* np, strm_value* val)
       n = exec_expr(ctx, nif->cond, &v);
       if (n) return n;
       if (strm_value_bool(v)) {
-        return exec_expr_stmt(ctx, nif->compstmt, val);
+        return exec_expr(ctx, nif->compstmt, val);
       }
       else if (nif->opt_else != NULL) {
-        return exec_expr_stmt(ctx, nif->compstmt, val);
+        return exec_expr(ctx, nif->compstmt, val);
       }
       else {
         *val = strm_null_value();
@@ -247,7 +233,7 @@ exec_expr(node_ctx* ctx, node* np, strm_value* val)
         node_block* nblk = (node_block*)ncall;
         strm_value v;
         int n;
-        n = exec_expr_stmt(ctx, nblk->compstmt, &v);
+        n = exec_expr(ctx, nblk->compstmt, &v);
         if (n && ctx->exc->type == NODE_ERROR_RETURN) {
           *val = ctx->exc->arg;
           free(ctx->exc);
@@ -263,6 +249,17 @@ exec_expr(node_ctx* ctx, node* np, strm_value* val)
       ctx->exc->type = NODE_ERROR_RETURN;
       n = exec_expr(ctx, nreturn->rv, &ctx->exc->arg);
       return n;
+    }
+    break;
+  case NODE_STMTS:
+    {
+      int i, n;
+      node_values* v = (node_values*)np;
+      for (i = 0; i < v->len; i++) {
+        n = exec_expr(ctx, v->data[i], val);
+        if (n) return n;
+      }
+      return 0;
     }
     break;
   case NODE_VALUE:
@@ -401,7 +398,7 @@ node_run(parser_state* p)
 
   node_init(&p->ctx);
   strm_seq_init(&p->ctx);
-  exec_expr_stmt(&p->ctx, (node*)p->lval, &v);
+  exec_expr(&p->ctx, (node*)p->lval, &v);
   if (p->ctx.exc != NULL) {
     strm_value v;
     exec_cputs(&p->ctx, stderr, 1, &p->ctx.exc->arg, &v);
