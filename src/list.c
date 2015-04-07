@@ -89,7 +89,7 @@ strm_list_nth(strm_list *list, size_t n)
 strm_list*
 strm_list_cons(strm_value car, strm_value cdr)
 {
-  if (cdr.vtype == STRM_VALUE_PTR) {
+  if (cdr.type == STRM_VALUE_PTR) {
     if (!cdr.val.p) {
       return strm_list_new(car, NULL);
     }

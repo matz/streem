@@ -94,7 +94,7 @@ typedef struct {
 typedef struct {
   NODE_HEADER;
   node* cond;
-  node* compstmt;
+  node* then;
   node* opt_else;
 } node_if;
 
@@ -150,9 +150,9 @@ extern node* node_if_new(node*, node*, node*);
 extern node* node_emit_new(node*);
 extern node* node_return_new(node*);
 extern node* node_break_new();
-extern node* node_id_new(strm_string*);
-extern node* node_id_str(strm_string*);
-extern strm_string* node_id_of(const char*);
+extern node* node_ident_new(strm_string*);
+extern node* node_ident_str(strm_string*);
+extern strm_string* node_ident_of(const char*);
 extern node* node_nil();
 extern node* node_true();
 extern node* node_false();

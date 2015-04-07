@@ -153,7 +153,7 @@ exec_call(node_ctx* ctx, strm_string *name, int argc, strm_value* args, strm_val
 {
   strm_value m = strm_var_get(name);
 
-  if (m.vtype == STRM_VALUE_CFUNC) {
+  if (m.type == STRM_VALUE_CFUNC) {
     return ((exec_cfunc)m.val.p)(ctx, argc, args, ret);
   }
   node_raise(ctx, "function not found");
@@ -186,10 +186,10 @@ exec_expr(node_ctx* ctx, node* np, strm_value* val)
       n = exec_expr(ctx, nif->cond, &v);
       if (n) return n;
       if (strm_value_bool(v)) {
-        return exec_expr(ctx, nif->compstmt, val);
+        return exec_expr(ctx, nif->then, val);
       }
       else if (nif->opt_else != NULL) {
-        return exec_expr(ctx, nif->compstmt, val);
+        return exec_expr(ctx, nif->opt_else, val);
       }
       else {
         *val = strm_nil_value();
@@ -330,7 +330,7 @@ exec_cputs(node_ctx* ctx, FILE* out, int argc, strm_value* args, strm_value *ret
     if (i != 0)
       fprintf(out, ", ");
     v = args[i];
-    switch (v.vtype) {
+    switch (v.type) {
     case STRM_VALUE_BOOL:
       fprintf(out, v.val.i ? "true" : "false");
       break;

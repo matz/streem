@@ -30,7 +30,7 @@ enum strm_value_type {
 };
 
 typedef struct strm_value {
-  enum strm_value_type vtype;
+  enum strm_value_type type;
   union {
     long i;
     void *p;

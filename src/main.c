@@ -35,7 +35,7 @@ dump_node(node* np, int indent) {
       for (i = 0; i < indent; i++)
         putchar(' ');
       printf("THEN:\n");
-      dump_node(((node_if*)np)->compstmt, indent+1);
+      dump_node(((node_if*)np)->then, indent+1);
       node* opt_else = ((node_if*)np)->opt_else;
       if (opt_else != NULL) {
         for (i = 0; i < indent; i++)

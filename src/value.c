@@ -6,7 +6,7 @@ strm_ptr_value(void *p)
 {
   strm_value v;
 
-  v.vtype = STRM_VALUE_PTR;
+  v.type = STRM_VALUE_PTR;
   v.val.p = p;
   return v;
 }
@@ -16,7 +16,7 @@ strm_cfunc_value(void *p)
 {
   strm_value v;
 
-  v.vtype = STRM_VALUE_CFUNC;
+  v.type = STRM_VALUE_CFUNC;
   v.val.p = p;
   return v;
 }
@@ -26,7 +26,7 @@ strm_task_value(void *p)
 {
   strm_value v;
 
-  v.vtype = STRM_VALUE_TASK;
+  v.type = STRM_VALUE_TASK;
   v.val.p = p;
   return v;
 }
@@ -36,7 +36,7 @@ strm_bool_value(int i)
 {
   strm_value v;
 
-  v.vtype = STRM_VALUE_BOOL;
+  v.type = STRM_VALUE_BOOL;
   v.val.i = i ? 1 : 0;
   return v;
 }
@@ -46,7 +46,7 @@ strm_int_value(long i)
 {
   strm_value v;
 
-  v.vtype = STRM_VALUE_INT;
+  v.type = STRM_VALUE_INT;
   v.val.i = i;
   return v;
 }
@@ -56,7 +56,7 @@ strm_flt_value(double f)
 {
   strm_value v;
 
-  v.vtype = STRM_VALUE_FLT;
+  v.type = STRM_VALUE_FLT;
   v.val.f = f;
   return v;
 }
@@ -64,7 +64,7 @@ strm_flt_value(double f)
 void*
 strm_value_ptr(strm_value v)
 {
-  assert(v.vtype == STRM_VALUE_PTR);
+  assert(v.type == STRM_VALUE_PTR);
   return v.val.p;
 }
 
@@ -73,7 +73,7 @@ strm_value_obj(strm_value v, enum strm_obj_type t)
 {
   struct strm_object *p;
 
-  assert(v.vtype == STRM_VALUE_PTR);
+  assert(v.type == STRM_VALUE_PTR);
   p = v.val.p;
   assert(p->type == t);
   return v.val.p;
@@ -82,7 +82,7 @@ strm_value_obj(strm_value v, enum strm_obj_type t)
 int
 strm_value_bool(strm_value v)
 {
-  if (v.vtype == STRM_VALUE_BOOL) {
+  if (v.type == STRM_VALUE_BOOL) {
     return v.val.i ? TRUE : FALSE;
   }
   return TRUE;
@@ -91,13 +91,13 @@ strm_value_bool(strm_value v)
 long
 strm_value_int(strm_value v)
 {
-  switch (v.vtype) {
+  switch (v.type) {
   case STRM_VALUE_FLT:
     return (long)v.val.f;
   case STRM_VALUE_INT:
     return v.val.i;
   default:
-    assert(v.vtype == STRM_VALUE_INT);
+    assert(v.type == STRM_VALUE_INT);
     break;
   }
   /* not reached */
@@ -107,13 +107,13 @@ strm_value_int(strm_value v)
 double
 strm_value_flt(strm_value v)
 {
-  switch (v.vtype) {
+  switch (v.type) {
   case STRM_VALUE_FLT:
     return v.val.f;
   case STRM_VALUE_INT:
     return (double)v.val.i;
   default:
-    assert(v.vtype == STRM_VALUE_FLT);
+    assert(v.type == STRM_VALUE_FLT);
     break;
   }
   /* not reached */
@@ -123,14 +123,14 @@ strm_value_flt(strm_value v)
 strm_task*
 strm_value_task(strm_value v)
 {
-  assert(v.vtype == STRM_VALUE_TASK);
+  assert(v.type == STRM_VALUE_TASK);
   return (strm_task*)v.val.p;
 }
 
 int
 strm_num_p(strm_value v)
 {
-  switch (v.vtype) {
+  switch (v.type) {
   case STRM_VALUE_FLT:
   case STRM_VALUE_INT:
     return TRUE;
@@ -142,25 +142,25 @@ strm_num_p(strm_value v)
 int
 strm_int_p(strm_value v)
 {
-  return v.vtype == STRM_VALUE_INT;
+  return v.type == STRM_VALUE_INT;
 }
 
 int
 strm_flt_p(strm_value v)
 {
-  return v.vtype == STRM_VALUE_FLT;
+  return v.type == STRM_VALUE_FLT;
 }
 
 int
 strm_cfunc_p(strm_value v)
 {
-  return v.vtype == STRM_VALUE_CFUNC;
+  return v.type == STRM_VALUE_CFUNC;
 }
 
 int
 strm_task_p(strm_value v)
 {
-  return v.vtype == STRM_VALUE_TASK;
+  return v.type == STRM_VALUE_TASK;
 }
 
 int
@@ -184,9 +184,9 @@ strm_ptr_eq(struct strm_object *a, struct strm_object *b)
 int
 strm_value_eq(strm_value a, strm_value b)
 {
-  if (a.vtype != b.vtype) return FALSE;
+  if (a.type != b.type) return FALSE;
 
-  switch (a.vtype) {
+  switch (a.type) {
   case STRM_VALUE_BOOL:
   case STRM_VALUE_INT:
     return a.val.i == b.val.i;
@@ -205,7 +205,7 @@ strm_to_str(strm_value v)
   char buf[32];
   int n;
 
-  switch (v.vtype) {
+  switch (v.type) {
   case STRM_VALUE_FLT:
     n = sprintf(buf, "%g", v.val.f);
     return strm_str_new(buf, n);

@@ -126,7 +126,7 @@ node_op_new(const char* op, node* lhs, node* rhs)
   node_op* nop = malloc(sizeof(node_op));
   nop->type = NODE_OP;
   nop->lhs = lhs;
-  nop->op = node_id_of(op);
+  nop->op = node_ident_of(op);
   nop->rhs = rhs;
   return (node*)nop;
 }
@@ -187,7 +187,7 @@ node_string_new(const char* s, size_t l)
 }
 
 node*
-node_id_new(strm_string* name)
+node_ident_new(strm_string* name)
 {
   node* np = malloc(sizeof(node));
 
@@ -198,7 +198,7 @@ node_id_new(strm_string* name)
 }
 
 node*
-node_id_str(strm_string *name)
+node_ident_str(strm_string *name)
 {
   node* np = malloc(sizeof(node));
 
@@ -209,7 +209,7 @@ node_id_str(strm_string *name)
 }
 
 strm_string*
-node_id_of(const char* s)
+node_ident_of(const char* s)
 {
   extern int strm_event_loop_started;
   strm_string *str;
@@ -241,12 +241,12 @@ node_false()
 }
 
 node*
-node_if_new(node* cond, node* compstmt, node* opt_else)
+node_if_new(node* cond, node* then, node* opt_else)
 {
   node_if* nif = malloc(sizeof(node_if));
   nif->type = NODE_IF;
   nif->cond = cond;
-  nif->compstmt = compstmt;
+  nif->then = then;
   nif->opt_else = opt_else;
   return (node*)nif;
 }
@@ -345,7 +345,7 @@ node_free(node* np) {
     break;
   case NODE_IF:
     node_free(((node_if*)np)->cond);
-    node_free(((node_if*)np)->compstmt);
+    node_free(((node_if*)np)->then);
     node_free(((node_if*)np)->opt_else);
     free(np);
     break;
