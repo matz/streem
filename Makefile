@@ -2,7 +2,8 @@ YACC = bison -y -d
 LEX = flex
 CC = gcc
 TARGET = bin/streem
-CFLAGS = -g -Wall
+CDEFS =
+CFLAGS = -g -Wall $(CDEFS)
 LIBS = -lpthread
 
 ifeq (Windows_NT,$(OS))

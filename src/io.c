@@ -3,6 +3,10 @@
 #include "pollfd.h"
 #include <errno.h>
 
+#ifdef STRM_USE_WRITEV
+#include <sys/uio.h>
+#endif
+
 static pthread_t io_worker;
 static int io_wait_num = 0;
 static int epoll_fd;
@@ -213,8 +217,19 @@ write_cb(strm_task *strm, strm_value data)
   struct write_data *d = (struct write_data*)strm->data;
   strm_string *p = strm_to_str(data);
 
+#ifdef STRM_USE_WRITEV
+  struct iovec v[2];
+
+  v[0].iov_base = (char*)p->ptr;
+  v[0].iov_len  = p->len;
+  v[1].iov_base = "\n";
+  v[1].iov_len  = 1;
+
+  writev(d->fd, v, 2);
+#else
   write(d->fd, p->ptr, p->len);
   write(d->fd, "\n", 1);
+#endif
 }
 
 static void
