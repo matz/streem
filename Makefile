@@ -28,7 +28,7 @@ test : all
 
 .PHONY : test
 
-src/y.tab.c : src/parse.y
+src/y.tab.c src/y.tab.h : src/parse.y
 	$(YACC) -o src/y.tab.c src/parse.y
 
 src/lex.yy.c src/lex.yy.h : src/lex.l
@@ -37,13 +37,15 @@ src/lex.yy.c src/lex.yy.h : src/lex.l
 src/parse.o : src/y.tab.c src/lex.yy.c
 	$(CC) -g -MMD -MP -c src/y.tab.c -o src/parse.o
 
+src/node.o : src/y.tab.h src/lex.yy.h
+
 $(TARGET) : $(OBJS)
 	mkdir -p "$$(dirname $(TARGET))"
 	$(CC) $(CFLAGS) $(OBJS) -o $(TARGET) $(LIBS)
 
 clean :
-	rm -f src/y.output src/y.tab.c
-	rm -f src/lex.yy.c
+	rm -f src/y.output src/y.tab.c src/y.tab.h
+	rm -f src/lex.yy.c src/lex.yy.h
 	rm -f src/*.d src/*.o $(TARGET)
 .PHONY : clean
 

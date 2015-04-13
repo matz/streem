@@ -310,7 +310,7 @@ cputs_ptr(node_ctx* ctx, FILE* out, struct strm_object *obj)
   case STRM_OBJ_STRING:
     {
       strm_string* str = (strm_string*)obj;
-      fprintf(out, "%*s", str->len, str->ptr);
+      fprintf(out, "%*s", (int)str->len, str->ptr);
       break;
     }
     break;

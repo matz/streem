@@ -6,7 +6,7 @@ static void
 print_id(const char* pre, strm_string *name)
 {
   fputs(pre, stdout);
-  fprintf(stdout, "%*s\n", name->len, name->ptr);
+  fprintf(stdout, "%*s\n", (int)name->len, name->ptr);
 }
 
 static void
@@ -115,7 +115,7 @@ dump_node(node* np, int indent) {
       printf("VALUE(NUMBER): %f\n", np->value.v.d);
       break;
     case NODE_VALUE_STRING:
-      printf("VALUE(STRING): \"%*s\"\n", np->value.v.s->len, np->value.v.s->ptr);
+      printf("VALUE(STRING): \"%*s\"\n", (int)np->value.v.s->len, np->value.v.s->ptr);
       break;
     case NODE_VALUE_BOOL:
       printf("VALUE(BOOL): %s\n", np->value.v.i ? "true" : "false");
