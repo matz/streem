@@ -8,6 +8,7 @@ LIBS = -lpthread
 
 ifeq (Windows_NT,$(OS))
 TARGET:=$(TARGET).exe
+LIBS += -lws2_32
 endif
 
 TESTS=$(wildcard examples/*.strm)

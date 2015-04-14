@@ -19,6 +19,13 @@ readonly_data_p(const char *p)
 {
   return (void*)get_etext() < p && p < (void*)get_edata();
 }
+#elif defined(_WIN32)
+
+static inline int
+readonly_data_p(const char *p)
+{
+  return 1;
+}
 #else
 
 extern char _etext[];
