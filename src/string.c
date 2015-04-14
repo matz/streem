@@ -2,7 +2,7 @@
 #include "khash.h"
 #include <pthread.h>
 
-#ifdef NO_READONLY_DATA_CHECK
+#if defined(NO_READONLY_DATA_CHECK) || defined(_WIN32)
 
 static inline int
 readonly_data_p(const char *s)
@@ -19,13 +19,7 @@ readonly_data_p(const char *p)
 {
   return (void*)get_etext() < p && p < (void*)get_edata();
 }
-#elif defined(_WIN32)
 
-static inline int
-readonly_data_p(const char *p)
-{
-  return 1;
-}
 #else
 
 extern char _etext[];
