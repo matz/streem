@@ -10,6 +10,15 @@ readonly_data_p(const char *s)
   return 0;
 }
 
+#elif defined(__APPLE__)
+
+#include <mach-o/getsect.h>
+
+static inline int
+readonly_data_p(const char *p)
+{
+  return (void*)get_etext() < p && p < (void*)get_edata();
+}
 #else
 
 extern char _etext[];

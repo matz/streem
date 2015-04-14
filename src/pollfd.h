@@ -2,6 +2,8 @@
 # include <sys/epoll.h>
 #else
 
+#include <stdint.h>
+
 /* for FD_SETSIZE */
 #ifdef _WIN32
 # include <ws2tcpip.h>
