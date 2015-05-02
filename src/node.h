@@ -42,7 +42,7 @@ typedef struct parser_state {
   node_ctx ctx;
 } parser_state;
 
-int node_parse_init(parser_state*);
+void node_parse_init(parser_state*);
 void node_parse_free(parser_state*);
 int node_parse_file(parser_state*, const char*);
 int node_parse_input(parser_state*, FILE* in, const char*);
