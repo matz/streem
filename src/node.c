@@ -74,7 +74,7 @@ node*
 node_pair_new(node* key, node* value)
 {
   node_pair* npair = malloc(sizeof(node_pair));
-  npair->type = NODE_PAIR; 
+  npair->type = NODE_PAIR;
   npair->key = key;
   npair->value = value;
   return (node*)npair;
@@ -279,7 +279,7 @@ node_break_new(node* value)
   return &nd;
 }
 
-int
+void
 node_parse_init(parser_state *p)
 {
   p->nerr = 0;
@@ -288,7 +288,6 @@ node_parse_init(parser_state *p)
   p->lineno = 1;
   p->tline = 1;
   p->ctx.exc = NULL;
-  return 0;
 }
 
 int
