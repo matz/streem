@@ -111,7 +111,7 @@ node_map_free(node* np)
 }
 
 node*
-node_let_new(node* lhs, node* rhs)
+node_let_new(strm_string* lhs, node* rhs)
 {
   node_let* nlet = malloc(sizeof(node_let));
   nlet->type = NODE_LET;

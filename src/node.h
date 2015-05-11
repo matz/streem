@@ -100,7 +100,7 @@ typedef struct {
 
 typedef struct {
   NODE_HEADER;
-  node* lhs;
+  strm_string* lhs;
   node* rhs;
 } node_let;
 
@@ -139,7 +139,7 @@ extern void node_stmts_add(node*, node*);
 extern node* node_pair_new(node*, node*);
 extern node* node_map_new();
 extern node* node_map_of(node*);
-extern node* node_let_new(node*, node*);
+extern node* node_let_new(strm_string*, node*);
 extern node* node_op_new(const char*, node*, node*);
 extern node* node_block_new(node*, node*);
 extern node* node_call_new(node*, node*, node*, node*);

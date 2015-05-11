@@ -18,10 +18,10 @@
 }
 
 %type <nd> program compstmt
-%type <nd> stmt expr condition block cond var primary primary0
+%type <nd> stmt expr condition block cond primary primary0
 %type <nd> stmts args opt_args opt_block f_args map map_args bparam
 %type <nd> opt_else opt_elsif
-%type <id> identifier
+%type <id> identifier var
 %type <nd> lit_string lit_number
 
 %pure-parser
@@ -137,9 +137,6 @@ stmt            : var '=' expr
                 ;
 
 var             : identifier
-                    {
-                        $$ = node_ident_new($1);
-                    }
                 ;
 
 expr            : expr op_plus expr
