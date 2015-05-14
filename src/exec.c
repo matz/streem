@@ -202,10 +202,10 @@ exec_call(node_ctx* ctx, strm_string *name, int argc, strm_value* args, strm_val
   strm_value m;
 
   n = strm_var_get(ctx, name, &m);
-  if (n) return n;
-
-  if (m.type == STRM_VALUE_CFUNC) {
-    return ((exec_cfunc)m.val.p)(ctx, argc, args, ret);
+  if (n == 0) {
+    if (m.type == STRM_VALUE_CFUNC) {
+      return ((exec_cfunc)m.val.p)(ctx, argc, args, ret);
+    }
   }
   node_raise(ctx, "function not found");
   return 1;
@@ -231,11 +231,18 @@ exec_expr(node_ctx* ctx, node* np, strm_value* val)
     {
       node_let *nlet = (node_let*)np;
       n = exec_expr(ctx, nlet->rhs, val);
-      if (n) return n;
+      if (n) {
+        node_raise(ctx, "failed to assign");
+        return n;
+      }
       return strm_var_set(ctx, nlet->lhs, *val);
     }
   case NODE_IDENT:
-    return strm_var_get(ctx, np->value.v.s, val);
+    n = strm_var_get(ctx, np->value.v.s, val);
+    if (n) {
+      node_raise(ctx, "failed to reference variable");
+    }
+    return n;
   case NODE_IF:
     {
       strm_value v;
