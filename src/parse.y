@@ -312,7 +312,10 @@ opt_elsif       : /* none */
                     }
                 | opt_elsif keyword_else keyword_if condition '{' compstmt '}'
                     {
-                      $$ = node_if_new($4, $6, NULL);
+                      if ($1)
+                        ((node_if*)$1)->opt_else = node_if_new($4, $6, NULL);
+                      else
+                        $$ = node_if_new($4, $6, NULL);
                     }
                 ;
 
@@ -322,7 +325,7 @@ opt_else        : opt_elsif
                     }
                 | opt_elsif keyword_else '{' compstmt '}'
                     {
-                      $$ = $4;
+                      ((node_if*)$1)->opt_else = $4;
                     }
                 ;
 
