@@ -450,10 +450,12 @@ node_run(parser_state* p)
   strm_seq_init(&p->ctx);
   exec_expr(&p->ctx, (node*)p->lval, &v);
   if (p->ctx.exc != NULL) {
-    strm_value v;
-    exec_cputs(&p->ctx, stderr, 1, &p->ctx.exc->arg, &v);
-    /* TODO: garbage correct previous exception value */
-    p->ctx.exc = NULL;
+    if (p->ctx.exc->type != NODE_ERROR_RETURN) {
+      strm_value v;
+      exec_cputs(&p->ctx, stderr, 1, &p->ctx.exc->arg, &v);
+      /* TODO: garbage correct previous exception value */
+      p->ctx.exc = NULL;
+    }
   }
   return 0;
 }
