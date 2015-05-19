@@ -129,20 +129,67 @@ exec_neq(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
   return 0;
 }
 
+struct blk_execer {
+  node_ctx* ctx;
+  node_block* blk;
+};
+
+static void blk_exec(strm_task *strm, strm_value data);
+
+static void blk_finish(strm_task *strm, strm_value data) {
+  struct blk_execer *e = strm->data;
+  free(e);
+}
+
 static int
 exec_bar(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
 {
+  strm_value lhs, rhs;
   assert(argc == 2);
   if (strm_int_p(args[0]) && strm_int_p(args[1])) {
     *ret = strm_int_value(strm_value_int(args[0])|strm_value_int(args[1]));
     return 0;
   }
-  if (strm_task_p(args[0]) && strm_task_p(args[1])) {
-    strm_connect(strm_value_task(args[0]), strm_value_task(args[1]));
+
+  lhs = args[0];
+  if (strm_blk_p(lhs)) {
+    struct blk_execer *e;
+    e = malloc(sizeof(struct blk_execer));
+    e->ctx = ctx;
+    e->blk = (node_block*)lhs.val.p;
+    lhs = strm_task_value(strm_alloc_stream(strm_task_filt, blk_exec, blk_finish, (void*)e));
+  }
+  rhs = args[1];
+  if (strm_blk_p(rhs)) {
+    struct blk_execer *e;
+    e = malloc(sizeof(struct blk_execer));
+    e->ctx = ctx;
+    e->blk = (node_block*)rhs.val.p;
+    rhs = strm_task_value(strm_alloc_stream(strm_task_filt, blk_exec, NULL, (void*)e));
+  }
+
+  if (strm_task_p(lhs) && strm_task_p(rhs)) {
+    strm_connect(strm_value_task(lhs), strm_value_task(rhs));
     *ret = args[1];
     return 0;
   }
+
   node_raise(ctx, "type error");
+  return 1;
+}
+
+static int
+exec_mod(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
+{
+  assert(argc == 2);
+  if (strm_int_p(args[0]) && strm_int_p(args[1])) {
+    *ret = strm_int_value(strm_value_int(args[0])%strm_value_int(args[1]));
+    return 0;
+  }
+  else if (strm_num_p(args[0])) {
+    *ret = strm_flt_value((int)strm_value_flt(args[0])%(int)strm_value_flt(args[1]));
+    return 0;
+  }
   return 1;
 }
 
@@ -230,25 +277,22 @@ exec_expr(node_ctx* ctx, node* np, strm_value* val)
         return exec_call(ctx, ncall->ident->value.v.s, i, args, val);
       }
       else {
-        node_block* nblk = (node_block*)ncall;
-        strm_value v;
-        int n;
-        n = exec_expr(ctx, nblk->compstmt, &v);
-        if (n && ctx->exc->type == NODE_ERROR_RETURN) {
-          *val = ctx->exc->arg;
-          free(ctx->exc);
-          return 0;
-        }
+        *val = strm_blk_value((node_block*)ncall->blk);
+        return 0;
       }
     }
     break;
   case NODE_RETURN:
     {
       node_return* nreturn = (node_return*)np;
-      ctx->exc = malloc(sizeof(node_error));
-      ctx->exc->type = NODE_ERROR_RETURN;
-      n = exec_expr(ctx, nreturn->rv, &ctx->exc->arg);
-      return n;
+      node_values* args = (node_values*)nreturn->rv;
+      if (args->len > 0) {
+        ctx->exc = malloc(sizeof(node_error));
+        ctx->exc->type = NODE_ERROR_RETURN;
+        n = exec_expr(ctx, args->data[0], &ctx->exc->arg);
+        return n;
+      }
+      return 0;
     }
     break;
   case NODE_STMTS:
@@ -346,6 +390,9 @@ exec_cputs(node_ctx* ctx, FILE* out, int argc, strm_value* args, strm_value *ret
     case STRM_VALUE_CFUNC:
       fprintf(out, "<cfunc:%p>", v.val.p);
       break;
+    case STRM_VALUE_BLK:
+      fprintf(out, "<blk:%p>", v.val.p);
+      break;
     case STRM_VALUE_TASK:
       fprintf(out, "<task:%p>", v.val.p);
       break;
@@ -385,6 +432,7 @@ node_init(node_ctx* ctx)
   strm_var_def("==", strm_cfunc_value(exec_eq));
   strm_var_def("!=", strm_cfunc_value(exec_neq));
   strm_var_def("|", strm_cfunc_value(exec_bar));
+  strm_var_def("%", strm_cfunc_value(exec_mod));
 }
 
 void strm_seq_init();
@@ -405,3 +453,31 @@ node_run(parser_state* p)
   }
   return 0;
 }
+
+static void
+blk_exec(strm_task *strm, strm_value data)
+{
+  struct blk_execer *e = strm->data;
+  strm_value ret = strm_nil_value();
+  node_values* args = (node_values*)e->blk->args;
+  int i, n;
+
+  for (i = 0; i < args->len; i++) {
+    const char* name = ((node*)args->data[i])->value.v.s->ptr;
+    strm_var_def(name, data);
+  }
+
+  n = exec_expr(e->ctx, e->blk->compstmt, &data);
+  if (n) return;
+  if (e->ctx->exc) {
+    if (e->ctx->exc->type == NODE_ERROR_RETURN) {
+      ret = e->ctx->exc->arg;
+      free(e->ctx->exc);
+      e->ctx->exc = NULL;
+    } else {
+      return;
+    }
+  }
+  strm_emit(strm, ret, NULL);
+}
+

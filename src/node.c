@@ -265,11 +265,10 @@ node_emit_new(node* value)
 node*
 node_return_new(node* value)
 {
-  node* np = malloc(sizeof(node));
-  np->type = NODE_RETURN;
-  np->value.t = NODE_VALUE_USER;
-  np->value.v.p = value;
-  return np;
+  node_return* nreturn = malloc(sizeof(node_return));
+  nreturn->type = NODE_RETURN;
+  nreturn->rv = value;
+  return (node*)nreturn;
 }
 
 node*

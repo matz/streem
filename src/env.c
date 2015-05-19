@@ -11,7 +11,8 @@ env_set(strm_env *env, strm_string* name, strm_value val)
   int r;
   khiter_t k;
 
-  assert(!strm_event_loop_started);
+  /* TODO */
+  /* assert(!strm_event_loop_started); */
   if ((name->flags & STRM_STR_INTERNED) == 0) {
     name = strm_str_intern(name->ptr, name->len);
   }
