@@ -304,6 +304,9 @@ exec_expr(node_ctx* ctx, node* np, strm_value* val)
         if (ctx->exc != NULL) return n;
         if (n) return n;
       }
+      ctx->exc = malloc(sizeof(node_error));
+      ctx->exc->type = NODE_ERROR_RETURN;
+      ctx->exc->arg = *val;
       return 0;
     }
     break;
