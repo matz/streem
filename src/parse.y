@@ -325,7 +325,10 @@ opt_else        : opt_elsif
                     }
                 | opt_elsif keyword_else '{' compstmt '}'
                     {
-                      ((node_if*)$1)->opt_else = $4;
+                      if ($1)
+                        ((node_if*)$1)->opt_else = $4;
+                      else
+                        $$ = $4;
                     }
                 ;
 
