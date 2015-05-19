@@ -170,7 +170,7 @@ exec_bar(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
 
   if (strm_task_p(lhs) && strm_task_p(rhs)) {
     strm_connect(strm_value_task(lhs), strm_value_task(rhs));
-    *ret = args[1];
+    *ret = rhs;
     return 0;
   }
 
