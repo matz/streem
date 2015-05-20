@@ -324,21 +324,15 @@ exec_expr(node_ctx* ctx, node* np, strm_value* val)
     break;
   case NODE_STMTS:
     {
-      int i, n;
+      int i;
       node_values* v = (node_values*)np;
       for (i = 0; i < v->len; i++) {
         n = exec_expr(ctx, v->data[i], val);
         if (ctx->exc != NULL) return n;
         if (n) return n;
       }
-#if 0
-      ctx->exc = malloc(sizeof(node_error));
-      ctx->exc->type = NODE_ERROR_RETURN;
-      ctx->exc->arg = *val;
-#endif
-      return 0;
     }
-    break;
+    return 0;
   case NODE_VALUE:
     switch (np->value.t) {
     case NODE_VALUE_BOOL:
