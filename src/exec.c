@@ -253,7 +253,7 @@ exec_expr(node_ctx* ctx, node* np, strm_value* val)
       node_if* nif = (node_if*)np;
       n = exec_expr(ctx, nif->cond, &v);
       if (n) return n;
-      if (strm_value_bool(v) || (strm_int_p(v) && strm_value_int(v) > 0)) {
+      if (strm_value_bool(v) && v.val.i) {
         return exec_expr(ctx, nif->then, val);
       }
       else if (nif->opt_else != NULL) {
