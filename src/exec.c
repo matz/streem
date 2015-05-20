@@ -202,7 +202,7 @@ exec_call(node_ctx* ctx, strm_string *name, int argc, strm_value* argv, strm_val
         c.prev = lambda->ctx;
         if (args->len != argc) return 1;
         for (i=0; i<argc; i++) {
-          n = strm_var_set(&c, ((node*)args->data[i])->value.v.s, argv[i]);
+          n = strm_var_set(&c, (strm_string*)args->data[i], argv[i]);
           if (n) return n;
         }
         return exec_expr(&c, nlbd->compstmt, ret);
@@ -494,7 +494,7 @@ blk_exec(strm_task *strm, strm_value data)
 
   c.prev = lambda->ctx;
   assert(args->len == 1);
-  strm_var_set(&c, ((node*)args->data[0])->value.v.s, data);
+  strm_var_set(&c, (strm_string*)args->data[0], data);
 
   n = exec_expr(&c, lambda->body->compstmt, &ret);
   if (n) return;

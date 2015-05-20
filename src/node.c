@@ -111,6 +111,18 @@ node_map_free(node* np)
 }
 
 node*
+node_args_new()
+{
+  return node_values_new(NODE_ARGS);
+}
+
+void
+node_args_add(node* arr, strm_string* s)
+{
+  node_values_add((node_values*)arr, s);
+}
+
+node*
 node_let_new(strm_string* lhs, node* rhs)
 {
   node_let* nlet = malloc(sizeof(node_let));

@@ -490,13 +490,13 @@ bparam          : op_rasgn
 
 f_args          : identifier
                     {
-                      $$ = node_array_new();
-                      node_array_add($$, node_ident_new($1));
+                      $$ = node_args_new();
+                      node_args_add($$, node_id_str($1));
                     }
                 | f_args ',' identifier
                     {
                       $$ = $1;
-                      node_array_add($$, node_ident_new($3));
+                      node_args_add($$, node_id_str($3));
                     }
                 ;
 
