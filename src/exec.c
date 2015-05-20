@@ -181,7 +181,7 @@ typedef int (*exec_cfunc)(node_ctx*, int, strm_value*, strm_value*);
 static int exec_expr(node_ctx* ctx, node* np, strm_value* val);
 
 static int
-exec_call(node_ctx* ctx, strm_string *name, int argc, strm_value* args, strm_value* ret)
+exec_call(node_ctx* ctx, strm_string *name, int argc, strm_value* argv, strm_value* ret)
 {
   int n;
   strm_value m;
@@ -190,14 +190,22 @@ exec_call(node_ctx* ctx, strm_string *name, int argc, strm_value* args, strm_val
   if (n == 0) {
     switch (m.type) {
     case STRM_VALUE_CFUNC:
-      return ((exec_cfunc)m.val.p)(ctx, argc, args, ret);
+      return ((exec_cfunc)m.val.p)(ctx, argc, argv, ret);
     case STRM_VALUE_PTR:
       {
         strm_lambda* lambda = strm_value_ptr(m);
+        node_lambda* nlbd = lambda->body;
+        node_values* args = (node_values*)nlbd->args;
         node_ctx c = {0};
+        int i;
 
         c.prev = lambda->ctx;
-        return exec_expr(&c, lambda->body->compstmt, ret);
+        if (args->len != argc) return 1;
+        for (i=0; i<argc; i++) {
+          n = strm_var_set(&c, ((node*)args->data[i])->value.v.s, argv[i]);
+          if (n) return n;
+        }
+        return exec_expr(&c, nlbd->compstmt, ret);
       }
     default:
       break;
