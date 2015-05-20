@@ -168,9 +168,10 @@ strm_cfunc_p(strm_value v)
 }
 
 int
-strm_blk_p(strm_value v)
+strm_lambda_p(strm_value v)
 {
-  return v.type == STRM_VALUE_BLK;
+  return v.type == STRM_VALUE_PTR &&
+         ((struct strm_object*)v.val.p)->type == STRM_OBJ_LAMBDA;
 }
 
 int

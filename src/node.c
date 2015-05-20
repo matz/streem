@@ -126,23 +126,23 @@ node_op_new(const char* op, node* lhs, node* rhs)
   node_op* nop = malloc(sizeof(node_op));
   nop->type = NODE_OP;
   nop->lhs = lhs;
-  nop->op = node_ident_of(op);
+  nop->op = node_id(op);
   nop->rhs = rhs;
   return (node*)nop;
 }
 
 node*
-node_block_new(node* args, node* compstmt)
+node_lambda_new(node* args, node* compstmt)
 {
-  node_block* block = malloc(sizeof(node_block));
-  block->type = NODE_BLOCK;
-  block->args = args;
-  block->compstmt = compstmt;
-  return (node*)block;
+  node_lambda* lambda = malloc(sizeof(node_lambda));
+  lambda->type = NODE_LAMBDA;
+  lambda->args = args;
+  lambda->compstmt = compstmt;
+  return (node*)lambda;
 }
 
 node*
-node_call_new(node* recv, node* ident, node* args, node* blk)
+node_call_new(node* recv, strm_string* ident, node* args, node* blk)
 {
   node_call* ncall = malloc(sizeof(node_call));
   ncall->type = NODE_CALL;
@@ -209,7 +209,7 @@ node_ident_str(strm_string *name)
 }
 
 strm_string*
-node_ident_of(const char* s)
+node_id(const char* s)
 {
   extern int strm_event_loop_started;
   strm_string *str;
@@ -217,6 +217,15 @@ node_ident_of(const char* s)
   assert(!strm_event_loop_started);
   str = strm_str_intern(s, strlen(s));
   return str;
+}
+
+strm_string*
+node_id_str(strm_string *s)
+{
+  if (s->flags & STRM_STR_INTERNED) {
+    return s;
+  }
+  return strm_str_intern(s->ptr, s->len);
 }
 
 node*
@@ -358,14 +367,13 @@ node_free(node* np) {
     node_free(((node_op*) np)->rhs);
     free(np);
     break;
-  case NODE_BLOCK:
-    node_free(((node_block*) np)->args);
-    node_free(((node_block*) np)->compstmt);
+  case NODE_LAMBDA:
+    node_free(((node_lambda*) np)->args);
+    node_free(((node_lambda*) np)->compstmt);
     free(np);
     break;
   case NODE_CALL:
     node_free(((node_call*) np)->recv);
-    node_free(((node_call*) np)->ident);
     node_free(((node_call*) np)->args);
     node_free(((node_call*) np)->blk);
     free(np);

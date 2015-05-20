@@ -57,7 +57,7 @@ typedef enum {
   NODE_PAIR,
   NODE_VALUE,
   NODE_CFUNC,
-  NODE_BLOCK,
+  NODE_LAMBDA,
   NODE_IDENT,
   NODE_LET,
   NODE_IF,
@@ -113,16 +113,16 @@ typedef struct {
   node* rhs;
 } node_op;
 
-typedef struct {
+typedef struct node_lambda {
   NODE_HEADER;
   node* args;
   node* compstmt;
-} node_block;
+} node_lambda;
 
 typedef struct {
   NODE_HEADER;
   node* recv;
-  node* ident;
+  strm_string* ident;
   node* args;
   node* blk;
 } node_call;
@@ -143,8 +143,8 @@ extern node* node_map_new();
 extern node* node_map_of(node*);
 extern node* node_let_new(strm_string*, node*);
 extern node* node_op_new(const char*, node*, node*);
-extern node* node_block_new(node*, node*);
-extern node* node_call_new(node*, node*, node*, node*);
+extern node* node_lambda_new(node*, node*);
+extern node* node_call_new(node*, strm_string*, node*, node*);
 extern node* node_int_new(long);
 extern node* node_double_new(double);
 extern node* node_string_new(const char*, size_t);
@@ -154,7 +154,8 @@ extern node* node_return_new(node*);
 extern node* node_break_new();
 extern node* node_ident_new(strm_string*);
 extern node* node_ident_str(strm_string*);
-extern strm_string* node_ident_of(const char*);
+extern strm_string* node_id(const char*);
+extern strm_string* node_id_str(strm_string*);
 extern node* node_nil();
 extern node* node_true();
 extern node* node_false();

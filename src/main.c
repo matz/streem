@@ -57,15 +57,20 @@ dump_node(node* np, int indent) {
     dump_node(((node_op*) np)->lhs, indent+1);
     dump_node(((node_op*) np)->rhs, indent+1);
     break;
-  case NODE_BLOCK:
-    printf("BLOCK:\n");
-    dump_node(((node_block*) np)->args, indent+1);
-    dump_node(((node_block*) np)->compstmt, indent+1);
+  case NODE_LAMBDA:
+    printf("LAMBDA:\n");
+    dump_node(((node_lambda*) np)->args, indent+1);
+    dump_node(((node_lambda*) np)->compstmt, indent+1);
     break;
   case NODE_CALL:
     printf("CALL:\n");
     dump_node(((node_call*) np)->recv, indent+2);
-    dump_node(((node_call*) np)->ident, indent+2);
+    for (i = 0; i < indent+2; i++)
+      putchar(' ');
+    {
+      strm_string *s = ((node_call*)np)->ident;
+      printf("\"%*s\"\n", (int)s->len, s->ptr);
+    }
     dump_node(((node_call*) np)->args, indent+2);
     dump_node(((node_call*) np)->blk, indent+2);
     break;

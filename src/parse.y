@@ -401,38 +401,35 @@ cond            : primary0
                     }
                 | identifier '(' opt_args ')'
                     {
-                      $$ = node_call_new(NULL, node_ident_new($1), $3, NULL);
+                      $$ = node_call_new(NULL, node_id_str($1), $3, NULL);
                     }
                 | cond '.' identifier '(' opt_args ')'
                     {
-                      $$ = node_call_new(NULL, node_ident_new($3), $5, NULL);
+                      $$ = node_call_new(NULL, node_id_str($3), $5, NULL);
                     }
                 | cond '.' identifier
                     {
-                      $$ = node_call_new($1, node_ident_new($3), NULL, NULL);
+                      $$ = node_call_new($1, node_id_str($3), NULL, NULL);
                     }
                 ;
 
 primary         : primary0
                 | block
-                    {
-                      $$ = node_call_new(NULL, NULL, NULL, $1);
-                    }
                 | identifier block
                     {
-                      $$ = node_call_new(NULL, node_ident_new($1), NULL, $2);
+                      $$ = node_call_new(NULL, node_id_str($1), NULL, $2);
                     }
                 | identifier '(' opt_args ')' opt_block
                     {
-                      $$ = node_call_new(NULL, node_ident_new($1), $3, $5);
+                      $$ = node_call_new(NULL, node_id_str($1), $3, $5);
                     }
                 | primary '.' identifier '(' opt_args ')' opt_block
                     {
-                      $$ = node_call_new($1, node_ident_new($3), $5, $7);
+                      $$ = node_call_new($1, node_id_str($3), $5, $7);
                     }
                 | primary '.' identifier opt_block
                     {
-                      $$ = node_call_new($1, node_ident_new($3), NULL, $4);
+                      $$ = node_call_new($1, node_id_str($3), NULL, $4);
                     }
                 ;
 
@@ -470,11 +467,11 @@ opt_block       : /* none */
 
 block           : '{' bparam compstmt '}'
                     {
-                      $$ = node_block_new($2, $3);
+                      $$ = node_lambda_new($2, $3);
                     }
                 | '{' compstmt '}'
                     {
-                      $$ = node_block_new(NULL, $2);
+                      $$ = node_lambda_new(NULL, $2);
                     }
                 ;
 

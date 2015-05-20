@@ -129,17 +129,7 @@ exec_neq(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
   return 0;
 }
 
-struct blk_execer {
-  node_ctx* ctx;
-  node_block* blk;
-};
-
 static void blk_exec(strm_task *strm, strm_value data);
-
-static void blk_finish(strm_task *strm, strm_value data) {
-  struct blk_execer *e = strm->data;
-  free(e);
-}
 
 static int
 exec_bar(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
@@ -152,20 +142,14 @@ exec_bar(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
   }
 
   lhs = args[0];
-  if (strm_blk_p(lhs)) {
-    struct blk_execer *e;
-    e = malloc(sizeof(struct blk_execer));
-    e->ctx = ctx;
-    e->blk = (node_block*)lhs.val.p;
-    lhs = strm_task_value(strm_alloc_stream(strm_task_filt, blk_exec, blk_finish, (void*)e));
+  if (strm_lambda_p(lhs)) {
+    strm_lambda *lmbd = strm_value_lambda(lhs)
+    lhs = strm_task_value(strm_alloc_stream(strm_task_filt, blk_exec, NULL, (void*)lmbd));
   }
   rhs = args[1];
-  if (strm_blk_p(rhs)) {
-    struct blk_execer *e;
-    e = malloc(sizeof(struct blk_execer));
-    e->ctx = ctx;
-    e->blk = (node_block*)rhs.val.p;
-    rhs = strm_task_value(strm_alloc_stream(strm_task_filt, blk_exec, NULL, (void*)e));
+  if (strm_lambda_p(rhs)) {
+    strm_lambda *lmbd = strm_value_lambda(rhs)
+    rhs = strm_task_value(strm_alloc_stream(strm_task_filt, blk_exec, NULL, (void*)lmbd));
   }
 
   if (strm_task_p(lhs) && strm_task_p(rhs)) {
@@ -194,6 +178,7 @@ exec_mod(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
 }
 
 typedef int (*exec_cfunc)(node_ctx*, int, strm_value*, strm_value*);
+static int exec_expr(node_ctx* ctx, node* np, strm_value* val);
 
 static int
 exec_call(node_ctx* ctx, strm_string *name, int argc, strm_value* args, strm_value* ret)
@@ -203,8 +188,19 @@ exec_call(node_ctx* ctx, strm_string *name, int argc, strm_value* args, strm_val
 
   n = strm_var_get(ctx, name, &m);
   if (n == 0) {
-    if (m.type == STRM_VALUE_CFUNC) {
+    switch (m.type) {
+    case STRM_VALUE_CFUNC:
       return ((exec_cfunc)m.val.p)(ctx, argc, args, ret);
+    case STRM_VALUE_PTR:
+      {
+        strm_lambda* lambda = strm_value_ptr(m);
+        node_ctx c = {0};
+
+        c.prev = lambda->ctx;
+        return exec_expr(&c, lambda->body->compstmt, ret);
+      }
+    default:
+      break;
     }
   }
   node_raise(ctx, "function not found");
@@ -278,25 +274,31 @@ exec_expr(node_ctx* ctx, node* np, strm_value* val)
       return exec_call(ctx, nop->op, i, args, val);
     }
     break;
+  case NODE_LAMBDA:
+    {
+      struct strm_lambda* lambda = malloc(sizeof(strm_lambda));
+
+      if (!lambda) return 1;
+      lambda->type = STRM_OBJ_LAMBDA;
+      lambda->body = (node_lambda*)np;
+      lambda->ctx = ctx;
+      *val = strm_ptr_value(lambda);
+      return 0;
+    }
+    break;
   case NODE_CALL:
     {
       /* TODO: wip code of ident */
       node_call* ncall = (node_call*)np;
-      if (ncall->ident != NULL) {
-        int i;
-        node_values* v0 = (node_values*)ncall->args;
-        strm_value *args = malloc(sizeof(strm_value)*v0->len);
+      int i;
+      node_values* v0 = (node_values*)ncall->args;
+      strm_value *args = malloc(sizeof(strm_value)*v0->len);
 
-        for (i = 0; i < v0->len; i++) {
-          n = exec_expr(ctx, v0->data[i], &args[i]);
-          if (n) return n;
-        }
-        return exec_call(ctx, ncall->ident->value.v.s, i, args, val);
+      for (i = 0; i < v0->len; i++) {
+        n = exec_expr(ctx, v0->data[i], &args[i]);
+        if (n) return n;
       }
-      else {
-        *val = strm_blk_value((node_block*)ncall->blk);
-        return 0;
-      }
+      return exec_call(ctx, ncall->ident, i, args, val);
     }
     break;
   case NODE_RETURN:
@@ -321,9 +323,11 @@ exec_expr(node_ctx* ctx, node* np, strm_value* val)
         if (ctx->exc != NULL) return n;
         if (n) return n;
       }
+#if 0
       ctx->exc = malloc(sizeof(node_error));
       ctx->exc->type = NODE_ERROR_RETURN;
       ctx->exc->arg = *val;
+#endif
       return 0;
     }
     break;
@@ -480,27 +484,26 @@ node_run(parser_state* p)
 static void
 blk_exec(strm_task *strm, strm_value data)
 {
-  struct blk_execer *e = strm->data;
+  strm_lambda *lambda = strm->data;
   strm_value ret = strm_nil_value();
-  node_values* args = (node_values*)e->blk->args;
-  int i, n;
+  node_values* args = (node_values*)lambda->body->args;
+  int n;
+  node_ctx c = {0};
 
-  for (i = 0; i < args->len; i++) {
-    const char* name = ((node*)args->data[i])->value.v.s->ptr;
-    strm_var_def(name, data);
-  }
+  c.prev = lambda->ctx;
+  assert(args->len == 1);
+  strm_var_set(&c, ((node*)args->data[0])->value.v.s, data);
 
-  n = exec_expr(e->ctx, e->blk->compstmt, &data);
+  n = exec_expr(&c, lambda->body->compstmt, &ret);
   if (n) return;
-  if (e->ctx->exc) {
-    if (e->ctx->exc->type == NODE_ERROR_RETURN) {
-      ret = e->ctx->exc->arg;
-      free(e->ctx->exc);
-      e->ctx->exc = NULL;
+  if (lambda->ctx->exc) {
+    if (lambda->ctx->exc->type == NODE_ERROR_RETURN) {
+      ret = lambda->ctx->exc->arg;
+      free(lambda->ctx->exc);
+      lambda->ctx->exc = NULL;
     } else {
       return;
     }
   }
   strm_emit(strm, ret, NULL);
 }
-

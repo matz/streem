@@ -60,13 +60,14 @@ int strm_int_p(strm_value);
 int strm_flt_p(strm_value);
 int strm_task_p(strm_value);
 int strm_cfunc_p(strm_value);
-int strm_blk_p(strm_value);
+int strm_lambda_p(strm_value);
 
 enum strm_obj_type {
   STRM_OBJ_ARRAY,
   STRM_OBJ_LIST,
   STRM_OBJ_MAP,
   STRM_OBJ_STRING,
+  STRM_OBJ_LAMBDA,
   STRM_OBJ_USER,
 };
 
@@ -192,4 +193,12 @@ void strm_io_stop(strm_task *strm, int fd);
 strm_task* strm_readio(int fd);
 strm_task* strm_writeio(int fd);
 
+/* ----- lambda */
+typedef struct strm_lambda {
+  STRM_OBJ_HEADER;
+  struct node_lambda* body;
+  struct node_ctx* ctx;
+} strm_lambda;
+
+#define strm_value_lambda(v) (strm_lambda*)strm_value_obj(v, STRM_OBJ_LAMBDA);
 #endif
