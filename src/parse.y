@@ -113,11 +113,6 @@ stmts           :
                       }
                       node_stmts_add($$, $3);
                     }
-                | error stmt
-                    {
-                      $$ = node_stmts_new();
-                      node_stmts_add($$, $2);
-                    }
                 ;
 
 stmt            : var '=' expr
