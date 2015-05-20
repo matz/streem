@@ -97,20 +97,26 @@ compstmt        : stmts opt_terms
 
 stmts           :
                     {
-                      $$ = node_stmts_new();
+                      $$ = NULL;
                     }
                 | stmt
-                    {
-                      $$ = node_stmts_new();
-                      node_stmts_add($$, $1);
-                    }
                 | stmts terms stmt
                     {
-                      $$ = $1;
-                      node_stmts_add($1, $3);
+                      if (!$1 || $1->type != NODE_STMTS) {
+                        $$ = node_stmts_new();
+                        if ($1) {
+                          node_stmts_add($$, $1);
+                        }
+                      }
+                      else {
+                        $$ = $1;
+                      }
+                      node_stmts_add($$, $3);
                     }
                 | error stmt
                     {
+                      $$ = node_stmts_new();
+                      node_stmts_add($$, $2);
                     }
                 ;
 
