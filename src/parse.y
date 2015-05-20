@@ -317,13 +317,16 @@ opt_elsif       : /* none */
                 ;
 
 opt_else        : opt_elsif
-                    {
-                      $$ = NULL;
-                    }
                 | opt_elsif keyword_else '{' compstmt '}'
                     {
-                      if ($1)
-                        ((node_if*)$1)->opt_else = $4;
+                      if ($1) {
+                        node_if* n = (node_if*)$1;
+
+                        while (n->opt_else && n->opt_else->type == NODE_IF) {
+                          n = (node_if*)n->opt_else;
+                        }
+                        n->opt_else = $4;
+                      }
                       else
                         $$ = $4;
                     }
