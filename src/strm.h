@@ -101,9 +101,10 @@ int strm_str_p(strm_value v);
 
 strm_string *strm_to_str(strm_value v);
 /* ----- Variables */
-void strm_var_set(strm_string*, strm_value);
-void strm_var_def(const char*, strm_value);
-strm_value strm_var_get(strm_string*);
+struct node_ctx;
+int strm_var_set(struct node_ctx*, strm_string*, strm_value);
+int strm_var_def(const char*, strm_value);
+int strm_var_get(struct node_ctx*, strm_string*, strm_value*);
 /* ----- Arrays */
 typedef struct strm_array {
   STRM_OBJ_HEADER;

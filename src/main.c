@@ -73,6 +73,10 @@ dump_node(node* np, int indent) {
     printf("RETURN:\n");
     dump_node(((node_return*) np)->rv, indent+1);
     break;
+  case NODE_LET:
+    print_id("LET: ", ((node_let*) np)->lhs);
+    dump_node(((node_let*) np)->rhs, indent+1);
+    break;
   case NODE_IDENT:
     print_id("IDENT: ", np->value.v.s);
     break;

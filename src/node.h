@@ -28,8 +28,10 @@ typedef struct {
   strm_value arg;
 } node_error;
 
-typedef struct {
+typedef struct node_ctx {
   node_error* exc;
+  void *env;
+  struct node_ctx *prev;
 } node_ctx;
 
 typedef struct parser_state {

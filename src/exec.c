@@ -198,7 +198,11 @@ typedef int (*exec_cfunc)(node_ctx*, int, strm_value*, strm_value*);
 static int
 exec_call(node_ctx* ctx, strm_string *name, int argc, strm_value* args, strm_value* ret)
 {
-  strm_value m = strm_var_get(name);
+  int n;
+  strm_value m;
+
+  n = strm_var_get(ctx, name, &m);
+  if (n) return n;
 
   if (m.type == STRM_VALUE_CFUNC) {
     return ((exec_cfunc)m.val.p)(ctx, argc, args, ret);
@@ -223,9 +227,15 @@ exec_expr(node_ctx* ctx, node* np, strm_value* val)
   case NODE_EMIT:
     break;
 */
+  case NODE_LET:
+    {
+      node_let *nlet = (node_let*)np;
+      n = exec_expr(ctx, nlet->rhs, val);
+      if (n) return n;
+      return strm_var_set(ctx, nlet->lhs, *val);
+    }
   case NODE_IDENT:
-    *val = strm_var_get(np->value.v.s);
-    return 0;
+    return strm_var_get(ctx, np->value.v.s, val);
   case NODE_IF:
     {
       strm_value v;
