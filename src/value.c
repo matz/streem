@@ -61,6 +61,16 @@ strm_flt_value(double f)
   return v;
 }
 
+strm_value
+strm_blk_value(void* blk)
+{
+  strm_value v;
+
+  v.type = STRM_VALUE_BLK;
+  v.val.p = blk;
+  return v;
+}
+
 void*
 strm_value_ptr(strm_value v)
 {
@@ -155,6 +165,12 @@ int
 strm_cfunc_p(strm_value v)
 {
   return v.type == STRM_VALUE_CFUNC;
+}
+
+int
+strm_blk_p(strm_value v)
+{
+  return v.type == STRM_VALUE_BLK;
 }
 
 int

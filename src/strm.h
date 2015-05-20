@@ -26,6 +26,7 @@ enum strm_value_type {
   STRM_VALUE_FLT,
   STRM_VALUE_PTR,
   STRM_VALUE_CFUNC,
+  STRM_VALUE_BLK,
   STRM_VALUE_TASK,
 };
 
@@ -40,6 +41,7 @@ typedef struct strm_value {
 
 strm_value strm_ptr_value(void*);
 strm_value strm_cfunc_value(void*);
+strm_value strm_blk_value(void*);
 strm_value strm_task_value(void*);
 strm_value strm_bool_value(int);
 strm_value strm_int_value(long);
@@ -58,6 +60,7 @@ int strm_int_p(strm_value);
 int strm_flt_p(strm_value);
 int strm_task_p(strm_value);
 int strm_cfunc_p(strm_value);
+int strm_blk_p(strm_value);
 
 enum strm_obj_type {
   STRM_OBJ_ARRAY,
