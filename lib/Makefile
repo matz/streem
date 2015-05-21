@@ -1,4 +1,4 @@
-TARGET = a.out
+TARGET = streem_proto
 ifeq (Windows_NT,$(OS))
 TARGET:=$(TARGET).exe
 endif
