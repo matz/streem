@@ -307,9 +307,6 @@ node_parse_init(parser_state *p)
   p->fname = NULL;
   p->lineno = 1;
   p->tline = 1;
-  p->ctx.exc = NULL;
-  p->ctx.env = NULL;
-  p->ctx.prev = NULL;
 }
 
 int

@@ -468,16 +468,18 @@ int
 node_run(parser_state* p)
 {
   strm_value v;
+  node_ctx *ctx = malloc(sizeof(node_ctx));
 
-  node_init(&p->ctx);
-  strm_seq_init(&p->ctx);
-  exec_expr(&p->ctx, (node*)p->lval, &v);
-  if (p->ctx.exc != NULL) {
-    if (p->ctx.exc->type != NODE_ERROR_RETURN) {
+  memset(ctx, 0, sizeof(node_ctx));
+  node_init(ctx);
+  strm_seq_init(ctx);
+  exec_expr(ctx, (node*)p->lval, &v);
+  if (ctx->exc != NULL) {
+    if (ctx->exc->type != NODE_ERROR_RETURN) {
       strm_value v;
-      exec_cputs(&p->ctx, stderr, 1, &p->ctx.exc->arg, &v);
+      exec_cputs(ctx, stderr, 1, &ctx->exc->arg, &v);
       /* TODO: garbage correct previous exception value */
-      p->ctx.exc = NULL;
+      ctx->exc = NULL;
     }
   }
   return 0;

@@ -41,7 +41,6 @@ typedef struct parser_state {
   int lineno;
   int tline;
   /* TODO: should be separated as another context structure */
-  node_ctx ctx;
 } parser_state;
 
 void node_parse_init(parser_state*);
