@@ -230,6 +230,8 @@ strm_to_str(strm_value v)
     n = sprintf(buf, "%ld", v.val.i);
     return strm_str_new(buf, n);
   case STRM_VALUE_PTR:
+    if (v.val.p == NULL)
+      return strm_str_new("nil", 3);
     switch (((struct strm_object*)v.val.p)->type) {
     case STRM_OBJ_STRING:
       return (strm_string*)v.val.p;
