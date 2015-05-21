@@ -39,6 +39,7 @@ static void yyerror(parser_state *p, const char *s);
         keyword_do
         keyword_break
         keyword_emit
+        keyword_skip
         keyword_return
         keyword_nil
         keyword_true
@@ -118,6 +119,10 @@ stmts           :
 stmt            : var '=' expr
                     {
                       $$ = node_let_new($1, $3);
+                    }
+                | keyword_skip
+                    {
+                      $$ = node_skip_new();
                     }
                 | keyword_emit opt_args
                     {

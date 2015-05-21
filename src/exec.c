@@ -3,6 +3,7 @@
 
 #define NODE_ERROR_RUNTIME 0
 #define NODE_ERROR_RETURN 1
+#define NODE_ERROR_SKIP 2
 
 static int
 exec_plus(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
@@ -228,9 +229,14 @@ exec_expr(node_ctx* ctx, node* np, strm_value* val)
 /*
   case NODE_ARGS:
     break;
-  case NODE_EMIT:
-    break;
 */
+  case NODE_SKIP:
+    {
+       ctx->exc = malloc(sizeof(node_error));
+       ctx->exc->type = NODE_ERROR_SKIP;
+       ctx->exc->arg = strm_nil_value();
+       return 0;
+    }
   case NODE_LET:
     {
       node_let *nlet = (node_let*)np;
@@ -473,7 +479,7 @@ node_run(parser_state* p)
   strm_seq_init(&p->ctx);
   exec_expr(&p->ctx, (node*)p->lval, &v);
   if (p->ctx.exc != NULL) {
-    if (p->ctx.exc->type != NODE_ERROR_RETURN) {
+    if (p->ctx.exc->type == NODE_ERROR_RUNTIME) {
       strm_value v;
       exec_cputs(&p->ctx, stderr, 1, &p->ctx.exc->arg, &v);
       /* TODO: garbage correct previous exception value */
