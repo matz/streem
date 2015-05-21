@@ -272,7 +272,6 @@ node_if_new(node* cond, node* then, node* opt_else)
   return (node*)nif;
 }
 
-
 node*
 node_emit_new(node* value)
 {
@@ -281,6 +280,13 @@ node_emit_new(node* value)
   np->value.t = NODE_VALUE_USER;
   np->value.v.p = value;
   return np;
+}
+
+node*
+node_skip_new(node* value)
+{
+  static node nd = { NODE_SKIP };
+  return &nd;
 }
 
 node*
