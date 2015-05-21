@@ -260,7 +260,7 @@ exec_expr(node_ctx* ctx, node* np, strm_value* val)
   case NODE_ARRAY:
     {
       node_values* v0 = (node_values*)np;
-	  strm_array *arr = strm_ary_new(NULL, v0->len);
+      strm_array *arr = strm_ary_new(NULL, v0->len);
       strm_value *ptr = (strm_value*)arr->ptr;
       int i=0;
 
