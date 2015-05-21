@@ -70,7 +70,7 @@ void
 strm_init_io_loop()
 {
   epoll_fd = epoll_create(10);
-  assert(epoll_fd > 0);
+  assert(epoll_fd >= 0);
   pthread_create(&io_worker, NULL, io_loop, NULL);
 }
 
