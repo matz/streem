@@ -132,6 +132,14 @@ exec_neq(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
 
 static void blk_exec(strm_task *strm, strm_value data);
 
+struct array_data {
+  int n;
+  strm_array* arr;
+};
+
+static void arr_exec(strm_task *strm, strm_value data);
+static void arr_finish(strm_task *strm, strm_value data);
+
 static int
 exec_bar(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
 {
@@ -154,6 +162,14 @@ exec_bar(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
   }
 
   if (strm_task_p(lhs) && strm_task_p(rhs)) {
+    strm_connect(strm_value_task(lhs), strm_value_task(rhs));
+    *ret = rhs;
+    return 0;
+  } else if (strm_array_p(lhs) && strm_task_p(rhs)) {
+    struct array_data *arrd = malloc(sizeof(struct array_data));
+    arrd->arr = strm_value_array(lhs)
+    arrd->n = 0;
+    lhs = strm_task_value(strm_alloc_stream(strm_task_prod, arr_exec, arr_finish, (void*)arrd));
     strm_connect(strm_value_task(lhs), strm_value_task(rhs));
     *ret = rhs;
     return 0;
@@ -237,6 +253,24 @@ exec_expr(node_ctx* ctx, node* np, strm_value* val)
        ctx->exc->arg = strm_nil_value();
        return 0;
     }
+  case NODE_EMIT:
+    {
+      int i, n;
+      node_values* v0;
+
+      if (!ctx->strm) {
+        node_raise(ctx, "failed to emit");
+      }
+      v0 = (node_values*)np->value.v.p;
+
+      for (i = 0; i < v0->len; i++) {
+        n = exec_expr(ctx, v0->data[i], val);
+        if (n) return n;
+	    strm_emit(ctx->strm, *val, NULL);
+      }
+      return 0;
+    }
+    break;
   case NODE_LET:
     {
       node_let *nlet = (node_let*)np;
@@ -246,6 +280,20 @@ exec_expr(node_ctx* ctx, node* np, strm_value* val)
         return n;
       }
       return strm_var_set(ctx, nlet->lhs, *val);
+    }
+  case NODE_ARRAY:
+    {
+      node_values* v0 = (node_values*)np;
+      strm_array *arr = strm_ary_new(NULL, v0->len);
+      strm_value *ptr = (strm_value*)arr->ptr;
+      int i=0;
+
+      for (i = 0; i < v0->len; i++, ptr++) {
+        n = exec_expr(ctx, v0->data[i], ptr);
+        if (n) return n;
+      }
+      *val = strm_ptr_value(arr);
+      return 0;
     }
   case NODE_IDENT:
     n = strm_var_get(ctx, np->value.v.s, val);
@@ -500,6 +548,7 @@ blk_exec(strm_task *strm, strm_value data)
   int n;
   node_ctx c = {0};
 
+  c.strm = strm;
   c.prev = lambda->ctx;
   assert(args->len == 1);
   strm_var_set(&c, (strm_string*)args->data[0], data);
@@ -516,4 +565,20 @@ blk_exec(strm_task *strm, strm_value data)
     }
   }
   strm_emit(strm, ret, NULL);
+}
+
+static void
+arr_exec(strm_task *strm, strm_value data)
+{
+  struct array_data *arrd = strm->data;
+  strm_emit(strm, arrd->arr->ptr[arrd->n++], NULL);
+  if (arrd->n == arrd->arr->len)
+    strm_close(strm);
+}
+
+static void
+arr_finish(strm_task *strm, strm_value data)
+{
+  struct array_data *d = strm->data;
+  free(d);
 }

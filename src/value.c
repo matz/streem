@@ -170,8 +170,15 @@ strm_cfunc_p(strm_value v)
 int
 strm_lambda_p(strm_value v)
 {
-  return v.type == STRM_VALUE_PTR &&
+  return v.type == STRM_VALUE_PTR && v.val.p &&
          ((struct strm_object*)v.val.p)->type == STRM_OBJ_LAMBDA;
+}
+
+int
+strm_array_p(strm_value v)
+{
+  return v.type == STRM_VALUE_PTR && v.val.p &&
+         ((struct strm_object*)v.val.p)->type == STRM_OBJ_ARRAY;
 }
 
 int
@@ -235,6 +242,9 @@ strm_to_str(strm_value v)
     switch (((struct strm_object*)v.val.p)->type) {
     case STRM_OBJ_STRING:
       return (strm_string*)v.val.p;
+    case STRM_OBJ_ARRAY:
+      /* TODO */
+      return strm_str_new("[...]", 5);
     default:
       /* fall through */
       break;

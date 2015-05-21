@@ -32,6 +32,7 @@ typedef struct node_ctx {
   node_error* exc;
   void *env;
   struct node_ctx *prev;
+  strm_task *strm;
 } node_ctx;
 
 typedef struct parser_state {

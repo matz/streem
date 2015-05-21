@@ -61,6 +61,7 @@ int strm_flt_p(strm_value);
 int strm_task_p(strm_value);
 int strm_cfunc_p(strm_value);
 int strm_lambda_p(strm_value);
+int strm_array_p(strm_value);
 
 enum strm_obj_type {
   STRM_OBJ_ARRAY,
@@ -201,4 +202,5 @@ typedef struct strm_lambda {
 } strm_lambda;
 
 #define strm_value_lambda(v) (strm_lambda*)strm_value_obj(v, STRM_OBJ_LAMBDA);
+#define strm_value_array(v) (strm_array*)strm_value_obj(v, STRM_OBJ_ARRAY);
 #endif
