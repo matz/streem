@@ -310,6 +310,7 @@ node_parse_init(parser_state *p)
   p->ctx.exc = NULL;
   p->ctx.env = NULL;
   p->ctx.prev = NULL;
+  p->ctx.strm = NULL;
 }
 
 int
