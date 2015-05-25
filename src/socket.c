@@ -25,7 +25,7 @@ accept_cb(strm_task *strm, strm_value data)
 {
   struct socket_data *sd = strm->data;
   struct sockaddr_in writer_addr;
-  int writer_len;
+  socklen_t writer_len;
   int sock;
 
   writer_len = sizeof(writer_addr);
@@ -116,4 +116,3 @@ strm_socket_init(node_ctx* ctx)
 {
   strm_var_def("tcp_server", strm_cfunc_value(exec_tcp_server));
 }
-
