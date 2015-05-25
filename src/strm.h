@@ -190,8 +190,8 @@ int strm_queue_p(strm_queue *q);
 void strm_task_push(struct strm_queue_task *t);
 
 /* ----- I/O */
-#define STRM_IO_READ  0
-#define STRM_IO_WRITE 1
+#define STRM_IO_READ  1
+#define STRM_IO_WRITE 2
 
 typedef struct strm_io {
   STRM_OBJ_HEADER;
@@ -200,7 +200,7 @@ typedef struct strm_io {
 } strm_io;
 
 strm_io* strm_io_new(int fd, int mode);
-strm_task* strm_io_open(strm_io *io);
+strm_task* strm_io_open(strm_io *io, int mode);
 #define strm_value_io(v) (strm_io*)strm_value_obj(v, STRM_OBJ_IO)
 
 /* ----- lambda */

@@ -156,7 +156,7 @@ exec_bar(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
   /* lhs: io */
   if (strm_io_p(lhs)) {
     strm_io *io = strm_value_io(lhs);
-    lhs = strm_task_value(strm_io_open(io));
+    lhs = strm_task_value(strm_io_open(io, STRM_IO_READ));
   }
   /* lhs: lambda */
   else if (strm_lambda_p(lhs)) {
@@ -173,11 +173,10 @@ exec_bar(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
   /* lhs: should be task */
 
   rhs = args[1];
-  
   /* rhs: io */
   if (strm_io_p(rhs)) {
     strm_io *io = strm_value_io(rhs);
-    rhs = strm_task_value(strm_io_open(io));
+    rhs = strm_task_value(strm_io_open(io, STRM_IO_WRITE));
   }
   /* rhs: lambda */
   else if (strm_lambda_p(rhs)) {
@@ -187,6 +186,10 @@ exec_bar(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
 
   /* task x task */
   if (strm_task_p(lhs) && strm_task_p(rhs)) {
+    if (lhs.val.p == NULL || rhs.val.p == NULL) {
+      node_raise(ctx, "task error");
+      return 1;
+    }
     strm_connect(strm_value_task(lhs), strm_value_task(rhs));
     *ret = rhs;
     return 0;

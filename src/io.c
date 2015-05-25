@@ -263,12 +263,19 @@ strm_io_new(int fd, int mode)
 }
 
 strm_task*
-strm_io_open(strm_io *io)
+strm_io_open(strm_io *io, int mode)
 {
-  if (io->mode & STRM_IO_WRITE) {
-    return strm_writeio(io->fd);
+  switch (mode) {
+  case STRM_IO_READ:
+    if (io->mode & STRM_IO_READ)
+      return strm_readio(io->fd);
+    break;
+  case STRM_IO_WRITE:
+    if (io->mode & STRM_IO_WRITE)
+      return strm_writeio(io->fd);
+    break;
+ default:
+   break;
   }
-  else {
-    return strm_readio(io->fd);
-  }
+  return NULL;
 }
