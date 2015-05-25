@@ -237,7 +237,8 @@ exec_call(node_ctx* ctx, strm_string *name, int argc, strm_value* argv, strm_val
         int i;
 
         c.prev = lambda->ctx;
-        if (args->len != argc) return 1;
+        if ((args == NULL && argc != 0) &&
+            (args->len != argc)) return 1;
         for (i=0; i<argc; i++) {
           n = strm_var_set(&c, (strm_string*)args->data[i], argv[i]);
           if (n) return n;
