@@ -243,7 +243,12 @@ exec_call(node_ctx* ctx, strm_string *name, int argc, strm_value* argv, strm_val
           n = strm_var_set(&c, (strm_string*)args->data[i], argv[i]);
           if (n) return n;
         }
-        return exec_expr(&c, nlbd->compstmt, ret);
+        n = exec_expr(&c, nlbd->compstmt, ret);
+        if (c.exc && c.exc->type == NODE_ERROR_RETURN) {
+          *ret = c.exc->arg;
+          return 0;
+        }
+        return n;
       }
     default:
       break;
@@ -388,13 +393,30 @@ exec_expr(node_ctx* ctx, node* np, strm_value* val)
     {
       node_return* nreturn = (node_return*)np;
       node_values* args = (node_values*)nreturn->rv;
-      if (args->len > 0) {
-        ctx->exc = malloc(sizeof(node_error));
-        ctx->exc->type = NODE_ERROR_RETURN;
+
+      ctx->exc = malloc(sizeof(node_error));
+      ctx->exc->type = NODE_ERROR_RETURN;
+      switch (args->len) {
+      case 0:
+        ctx->exc->arg = strm_nil_value();
+        break;
+      case 1:
         n = exec_expr(ctx, args->data[0], &ctx->exc->arg);
-        return n;
+        if (n) return n;
+        break;
+      default:
+        {
+          strm_array* ary = strm_ary_new(NULL, args->len);
+          size_t i;
+
+          for (i=0; i<args->len; i++) {
+            n = exec_expr(ctx, args->data[i], (strm_value*)&ary->ptr[i]);
+            if (n) return n;
+          }
+        }
+        break;
       }
-      return 0;
+      return 1;
     }
     break;
   case NODE_STMTS:
@@ -403,7 +425,7 @@ exec_expr(node_ctx* ctx, node* np, strm_value* val)
       node_values* v = (node_values*)np;
       for (i = 0; i < v->len; i++) {
         n = exec_expr(ctx, v->data[i], val);
-        if (ctx->exc != NULL) return n;
+        if (ctx->exc != NULL) return 1;
         if (n) return n;
       }
     }
