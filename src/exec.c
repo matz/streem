@@ -542,6 +542,7 @@ node_init(node_ctx* ctx)
 }
 
 void strm_seq_init();
+void strm_socket_init(node_ctx* ctx);
 
 int
 node_run(parser_state* p)
@@ -551,7 +552,10 @@ node_run(parser_state* p)
 
   memset(ctx, 0, sizeof(node_ctx));
   node_init(ctx);
+
   strm_seq_init(ctx);
+  strm_socket_init(ctx);
+
   exec_expr(ctx, (node*)p->lval, &v);
   if (ctx->exc != NULL) {
     if (ctx->exc->type != NODE_ERROR_RUNTIME) {
