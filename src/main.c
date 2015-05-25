@@ -75,7 +75,7 @@ dump_node(node* np, int indent) {
       putchar(' ');
     {
       strm_string *s = ((node_call*)np)->ident;
-      printf("\"%*s\"\n", (int)s->len, s->ptr);
+      printf("%*s\n", (int)s->len, s->ptr);
     }
     dump_node(((node_call*) np)->args, indent+2);
     dump_node(((node_call*) np)->blk, indent+2);
