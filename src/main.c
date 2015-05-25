@@ -23,11 +23,11 @@ dump_node(node* np, int indent) {
   switch (np->type) {
   case NODE_ARGS:
     {
-      node_values* arr0 = (node_values*)np;
+      node_values* args = (node_values*)np;
 
       printf("ARGS:\n");
-      for (i = 0; i < arr0->len; i++) {
-        strm_string *s = arr0->data[i];
+      for (i = 0; i < args->len; i++) {
+        strm_string *s = args->data[i];
         for (i = 0; i < indent+1; i++)
           putchar(' ');
         printf("%*s\n", (int)s->len, s->ptr);
@@ -95,17 +95,17 @@ dump_node(node* np, int indent) {
   case NODE_ARRAY:
     printf("ARRAY:\n");
     {
-      node_values* arr0 = (node_values*)np;
-      for (i = 0; i < arr0->len; i++)
-        dump_node(arr0->data[i], indent+1);
+      node_values* ary = (node_values*)np;
+      for (i = 0; i < ary->len; i++)
+        dump_node(ary->data[i], indent+1);
     }
     break;
   case NODE_MAP:
     printf("MAP:\n");
     {
-      node_values* arr0 = (node_values*)np;
-      for (i = 0; i < arr0->len; i++) {
-        node* pair = arr0->data[i];
+      node_values* map = (node_values*)np;
+      for (i = 0; i < map->len; i++) {
+        node* pair = map->data[i];
         node_pair* pair0 = (node_pair*)pair;
         dump_node(pair0->key, indent+1);
         dump_node(pair0->value, indent+1);
@@ -115,9 +115,9 @@ dump_node(node* np, int indent) {
   case NODE_STMTS:
     printf("STMTS:\n");
     {
-      node_values* arr0 = (node_values*)np;
-      for (i = 0; i < arr0->len; i++)
-        dump_node(arr0->data[i], indent+1);
+      node_values* ary = (node_values*)np;
+      for (i = 0; i < ary->len; i++)
+        dump_node(ary->data[i], indent+1);
     }
     break;
 
