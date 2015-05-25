@@ -564,7 +564,7 @@ node_init(node_ctx* ctx)
   strm_var_def("%", strm_cfunc_value(exec_mod));
 }
 
-void strm_seq_init();
+void strm_seq_init(node_ctx* ctx);
 void strm_socket_init(node_ctx* ctx);
 
 int
