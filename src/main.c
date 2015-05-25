@@ -24,8 +24,14 @@ dump_node(node* np, int indent) {
   case NODE_ARGS:
     {
       node_values* arr0 = (node_values*)np;
-      for (i = 0; i < arr0->len; i++)
-        dump_node(arr0->data[i], indent+1);
+
+      printf("ARGS:\n");
+      for (i = 0; i < arr0->len; i++) {
+        strm_string *s = arr0->data[i];
+        for (i = 0; i < indent+1; i++)
+          putchar(' ');
+        printf("%*s\n", (int)s->len, s->ptr);
+      }
     }
     break;
   case NODE_IF:
