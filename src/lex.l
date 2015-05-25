@@ -47,11 +47,11 @@ TRAIL  ([\t \n]|"#"[^\n]*"\n")*
 "="{TRAIL}  LEX_RETURN('=');
 "::"{TRAIL} LEX_RETURN(op_colon2);
 
-if{TRAIL}           LEX_RETURN(keyword_if);
+if                  LEX_RETURN(keyword_if);
 {TRAIL}else{TRAIL}  LEX_RETURN(keyword_else);
 break{TRAIL}        LEX_RETURN(keyword_break);
-emit{TRAIL}         LEX_RETURN(keyword_emit);
-return{TRAIL}       LEX_RETURN(keyword_return);
+emit                LEX_RETURN(keyword_emit);
+return              LEX_RETURN(keyword_return);
 nil{TRAIL}          LEX_RETURN(keyword_nil);
 true{TRAIL}         LEX_RETURN(keyword_true);
 false{TRAIL}        LEX_RETURN(keyword_false);
