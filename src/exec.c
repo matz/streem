@@ -144,32 +144,49 @@ static int
 exec_bar(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
 {
   strm_value lhs, rhs;
+
   assert(argc == 2);
+  /* int x int */
   if (strm_int_p(args[0]) && strm_int_p(args[1])) {
     *ret = strm_int_value(strm_value_int(args[0])|strm_value_int(args[1]));
     return 0;
   }
 
   lhs = args[0];
-  if (strm_lambda_p(lhs)) {
+  /* lhs: io */
+  if (strm_io_p(lhs)) {
+    strm_io *io = strm_value_io(lhs);
+    lhs = strm_task_value(strm_io_open(io));
+  }
+  /* lhs: lambda */
+  else if (strm_lambda_p(lhs)) {
     strm_lambda *lmbd = strm_value_lambda(lhs)
     lhs = strm_task_value(strm_alloc_stream(strm_task_filt, blk_exec, NULL, (void*)lmbd));
   }
+  /* lhs: array */
+  else if (strm_array_p(lhs)) {
+    struct array_data *arrd = malloc(sizeof(struct array_data));
+    arrd->arr = strm_value_array(lhs);
+    arrd->n = 0;
+    lhs = strm_task_value(strm_alloc_stream(strm_task_prod, arr_exec, arr_finish, (void*)arrd));
+  }
+  /* lhs: should be task */
+
   rhs = args[1];
-  if (strm_lambda_p(rhs)) {
-    strm_lambda *lmbd = strm_value_lambda(rhs)
+  
+  /* rhs: io */
+  if (strm_io_p(rhs)) {
+    strm_io *io = strm_value_io(rhs);
+    rhs = strm_task_value(strm_io_open(io));
+  }
+  /* rhs: lambda */
+  else if (strm_lambda_p(rhs)) {
+    strm_lambda *lmbd = strm_value_lambda(rhs);
     rhs = strm_task_value(strm_alloc_stream(strm_task_filt, blk_exec, NULL, (void*)lmbd));
   }
 
+  /* task x task */
   if (strm_task_p(lhs) && strm_task_p(rhs)) {
-    strm_connect(strm_value_task(lhs), strm_value_task(rhs));
-    *ret = rhs;
-    return 0;
-  } else if (strm_array_p(lhs) && strm_task_p(rhs)) {
-    struct array_data *arrd = malloc(sizeof(struct array_data));
-    arrd->arr = strm_value_array(lhs)
-    arrd->n = 0;
-    lhs = strm_task_value(strm_alloc_stream(strm_task_prod, arr_exec, arr_finish, (void*)arrd));
     strm_connect(strm_value_task(lhs), strm_value_task(rhs));
     *ret = rhs;
     return 0;
@@ -436,7 +453,12 @@ cputs_ptr(node_ctx* ctx, FILE* out, struct strm_object *obj)
     {
       strm_string* str = (strm_string*)obj;
       fprintf(out, "%*s", (int)str->len, str->ptr);
-      break;
+    }
+    break;
+  case STRM_OBJ_IO:
+    {
+      strm_io* io = (strm_io*)obj;
+      fprintf(out, "<io: fd=%d mode=%d>", io->fd, io->mode);
     }
     break;
   default:
@@ -498,9 +520,9 @@ node_raise(node_ctx* ctx, const char* msg) {
 static void
 node_init(node_ctx* ctx)
 {
-  strm_var_def("STDIN", strm_task_value(strm_readio(0 /* stdin*/)));
-  strm_var_def("STDOUT", strm_task_value(strm_writeio(1 /* stdout*/)));
-  strm_var_def("STDERR", strm_task_value(strm_writeio(2 /* stdout*/)));
+  strm_var_def("STDIN", strm_ptr_value(strm_io_new(0, STRM_IO_READ)));
+  strm_var_def("STDOUT", strm_ptr_value(strm_io_new(1, STRM_IO_WRITE)));
+  strm_var_def("STDERR", strm_ptr_value(strm_io_new(2, STRM_IO_WRITE)));
   strm_var_def("puts", strm_cfunc_value(exec_puts));
   strm_var_def("+", strm_cfunc_value(exec_plus));
   strm_var_def("-", strm_cfunc_value(exec_minus));

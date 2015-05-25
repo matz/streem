@@ -93,7 +93,7 @@ strm_io_start(strm_task *strm, int fd, strm_func cb, uint32_t events)
   }
 }
 
-void
+static void
 strm_io_stop(strm_task *strm, int fd)
 {
   if ((strm->flags & STRM_IO_NOWAIT) == 0) {
@@ -103,7 +103,7 @@ strm_io_stop(strm_task *strm, int fd)
   strm_close(strm);
 }
 
-void
+static void
 strm_io_start_read(strm_task *strm, int fd, strm_func cb)
 {
   strm_io_start(strm, fd, cb, EPOLLIN);
@@ -198,7 +198,7 @@ read_close(strm_task *strm, strm_value d)
   close(b->fd);
 }
 
-strm_task*
+static strm_task*
 strm_readio(int fd)
 {
   struct fd_read_buffer *buf = malloc(sizeof(struct fd_read_buffer));
@@ -242,11 +242,33 @@ write_close(strm_task *strm, strm_value data)
   free(d);
 }
 
-strm_task*
+static strm_task*
 strm_writeio(int fd)
 {
   struct write_data *d = malloc(sizeof(struct write_data));
 
   d->fd = fd;
   return strm_alloc_stream(strm_task_cons, write_cb, write_close, (void*)d);
+}
+
+strm_io*
+strm_io_new(int fd, int mode)
+{
+  strm_io *io = malloc(sizeof(strm_io));
+
+  io->fd = fd;
+  io->mode = mode;
+  io->type = STRM_OBJ_IO;
+  return io;
+}
+
+strm_task*
+strm_io_open(strm_io *io)
+{
+  if (io->mode & STRM_IO_WRITE) {
+    return strm_writeio(io->fd);
+  }
+  else {
+    return strm_readio(io->fd);
+  }
 }

@@ -58,6 +58,7 @@ int strm_value_eq(strm_value, strm_value);
 int strm_num_p(strm_value);
 int strm_int_p(strm_value);
 int strm_flt_p(strm_value);
+int strm_io_p(strm_value);
 int strm_task_p(strm_value);
 int strm_cfunc_p(strm_value);
 int strm_lambda_p(strm_value);
@@ -69,6 +70,7 @@ enum strm_obj_type {
   STRM_OBJ_MAP,
   STRM_OBJ_STRING,
   STRM_OBJ_LAMBDA,
+  STRM_OBJ_IO,
   STRM_OBJ_USER,
 };
 
@@ -188,11 +190,18 @@ int strm_queue_p(strm_queue *q);
 void strm_task_push(struct strm_queue_task *t);
 
 /* ----- I/O */
-void strm_io_start_read(strm_task *strm, int fd, strm_func cb);
-void strm_io_start_write(strm_task *strm, int fd, strm_func cb);
-void strm_io_stop(strm_task *strm, int fd);
-strm_task* strm_readio(int fd);
-strm_task* strm_writeio(int fd);
+#define STRM_IO_READ  0
+#define STRM_IO_WRITE 1
+
+typedef struct strm_io {
+  STRM_OBJ_HEADER;
+  int fd;
+  int mode;
+} strm_io;
+
+strm_io* strm_io_new(int fd, int mode);
+strm_task* strm_io_open(strm_io *io);
+#define strm_value_io(v) (strm_io*)strm_value_obj(v, STRM_OBJ_IO)
 
 /* ----- lambda */
 typedef struct strm_lambda {

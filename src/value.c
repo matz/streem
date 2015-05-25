@@ -188,6 +188,13 @@ strm_task_p(strm_value v)
 }
 
 int
+strm_io_p(strm_value v)
+{
+  return v.type == STRM_VALUE_PTR && v.val.p &&
+         ((struct strm_object*)v.val.p)->type == STRM_OBJ_IO;
+}
+
+int
 strm_ptr_eq(struct strm_object *a, struct strm_object *b)
 {
   if (a == b) return TRUE;
