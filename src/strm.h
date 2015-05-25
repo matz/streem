@@ -201,6 +201,7 @@ typedef struct strm_io {
 
 strm_io* strm_io_new(int fd, int mode);
 strm_task* strm_io_open(strm_io *io, int mode);
+void strm_io_start_read(strm_task *strm, int fd, strm_func cb);
 #define strm_value_io(v) (strm_io*)strm_value_obj(v, STRM_OBJ_IO)
 
 /* ----- lambda */

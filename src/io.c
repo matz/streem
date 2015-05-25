@@ -103,7 +103,7 @@ strm_io_stop(strm_task *strm, int fd)
   strm_close(strm);
 }
 
-static void
+void
 strm_io_start_read(strm_task *strm, int fd, strm_func cb)
 {
   strm_io_start(strm, fd, cb, EPOLLIN);
@@ -198,7 +198,7 @@ read_close(strm_task *strm, strm_value d)
   close(b->fd);
 }
 
-static strm_task*
+strm_task*
 strm_readio(int fd)
 {
   struct fd_read_buffer *buf = malloc(sizeof(struct fd_read_buffer));
@@ -217,7 +217,6 @@ write_cb(strm_task *strm, strm_value data)
 {
   struct write_data *d = (struct write_data*)strm->data;
   strm_string *p = strm_to_str(data);
-
 #ifdef STRM_USE_WRITEV
   struct iovec v[2];
 
