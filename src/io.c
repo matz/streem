@@ -2,6 +2,7 @@
 #include <pthread.h>
 #include "pollfd.h"
 #include <errno.h>
+#include <sys/socket.h>
 
 #ifdef STRM_USE_WRITEV
 #include <sys/uio.h>
@@ -112,6 +113,7 @@ strm_io_start_read(strm_task *strm, int fd, strm_func cb)
 struct fd_read_buffer {
   int fd;
   char *beg, *end;
+  strm_io* io;
   char buf[1024];
 };
 
@@ -198,18 +200,21 @@ read_close(strm_task *strm, strm_value d)
   close(b->fd);
 }
 
-strm_task*
-strm_readio(int fd)
+static strm_task*
+strm_readio(strm_io* io)
 {
   struct fd_read_buffer *buf = malloc(sizeof(struct fd_read_buffer));
 
-  buf->fd = fd;
+  io->mode |= STRM_IO_READING;
+  buf->fd = io->fd;
+  buf->io = io;
   buf->beg = buf->end = buf->buf;
   return strm_alloc_stream(strm_task_prod, stdio_read, read_close, (void*)buf);
 }
 
 struct write_data {
   int fd;
+  strm_io* io;
 };
 
 static void
@@ -237,17 +242,22 @@ write_close(strm_task *strm, strm_value data)
 {
   struct write_data *d = (struct write_data*)strm->data;
 
+  /* tell peer we close the socket for writing (if it is) */
   shutdown(d->fd, 1);
-  close(d->fd);
+  /* if we have a reading task, let it close the fd */
+  if ((d->io->mode & STRM_IO_READING) == 0) {
+    close(d->fd);
+  }
   free(d);
 }
 
 static strm_task*
-strm_writeio(int fd)
+strm_writeio(strm_io* io)
 {
   struct write_data *d = malloc(sizeof(struct write_data));
 
-  d->fd = fd;
+  d->fd = io->fd;
+  d->io = io;
   return strm_alloc_stream(strm_task_cons, write_cb, write_close, (void*)d);
 }
 
@@ -267,12 +277,14 @@ strm_io_open(strm_io *io, int mode)
 {
   switch (mode) {
   case STRM_IO_READ:
-    if (io->mode & STRM_IO_READ)
-      return strm_readio(io->fd);
+    if (io->mode & STRM_IO_READ) {
+      return strm_readio(io);
+    }
     break;
   case STRM_IO_WRITE:
-    if (io->mode & STRM_IO_WRITE)
-      return strm_writeio(io->fd);
+    if (io->mode & STRM_IO_WRITE) {
+      return strm_writeio(io);
+    }
     break;
  default:
    break;
