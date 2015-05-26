@@ -1,0 +1,3 @@
+s = tcp_socket("localhost", 8007)
+STDIN | s
+s | STDOUT
