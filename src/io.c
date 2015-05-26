@@ -237,6 +237,7 @@ write_close(strm_task *strm, strm_value data)
 {
   struct write_data *d = (struct write_data*)strm->data;
 
+  shutdown(d->fd, 1);
   close(d->fd);
   free(d);
 }
