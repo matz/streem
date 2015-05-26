@@ -63,9 +63,11 @@ server_close(strm_task *strm, strm_value d)
 static int
 exec_tcp_server(node_ctx* ctx, int argc, strm_value* args, strm_value *ret)
 {
-  struct sockaddr_in reader_addr; 
-  int sock;
-  int port;
+  struct addrinfo hints;
+  struct addrinfo *result, *rp;
+  int sock, s;
+  const char *service;
+  char buf[12];
   struct socket_data *sd;
   strm_task *task;
 
@@ -79,22 +81,44 @@ exec_tcp_server(node_ctx* ctx, int argc, strm_value* args, strm_value *ret)
   if (argc != 1) {
     return 1;
   }
-  port = strm_value_int(args[0]);
+  if (strm_int_p(args[0])) {
+    sprintf(buf, "%d", (int)strm_value_int(args[0]));
+    service = buf;
+  }
+  else {
+    volatile strm_string* str = strm_value_str(args[0]);
+    service = str->ptr;
+  }
 
-  if ((sock = socket(PF_INET, SOCK_STREAM, 0)) < 0) {
-    node_raise(ctx, "socket error: socket");
+  memset(&hints, 0, sizeof(struct addrinfo));
+  hints.ai_family = AF_UNSPEC;    /* Allow IPv4 or IPv6 */
+  hints.ai_socktype = SOCK_STREAM;/* Datagram socket */
+  hints.ai_flags = AI_PASSIVE;    /* For wildcard IP address */
+  hints.ai_protocol = 0;          /* Any protocol */
+  hints.ai_canonname = NULL;
+  hints.ai_addr = NULL;
+  hints.ai_next = NULL;
+
+  s = getaddrinfo(NULL, service, &hints, &result);
+  if (s != 0) {
+    node_raise(ctx, gai_strerror(s));
     return 1;
   }
 
-  memset((char *) &reader_addr, 0, sizeof(reader_addr));
-  reader_addr.sin_family = PF_INET;
-  reader_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-  reader_addr.sin_port = htons(port);
+  for (rp = result; rp != NULL; rp = rp->ai_next) {
+    sock = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
+    if (sock == -1) continue;
 
-  if (bind(sock, (struct sockaddr *)&reader_addr, sizeof(reader_addr)) < 0) {
+    if (bind(sock, rp->ai_addr, rp->ai_addrlen) == 0)
+      break;                    /* Success */
+    close(sock);
+  }
+
+  if (rp == NULL) {
     node_raise(ctx, "socket error: bind");
     return 1;
   }
+  freeaddrinfo(result);
 
   if (listen(sock, 5) < 0) {
     close(sock);
