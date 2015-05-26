@@ -198,6 +198,7 @@ typedef struct strm_io {
   STRM_OBJ_HEADER;
   int fd;
   int mode;
+  strm_task *read_task, *write_task;
 } strm_io;
 
 strm_io* strm_io_new(int fd, int mode);

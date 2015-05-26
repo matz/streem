@@ -203,13 +203,16 @@ read_close(strm_task *strm, strm_value d)
 static strm_task*
 strm_readio(strm_io* io)
 {
-  struct fd_read_buffer *buf = malloc(sizeof(struct fd_read_buffer));
+  if (io->read_task == NULL) {
+    struct fd_read_buffer *buf = malloc(sizeof(struct fd_read_buffer));
 
-  io->mode |= STRM_IO_READING;
-  buf->fd = io->fd;
-  buf->io = io;
-  buf->beg = buf->end = buf->buf;
-  return strm_alloc_stream(strm_task_prod, stdio_read, read_close, (void*)buf);
+    io->mode |= STRM_IO_READING;
+    buf->fd = io->fd;
+    buf->io = io;
+    buf->beg = buf->end = buf->buf;
+    io->read_task = strm_alloc_stream(strm_task_prod, stdio_read, read_close, (void*)buf);
+  }
+  return io->read_task;
 }
 
 struct write_data {
@@ -254,11 +257,14 @@ write_close(strm_task *strm, strm_value data)
 static strm_task*
 strm_writeio(strm_io* io)
 {
-  struct write_data *d = malloc(sizeof(struct write_data));
+  if (io->write_task == NULL) {
+    struct write_data *d = malloc(sizeof(struct write_data));
 
-  d->fd = io->fd;
-  d->io = io;
-  return strm_alloc_stream(strm_task_cons, write_cb, write_close, (void*)d);
+    d->fd = io->fd;
+    d->io = io;
+    io->write_task = strm_alloc_stream(strm_task_cons, write_cb, write_close, (void*)d);
+  }
+  return io->write_task;
 }
 
 strm_io*
@@ -269,6 +275,7 @@ strm_io_new(int fd, int mode)
   io->fd = fd;
   io->mode = mode;
   io->type = STRM_OBJ_IO;
+  io->read_task = io->write_task = NULL;
   return io;
 }
 
@@ -277,11 +284,13 @@ strm_io_open(strm_io *io, int mode)
 {
   switch (mode) {
   case STRM_IO_READ:
+    if (io->read_task) return io->read_task;
     if (io->mode & STRM_IO_READ) {
       return strm_readio(io);
     }
     break;
   case STRM_IO_WRITE:
+    if (io->write_task) return io->read_task;
     if (io->mode & STRM_IO_WRITE) {
       return strm_writeio(io);
     }
