@@ -206,6 +206,14 @@ main(int argc, const char**argv)
       puts("Syntax OK");
     }
     else {
+      strm_array* av = strm_ary_new(NULL, argc);
+      strm_value* buf = (strm_value*)av->ptr;
+      int i;
+
+      for (i=0; i<argc; i++) {
+        buf[i] = strm_str_value(argv[i], strlen(argv[i]));
+      }
+      strm_var_def("ARGV", strm_ptr_value(av));
       node_run(&state);
       strm_loop();
     }
