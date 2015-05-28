@@ -5,6 +5,8 @@
 
 #include "y.tab.h"
 #include "lex.yy.h"
+/* old bison does not have yyparse prototype in y.tab.h */
+int yyparse(parser_state*);
 
 node*
 node_values_new(node_type type) {
