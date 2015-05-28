@@ -10,14 +10,14 @@ readonly_data_p(const char *s)
   return 0;
 }
 
-#elif defined(__APPLE__)
+#elif defined(__APPLE__) && defined(__MACH__)
 
 #include <mach-o/getsect.h>
 
 static inline int
 readonly_data_p(const char *p)
 {
-  return (void*)get_etext() < p && p < (void*)get_edata();
+  return (void*)get_etext() < (void*)p && (void*)p < (void*)get_edata();
 }
 
 #else
