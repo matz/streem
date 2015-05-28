@@ -5,6 +5,73 @@
 #include <stdint.h>
 #include <memory.h>
 #include <unistd.h>
+
+#if defined(__APPLE__) || defined(__FreeBSD__)
+
+#include <sys/types.h>
+#include <sys/event.h>
+#include <sys/time.h>
+
+int
+epoll_create(int size)
+{
+  return kqueue();
+}
+
+int
+epoll_ctl(int epfd, int op, int fd, struct epoll_event *event)
+{
+  struct kevent kev = {0};
+  struct timespec tv = {0};
+
+  kev.ident = fd;
+  kev.filter = EVFILT_READ;
+  if (event) {
+    if (event->events & EPOLLONESHOT) {
+      kev.flags = EV_ONESHOT;
+    }
+    kev.udata = event->data.ptr;
+  }
+  switch (op) {
+  case EPOLL_CTL_ADD:
+  case EPOLL_CTL_MOD:
+    kev.flags |= EV_ADD;
+    break;
+  case EPOLL_CTL_DEL:
+    kev.flags |= EV_DELETE;
+    break;
+  }
+  return kevent(epfd, &kev, 1, &kev, 1, &tv);
+}
+
+#define MAX_KEVENTS 10
+
+int
+epoll_wait(int epfd, struct epoll_event *events, int maxevents, int timeout)
+{
+  struct kevent kev[MAX_KEVENTS] = {{0}};
+  struct timespec tv, *tp;
+  int i, n;
+
+  if (maxevents > MAX_KEVENTS)
+    maxevents = MAX_KEVENTS;
+  if (timeout < 0) tp = NULL;
+  else {
+    tv.tv_sec = timeout/1000;
+    tv.tv_nsec = (timeout%1000)*1000000;
+    tp = &tv;
+  }
+  n = kevent(epfd, NULL, 0, kev, maxevents, tp);
+  if (n >= 0) {
+    for (i=0; i<n; i++) {
+      events[i].data.ptr = kev[i].udata;
+    }
+  }
+  return n;
+}
+
+#else
+
 #ifndef _WIN32
 # include <sys/socket.h>
 # include <netinet/in.h>
@@ -166,5 +233,6 @@ epoll_wait(int epfd, struct epoll_event *events, int maxevents, int timeout)
   }
   return 0;
 }
-#endif
-#endif
+#endif /* _WIN32 */
+#endif /* __APPLE__ || __FreeBSD__ */
+#endif /* not __linux__ */

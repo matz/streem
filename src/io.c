@@ -3,6 +3,7 @@
 #include "pollfd.h"
 #include <errno.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
 
 #ifdef STRM_USE_WRITEV
 #include <sys/uio.h>
@@ -79,18 +80,19 @@ static void
 strm_io_start(strm_task *strm, int fd, strm_func cb, uint32_t events)
 {
   int n;
+  struct stat st;
+
+  if (fstat(fd, &st) == 0 && (st.st_mode & S_IFMT) == S_IFREG) {
+    /* fd must be a regular file */
+    /* enqueue task without waiting */
+    strm->flags |= STRM_IO_NOWAIT;
+    strm_task_push(strm_queue_task(strm, cb, strm_nil_value()));
+    return;
+  }
 
   n = io_push(fd, strm, cb);
   if (n == 0) {
     io_wait_num++;
-  }
-  else {
-    if (errno == EPERM) {
-      /* fd must be a regular file */
-      /* enqueue task without waiting */
-      strm->flags |= STRM_IO_NOWAIT;
-      strm_task_push(strm_queue_task(strm, cb, strm_nil_value()));
-    }
   }
 }
 
