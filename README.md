@@ -46,10 +46,11 @@ it will be invoked for each element in the stream.
 ## Compiling
 
 ### Install dependencies
+
 * bison
 * flex
 * gcc / clang
-* libgc
+* libgc (libgc-dev on Debian/Ubuntu, bdw-gc on OSX homebrew)
 
 ### Run make
 ```
