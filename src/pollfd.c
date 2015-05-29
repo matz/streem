@@ -153,12 +153,19 @@ epoll_wait(int epfd, struct epoll_event *events, int maxevents, int timeout)
   FD_SET fdset[3];
   WSANETWORKEVENTS wev;
   ee = &_epoll_events[epfd];
+  struct timeval tv, *tp;
   if (!ee) return -1;
+  if (timeout < 0) tp = NULL;
+  else {
+    tv.tv_sec = timeout/1000;
+    tv.tv_usec = (timeout%1000)*1000000;
+    tp = &tv;
+  }
   ct = GetTickCount();
   while (GetTickCount() - ct < timeout) {
     int i, e = 0;
     for (i = 0; i < FD_SETSIZE; i++) {
-      if (ee->fds[i] == -1) continue;
+      if (ee->fds[i] < 0) continue;
       if (WSAEnumNetworkEvents((SOCKET) ee->fds[i], NULL, &wev) == 0) {
         FD_ZERO(&fdset[0]);
         FD_ZERO(&fdset[1]);
@@ -166,7 +173,7 @@ epoll_wait(int epfd, struct epoll_event *events, int maxevents, int timeout)
         if (ee->events & EPOLLIN) FD_SET(ee->fds[i], &fdset[0]);
         if (ee->events & EPOLLOUT) FD_SET(ee->fds[i], &fdset[1]);
         if (ee->events & EPOLLERR) FD_SET(ee->fds[i], &fdset[2]);
-        if (select(1, &fdset[0], &fdset[1], &fdset[2], NULL) > 0 &&
+        if (select(1, &fdset[0], &fdset[1], &fdset[2], tp) > 0 &&
             (FD_ISSET(ee->fds[i], &fdset[0]) ||
              FD_ISSET(ee->fds[i], &fdset[1]) ||
              FD_ISSET(ee->fds[i], &fdset[2]))) {
@@ -176,7 +183,7 @@ epoll_wait(int epfd, struct epoll_event *events, int maxevents, int timeout)
         }
       } else {
         HANDLE h = (HANDLE) _get_osfhandle(ee->fds[i]);
-        if (WaitForSingleObject(h, 0) == WAIT_OBJECT_0) {
+        if (h != INVALID_HANDLE_VALUE && WaitForSingleObject(h, timeout < 0 ? INFINITE : timeout) == WAIT_OBJECT_0) {
           events[e++] = *ee;
           if (ee->events & EPOLLONESHOT)
             ee->fds[i] = -1;
@@ -205,20 +212,27 @@ epoll_wait(int epfd, struct epoll_event *events, int maxevents, int timeout)
   struct epoll_event* ee;
   unsigned long ct;
   fd_set fdset[3];
+  struct timeval tv, *tp;
   ee = &_epoll_events[epfd];
   if (!ee) return -1;
+  if (timeout < 0) tp = NULL;
+  else {
+    tv.tv_sec = timeout/1000;
+    tv.tv_usec = (timeout%1000)*1000000;
+    tp = &tv;
+  }
   ct = current_time();
   while (current_time() - ct < timeout) {
     int i, e = 0;
     for (i = 0; i < FD_SETSIZE; i++) {
-      if (ee->fds[i] == -1) continue;
+      if (ee->fds[i] < 0) continue;
       FD_ZERO(&fdset[0]);
       FD_ZERO(&fdset[1]);
       FD_ZERO(&fdset[2]);
       if (ee->events & EPOLLIN) FD_SET(ee->fds[i], &fdset[0]);
       if (ee->events & EPOLLOUT) FD_SET(ee->fds[i], &fdset[1]);
       if (ee->events & EPOLLERR) FD_SET(ee->fds[i], &fdset[2]);
-      if (select(1, &fdset[0], &fdset[1], &fdset[2], NULL) > 0 &&
+      if (select(1, &fdset[0], &fdset[1], &fdset[2], tp) > 0 &&
           (FD_ISSET(ee->fds[i], &fdset[0]) ||
            FD_ISSET(ee->fds[i], &fdset[1]) ||
            FD_ISSET(ee->fds[i], &fdset[2]))) {

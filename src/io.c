@@ -2,7 +2,11 @@
 #include <pthread.h>
 #include "pollfd.h"
 #include <errno.h>
-#include <sys/socket.h>
+#ifndef _WIN32
+# include <sys/socket.h>
+#else
+# include <ws2tcpip.h>
+#endif
 #include <sys/stat.h>
 
 #ifdef STRM_USE_WRITEV
