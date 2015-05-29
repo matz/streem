@@ -39,7 +39,7 @@ accept_cb(strm_task *strm, strm_value data)
   }
 
 #ifdef _WIN32
-  sock = _open_osfhandle(sock, _O_RDWR),
+  sock = _open_osfhandle(sock, 0);
 #endif
   strm_emit(strm, strm_ptr_value(strm_io_new(sock, STRM_IO_READ | STRM_IO_WRITE)), accept_cb);
 }
@@ -111,7 +111,7 @@ exec_tcp_server(node_ctx* ctx, int argc, strm_value* args, strm_value *ret)
 
     if (bind(sock, rp->ai_addr, rp->ai_addrlen) == 0)
       break;                    /* Success */
-    close(sock);
+    closesocket(sock);
   }
 
   if (rp == NULL) {
@@ -121,11 +121,14 @@ exec_tcp_server(node_ctx* ctx, int argc, strm_value* args, strm_value *ret)
   freeaddrinfo(result);
 
   if (listen(sock, 5) < 0) {
-    close(sock);
+    closesocket(sock);
     node_raise(ctx, "socket error: listen");
     return 1;
   }
 
+#ifdef _WIN32
+  sock = _open_osfhandle(sock, 0);
+#endif
   sd = malloc(sizeof(struct socket_data));
   sd->fd = sock;
   sd->ctx = ctx;
@@ -182,7 +185,7 @@ exec_tcp_socket(node_ctx* ctx, int argc, strm_value* args, strm_value *ret)
 
     if (connect(sock, rp->ai_addr, rp->ai_addrlen) != -1)
       break;                    /* Success */
-    close(sock);
+    closesocket(sock);
   }
 
   if (rp == NULL) {
@@ -190,6 +193,9 @@ exec_tcp_socket(node_ctx* ctx, int argc, strm_value* args, strm_value *ret)
     return 1;
   }
   freeaddrinfo(result);
+#ifdef _WIN32
+  sock = _open_osfhandle(sock, 0);
+#endif
   *ret = strm_ptr_value(strm_io_new(sock, STRM_IO_READ|STRM_IO_WRITE));
   return 0;
 }
