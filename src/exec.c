@@ -536,6 +536,38 @@ exec_puts(node_ctx* ctx, int argc, strm_value* args, strm_value *ret) {
   return exec_cputs(ctx, stdout, argc, args, ret);
 }
 
+#include <fcntl.h>
+
+static int
+exec_fread(node_ctx* ctx, int argc, strm_value* args, strm_value *ret)
+{
+  int fd;
+  strm_string *path;
+
+  assert(argc == 1);
+  assert(strm_str_p(args[0]));
+  path = strm_value_str(args[0]);
+  fd = open(path->ptr, O_RDONLY);
+  if (fd < 0) return 1;
+  *ret = strm_ptr_value(strm_io_new(fd, STRM_IO_READ));
+  return 0;
+}
+
+static int
+exec_fwrite(node_ctx* ctx, int argc, strm_value* args, strm_value *ret)
+{
+  int fd;
+  strm_string *path;
+
+  assert(argc == 1);
+  assert(strm_str_p(args[0]));
+  path = strm_value_str(args[0]);
+  fd = open(path->ptr, O_WRONLY|O_CREAT, 0644);
+  if (fd < 0) return 1;
+  *ret = strm_ptr_value(strm_io_new(fd, STRM_IO_WRITE));
+  return 0;
+}
+
 void
 node_raise(node_ctx* ctx, const char* msg) {
   ctx->exc = malloc(sizeof(node_error));
@@ -562,6 +594,8 @@ node_init(node_ctx* ctx)
   strm_var_def("!=", strm_cfunc_value(exec_neq));
   strm_var_def("|", strm_cfunc_value(exec_bar));
   strm_var_def("%", strm_cfunc_value(exec_mod));
+  strm_var_def("fread", strm_cfunc_value(exec_fread));
+  strm_var_def("fwrite", strm_cfunc_value(exec_fwrite));
 }
 
 void strm_seq_init(node_ctx* ctx);
