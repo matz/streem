@@ -81,7 +81,7 @@ strm_init_io_loop()
 }
 
 static void
-strm_io_start(strm_task *strm, int fd, strm_func cb, uint32_t events)
+strm_io_start(strm_task *strm, int fd, strm_func cb)
 {
   int n;
   struct stat st;
@@ -113,7 +113,7 @@ strm_io_stop(strm_task *strm, int fd)
 void
 strm_io_start_read(strm_task *strm, int fd, strm_func cb)
 {
-  strm_io_start(strm, fd, cb, EPOLLIN);
+  strm_io_start(strm, fd, cb);
 }
 
 struct fd_read_buffer {
