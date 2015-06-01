@@ -292,7 +292,7 @@ exec_expr(node_ctx* ctx, node* np, strm_value* val)
       for (i = 0; i < v0->len; i++) {
         n = exec_expr(ctx, v0->data[i], val);
         if (n) return n;
-	    strm_emit(ctx->strm, *val, NULL);
+        strm_emit(ctx->strm, *val, NULL);
       }
       return 0;
     }
