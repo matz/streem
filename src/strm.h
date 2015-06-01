@@ -148,9 +148,6 @@ typedef struct strm_task strm_task;
 typedef void (*strm_func)(strm_task*, strm_value);
 typedef strm_value (*strm_map_func)(strm_task*, strm_value);
 
-#define STRM_IO_NOWAIT 1
-#define STRM_IO_BFULL  2
-
 struct strm_task {
   int tid;
   strm_task_mode mode;

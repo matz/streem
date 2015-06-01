@@ -17,6 +17,15 @@ static pthread_t io_worker;
 static int io_wait_num = 0;
 static int epoll_fd;
 
+#define STRM_IO_NOWAIT 1
+#define STRM_IO_NOFILL 2
+
+#define STRM_IO_MMAP   4
+/* should undef STRM_IO_MMAP on platform without mmap(2) */
+#ifdef STRM_IO_MMAP
+#include <sys/mman.h>
+#endif
+
 #define MAX_EVENTS 10
 
 int
@@ -80,22 +89,10 @@ strm_init_io_loop()
   pthread_create(&io_worker, NULL, io_loop, NULL);
 }
 
-static void
-strm_io_start(strm_task *strm, int fd, strm_func cb)
+void
+strm_io_start_read(strm_task *strm, int fd, strm_func cb)
 {
-  int n;
-  struct stat st;
-
-  if (fstat(fd, &st) == 0 && (st.st_mode & S_IFMT) == S_IFREG) {
-    /* fd must be a regular file */
-    /* enqueue task without waiting */
-    strm->flags |= STRM_IO_NOWAIT;
-    strm_task_push(strm_queue_task(strm, cb, strm_nil_value()));
-    return;
-  }
-
-  n = io_push(fd, strm, cb);
-  if (n == 0) {
+  if (io_push(fd, strm, cb) == 0) {
     io_wait_num++;
   }
 }
@@ -110,17 +107,16 @@ strm_io_stop(strm_task *strm, int fd)
   strm_close(strm);
 }
 
-void
-strm_io_start_read(strm_task *strm, int fd, strm_func cb)
-{
-  strm_io_start(strm, fd, cb);
-}
-
 struct fd_read_buffer {
   int fd;
   char *beg, *end;
   strm_io* io;
+#ifdef STRM_IO_MMAP
+  char *buf;
+  char fixed[1024];
+#else
   char buf[1024];
+#endif
 };
 
 static void readline_cb(strm_task *strm, strm_value data);
@@ -171,7 +167,19 @@ readline_cb(strm_task *strm, strm_value data)
   if (p) {
     len = p - b->beg;
   }
-  else {                        /* no newline */
+  /* no newline */
+  else if (strm->flags & STRM_IO_NOFILL) {
+    if (len <= 0) {
+#ifdef STRM_IO_MMAP
+      if (strm->flags & STRM_IO_MMAP) {
+        munmap(b->buf, b->end - b->beg);
+      }
+#endif
+      strm_io_stop(strm, b->fd);
+      return;
+    }
+  }
+  else {
     if (len < sizeof(b->buf)) {
       memmove(b->buf, b->beg, len);
       b->beg = b->buf;
@@ -193,9 +201,9 @@ readline_cb(strm_task *strm, strm_value data)
 static void
 stdio_read(strm_task *strm, strm_value data)
 {
-  struct fd_read_buffer *buf = strm->data;
+  struct fd_read_buffer *b = strm->data;
 
-  strm_io_start_read(strm, buf->fd, read_cb);
+  strm_io_start_read(strm, b->fd, read_cb);
 }
 
 static void
@@ -209,14 +217,38 @@ read_close(strm_task *strm, strm_value d)
 static strm_task*
 strm_readio(strm_io* io)
 {
+  strm_func cb = stdio_read;
+  unsigned int flags = 0;
+
   if (io->read_task == NULL) {
     struct fd_read_buffer *buf = malloc(sizeof(struct fd_read_buffer));
+    struct stat st;
 
     io->mode |= STRM_IO_READING;
     buf->fd = io->fd;
     buf->io = io;
-    buf->beg = buf->end = buf->buf;
-    io->read_task = strm_alloc_stream(strm_task_prod, stdio_read, read_close, (void*)buf);
+    buf->buf = buf->fixed;
+
+    if (fstat(io->fd, &st) == 0 && (st.st_mode & S_IFMT) == S_IFREG) {
+      /* fd must be a regular file */
+      /* try mmap if STRM_IO_MMAP is defined */
+      flags |= STRM_IO_NOWAIT;
+#ifdef STRM_IO_MMAP
+      buf->buf = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, buf->fd, 0);
+      if (buf->buf != MAP_FAILED) {
+        buf->beg = buf->buf;
+        buf->end = buf->buf + st.st_size;
+        flags |= STRM_IO_NOFILL;
+        /* enqueue task without waiting */
+        cb = readline_cb;
+      }
+#endif
+    }
+    else {
+      buf->beg = buf->end = buf->buf;
+    }
+    io->read_task = strm_alloc_stream(strm_task_prod, cb, read_close, (void*)buf);
+    io->read_task->flags |= flags;
   }
   return io->read_task;
 }
