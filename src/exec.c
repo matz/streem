@@ -615,7 +615,7 @@ node_run(parser_state* p)
 
   exec_expr(ctx, (node*)p->lval, &v);
   if (ctx->exc != NULL) {
-    if (ctx->exc->type != NODE_ERROR_RUNTIME) {
+    if (ctx->exc->type != NODE_ERROR_RETURN) {
       strm_value v;
       exec_cputs(ctx, stderr, 1, &ctx->exc->arg, &v);
       /* TODO: garbage correct previous exception value */
