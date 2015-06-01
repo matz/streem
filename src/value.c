@@ -150,6 +150,12 @@ strm_num_p(strm_value v)
 }
 
 int
+strm_nil_p(strm_value v)
+{
+  return v.type == STRM_VALUE_PTR && v.val.p == NULL;
+}
+
+int
 strm_int_p(strm_value v)
 {
   return v.type == STRM_VALUE_INT;

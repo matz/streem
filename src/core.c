@@ -72,10 +72,12 @@ strm_emit(strm_task *strm, strm_value data, strm_func func)
   strm_task *d = strm->dst;
   int tid = strm->tid;
 
-  while (d) {
-    task_push(tid, strm_queue_task(d, d->start_func, data));
-    d = d->nextd;
-    tid++;
+  if (!strm_nil_p(data)) {
+    while (d) {
+      task_push(tid, strm_queue_task(d, d->start_func, data));
+      d = d->nextd;
+      tid++;
+    }
   }
   if (func) {
     strm_task_push(strm_queue_task(strm, func, strm_nil_value()));
