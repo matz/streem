@@ -256,7 +256,7 @@ strm_readio(strm_io* io)
 }
 
 struct write_data {
-  int fd;
+  FILE *f;
   strm_io* io;
 };
 
@@ -265,19 +265,12 @@ write_cb(strm_task *strm, strm_value data)
 {
   struct write_data *d = (struct write_data*)strm->data;
   strm_string *p = strm_to_str(data);
-#ifdef STRM_USE_WRITEV
-  struct iovec v[2];
 
-  v[0].iov_base = (char*)p->ptr;
-  v[0].iov_len  = p->len;
-  v[1].iov_base = "\n";
-  v[1].iov_len  = 1;
-
-  writev(d->fd, v, 2);
-#else
-  write(d->fd, p->ptr, p->len);
-  write(d->fd, "\n", 1);
-#endif
+  fwrite(p->ptr, p->len, 1, d->f);
+  fputs("\n", d->f);
+  if (d->io->mode & STRM_IO_FLUSH) {
+    fflush(d->f);
+  }
 }
 
 static void
@@ -286,10 +279,10 @@ write_close(strm_task *strm, strm_value data)
   struct write_data *d = (struct write_data*)strm->data;
 
   /* tell peer we close the socket for writing (if it is) */
-  shutdown(d->fd, 1);
+  shutdown(fileno(d->f), 1);
   /* if we have a reading task, let it close the fd */
   if ((d->io->mode & STRM_IO_READING) == 0) {
-    close(d->fd);
+    fclose(d->f);
   }
   free(d);
 }
@@ -300,7 +293,7 @@ strm_writeio(strm_io* io)
   if (io->write_task == NULL) {
     struct write_data *d = malloc(sizeof(struct write_data));
 
-    d->fd = io->fd;
+    d->f = fdopen(io->fd, "w");
     d->io = io;
     io->write_task = strm_alloc_stream(strm_task_cons, write_cb, write_close, (void*)d);
   }

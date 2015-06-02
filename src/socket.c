@@ -41,7 +41,8 @@ accept_cb(strm_task *strm, strm_value data)
 #ifdef _WIN32
   sock = _open_osfhandle(sock, 0);
 #endif
-  strm_emit(strm, strm_ptr_value(strm_io_new(sock, STRM_IO_READ | STRM_IO_WRITE)), accept_cb);
+  fprintf(stderr, "accept()=%d\n", sock);
+  strm_emit(strm, strm_ptr_value(strm_io_new(sock, STRM_IO_READ|STRM_IO_WRITE|STRM_IO_FLUSH)), accept_cb);
 }
 
 static void
@@ -196,7 +197,7 @@ exec_tcp_socket(node_ctx* ctx, int argc, strm_value* args, strm_value *ret)
 #ifdef _WIN32
   sock = _open_osfhandle(sock, 0);
 #endif
-  *ret = strm_ptr_value(strm_io_new(sock, STRM_IO_READ|STRM_IO_WRITE));
+  *ret = strm_ptr_value(strm_io_new(sock, STRM_IO_READ|STRM_IO_WRITE|STRM_IO_FLUSH));
   return 0;
 }
 

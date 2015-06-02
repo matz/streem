@@ -190,7 +190,8 @@ void strm_task_push(struct strm_queue_task *t);
 /* ----- I/O */
 #define STRM_IO_READ  1
 #define STRM_IO_WRITE 2
-#define STRM_IO_READING 4
+#define STRM_IO_FLUSH 4
+#define STRM_IO_READING 8
 
 typedef struct strm_io {
   STRM_OBJ_HEADER;
