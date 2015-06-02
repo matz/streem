@@ -227,7 +227,9 @@ strm_readio(strm_io* io)
     io->mode |= STRM_IO_READING;
     buf->fd = io->fd;
     buf->io = io;
+#ifdef STRM_IO_MMAP    
     buf->buf = buf->fixed;
+#endif
 
     if (fstat(io->fd, &st) == 0 && (st.st_mode & S_IFMT) == S_IFREG) {
       /* fd must be a regular file */
