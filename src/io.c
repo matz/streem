@@ -113,9 +113,9 @@ struct fd_read_buffer {
   strm_io* io;
 #ifdef STRM_IO_MMAP
   char *buf;
-  char fixed[1024];
+  char fixed[BUFSIZ];
 #else
-  char buf[1024];
+  char buf[BUFSIZ];
 #endif
 };
 
@@ -137,7 +137,7 @@ read_cb(strm_task *strm, strm_value data)
   size_t count;
   ssize_t n;
 
-  count = sizeof(b->buf)-(b->end-b->buf);
+  count = BUFSIZ-(b->end-b->buf);
   n = read(b->fd, b->end, count);
   if (n <= 0) {
     if (b->buf < b->end) {
