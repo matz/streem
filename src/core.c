@@ -67,7 +67,7 @@ strm_task_push(struct strm_queue_task *t)
 }
 
 void
-strm_emit(strm_task *strm, strm_value data, strm_func func)
+strm_emit(strm_task *strm, strm_value data, strm_callback func)
 {
   strm_task *d = strm->dst;
   int tid = strm->tid;
@@ -193,7 +193,7 @@ strm_loop()
 }
 
 strm_task*
-strm_alloc_stream(strm_task_mode mode, strm_func start_func, strm_func close_func, void *data)
+strm_alloc_stream(strm_task_mode mode, strm_callback start_func, strm_callback close_func, void *data)
 {
   strm_task *s = malloc(sizeof(strm_task));
   s->tid = -1;                  /* -1 means uninitialized */
@@ -228,7 +228,7 @@ strm_close(strm_task *strm)
   strm_task *d = strm->dst;
 
   while (d) {
-    strm_task_push(strm_queue_task(d, (strm_func)strm_close, strm_nil_value()));
+    strm_task_push(strm_queue_task(d, (strm_callback)strm_close, strm_nil_value()));
     d = d->nextd;
   }
   if (strm->mode == strm_task_prod) {

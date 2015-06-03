@@ -35,7 +35,7 @@ strm_io_waiting()
 }
 
 static int
-io_push(int fd, strm_task *strm, strm_func cb)
+io_push(int fd, strm_task *strm, strm_callback cb)
 {
   struct epoll_event ev = { 0 };
 
@@ -45,7 +45,7 @@ io_push(int fd, strm_task *strm, strm_func cb)
 }
 
 static int
-io_kick(int fd, strm_task *strm, strm_func cb)
+io_kick(int fd, strm_task *strm, strm_callback cb)
 {
   struct epoll_event ev;
 
@@ -90,7 +90,7 @@ strm_init_io_loop()
 }
 
 void
-strm_io_start_read(strm_task *strm, int fd, strm_func cb)
+strm_io_start_read(strm_task *strm, int fd, strm_callback cb)
 {
   if (io_push(fd, strm, cb) == 0) {
     io_wait_num++;
@@ -217,7 +217,7 @@ read_close(strm_task *strm, strm_value d)
 static strm_task*
 strm_readio(strm_io* io)
 {
-  strm_func cb = stdio_read;
+  strm_callback cb = stdio_read;
   unsigned int flags = 0;
 
   if (io->read_task == NULL) {

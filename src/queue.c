@@ -86,7 +86,7 @@ strm_queue_push(strm_queue *q, struct strm_queue_task *t)
 }
 
 struct strm_queue_task*
-strm_queue_task(strm_task *strm, strm_func func, strm_value data)
+strm_queue_task(strm_task *strm, strm_callback func, strm_value data)
 {
   struct strm_queue_task *t;
 
@@ -104,7 +104,7 @@ strm_queue_exec(strm_queue *q)
 {
   struct strm_queue_task *t;
   strm_task *strm;
-  strm_func func;
+  strm_callback func;
   strm_value data;
 
   pthread_mutex_lock(&q->mutex);

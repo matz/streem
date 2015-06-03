@@ -145,22 +145,22 @@ typedef enum {
 } strm_task_mode;
 
 typedef struct strm_task strm_task;
-typedef void (*strm_func)(strm_task*, strm_value);
+typedef void (*strm_callback)(strm_task*, strm_value);
 typedef strm_value (*strm_map_func)(strm_task*, strm_value);
 
 struct strm_task {
   int tid;
   strm_task_mode mode;
   unsigned int flags;
-  strm_func start_func;
-  strm_func close_func;
+  strm_callback start_func;
+  strm_callback close_func;
   void *data;
   strm_task *dst;
   strm_task *nextd;
 };
 
-strm_task* strm_alloc_stream(strm_task_mode mode, strm_func start, strm_func close, void *data);
-void strm_emit(strm_task *strm, strm_value data, strm_func cb);
+strm_task* strm_alloc_stream(strm_task_mode mode, strm_callback start, strm_callback close, void *data);
+void strm_emit(strm_task *strm, strm_value data, strm_callback cb);
 int strm_connect(strm_task *src, strm_task *dst);
 int strm_loop();
 void strm_close(strm_task *strm);
@@ -172,13 +172,13 @@ strm_task* strm_value_task(strm_value);
 typedef struct strm_queue strm_queue;
 struct strm_queue_task {
   strm_task *strm;
-  strm_func func;
+  strm_callback func;
   strm_value data;
   struct strm_queue_task *next;
 };
 
 strm_queue* strm_queue_alloc(void);
-struct strm_queue_task* strm_queue_task(strm_task *strm, strm_func func, strm_value data);
+struct strm_queue_task* strm_queue_task(strm_task *strm, strm_callback func, strm_value data);
 void strm_queue_free(strm_queue *q);
 void strm_queue_push(strm_queue *q, struct strm_queue_task *t);
 int strm_queue_exec(strm_queue *q);
@@ -202,7 +202,7 @@ typedef struct strm_io {
 
 strm_io* strm_io_new(int fd, int mode);
 strm_task* strm_io_open(strm_io *io, int mode);
-void strm_io_start_read(strm_task *strm, int fd, strm_func cb);
+void strm_io_start_read(strm_task *strm, int fd, strm_callback cb);
 #define strm_value_io(v) (strm_io*)strm_value_obj(v, STRM_OBJ_IO)
 
 /* ----- lambda */
