@@ -22,6 +22,9 @@ static int epoll_fd;
 
 #define STRM_IO_MMAP   4
 /* should undef STRM_IO_MMAP on platform without mmap(2) */
+#ifdef _WIN32
+# undef STRM_IO_MMAP
+#endif
 #ifdef STRM_IO_MMAP
 #include <sys/mman.h>
 #endif
