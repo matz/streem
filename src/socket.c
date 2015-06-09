@@ -62,7 +62,7 @@ server_close(strm_task *strm, strm_value d)
 }
 
 static int
-exec_tcp_server(node_ctx* ctx, int argc, strm_value* args, strm_value *ret)
+tcp_server(node_ctx* ctx, int argc, strm_value* args, strm_value *ret)
 {
   struct addrinfo hints;
   struct addrinfo *result, *rp;
@@ -139,7 +139,7 @@ exec_tcp_server(node_ctx* ctx, int argc, strm_value* args, strm_value *ret)
 }
 
 static int
-exec_tcp_socket(node_ctx* ctx, int argc, strm_value* args, strm_value *ret)
+tcp_socket(node_ctx* ctx, int argc, strm_value* args, strm_value *ret)
 {
   struct addrinfo hints;
   struct addrinfo *result, *rp;
@@ -204,6 +204,6 @@ exec_tcp_socket(node_ctx* ctx, int argc, strm_value* args, strm_value *ret)
 void
 strm_socket_init(node_ctx* ctx)
 {
-  strm_var_def("tcp_server", strm_cfunc_value(exec_tcp_server));
-  strm_var_def("tcp_socket", strm_cfunc_value(exec_tcp_socket));
+  strm_var_def("tcp_server", strm_cfunc_value(tcp_server));
+  strm_var_def("tcp_socket", strm_cfunc_value(tcp_socket));
 }
