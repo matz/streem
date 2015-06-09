@@ -38,22 +38,22 @@ strm_io_waiting()
 }
 
 static int
-io_push(int fd, strm_task *strm, strm_callback cb)
+io_push(int fd, strm_task* task, strm_callback cb)
 {
   struct epoll_event ev = { 0 };
 
   ev.events = EPOLLIN | EPOLLONESHOT;
-  ev.data.ptr = strm_queue_task(strm, cb, strm_nil_value());
+  ev.data.ptr = strm_queue_task(task, cb, strm_nil_value());
   return epoll_ctl(epoll_fd, EPOLL_CTL_ADD, fd, &ev);
 }
 
 static int
-io_kick(int fd, strm_task *strm, strm_callback cb)
+io_kick(int fd, strm_task* task, strm_callback cb)
 {
   struct epoll_event ev;
 
   ev.events = EPOLLIN | EPOLLONESHOT;
-  ev.data.ptr = strm_queue_task(strm, cb, strm_nil_value());
+  ev.data.ptr = strm_queue_task(task, cb, strm_nil_value());
   return epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &ev);
 }
 
@@ -93,21 +93,21 @@ strm_init_io_loop()
 }
 
 void
-strm_io_start_read(strm_task *strm, int fd, strm_callback cb)
+strm_io_start_read(strm_task* task, int fd, strm_callback cb)
 {
-  if (io_push(fd, strm, cb) == 0) {
+  if (io_push(fd, task, cb) == 0) {
     io_wait_num++;
   }
 }
 
 static void
-strm_io_stop(strm_task *strm, int fd)
+strm_io_stop(strm_task* task, int fd)
 {
-  if ((strm->flags & STRM_IO_NOWAIT) == 0) {
+  if ((task->flags & STRM_IO_NOWAIT) == 0) {
     io_wait_num--;
     io_pop(fd);
   }
-  strm_close(strm);
+  strm_close(task);
 }
 
 struct fd_read_buffer {
@@ -122,7 +122,7 @@ struct fd_read_buffer {
 #endif
 };
 
-static void readline_cb(strm_task *strm, strm_value data);
+static void readline_cb(strm_task* task, strm_value data);
 
 static strm_value
 read_str(const char *beg, size_t len)
@@ -134,9 +134,9 @@ read_str(const char *beg, size_t len)
 }
 
 static void
-read_cb(strm_task *strm, strm_value data)
+read_cb(strm_task* task, strm_value data)
 {
-  struct fd_read_buffer *b = strm->data;
+  struct fd_read_buffer *b = task->data;
   size_t count;
   ssize_t n;
 
@@ -146,22 +146,22 @@ read_cb(strm_task *strm, strm_value data)
     if (b->buf < b->end) {
       strm_value s = read_str(b->beg, b->end-b->beg);
       b->beg = b->end = b->buf;
-      strm_emit(strm, s, NULL);
-      io_kick(b->fd, strm, read_cb);
+      strm_emit(task, s, NULL);
+      io_kick(b->fd, task, read_cb);
     }
     else {
-      strm_io_stop(strm, b->fd);
+      strm_io_stop(task, b->fd);
     }
     return;
   }
   b->end += n;
-  (*readline_cb)(strm, strm_nil_value());
+  (*readline_cb)(task, strm_nil_value());
 }
 
 static void
-readline_cb(strm_task *strm, strm_value data)
+readline_cb(strm_task* task, strm_value data)
 {
-  struct fd_read_buffer *b = strm->data;
+  struct fd_read_buffer *b = task->data;
   strm_value s;
   char *p;
   ssize_t len = b->end-b->beg;
@@ -171,14 +171,14 @@ readline_cb(strm_task *strm, strm_value data)
     len = p - b->beg;
   }
   /* no newline */
-  else if (strm->flags & STRM_IO_NOFILL) {
+  else if (task->flags & STRM_IO_NOFILL) {
     if (len <= 0) {
 #ifdef STRM_IO_MMAP
-      if (strm->flags & STRM_IO_MMAP) {
+      if (task->flags & STRM_IO_MMAP) {
         munmap(b->buf, b->end - b->beg);
       }
 #endif
-      strm_io_stop(strm, b->fd);
+      strm_io_stop(task, b->fd);
       return;
     }
   }
@@ -188,31 +188,31 @@ readline_cb(strm_task *strm, strm_value data)
       b->beg = b->buf;
       b->end = b->beg + len;
     }
-    if (strm->flags & STRM_IO_NOWAIT) {
-      strm_task_push(strm_queue_task(strm, read_cb, strm_nil_value()));
+    if (task->flags & STRM_IO_NOWAIT) {
+      strm_task_push(strm_queue_task(task, read_cb, strm_nil_value()));
     }
     else {
-      io_kick(b->fd, strm, read_cb);
+      io_kick(b->fd, task, read_cb);
     }
     return;
   }
   s = read_str(b->beg, len);
   b->beg += len + 1;
-  strm_emit(strm, s, readline_cb);
+  strm_emit(task, s, readline_cb);
 }
 
 static void
-stdio_read(strm_task *strm, strm_value data)
+stdio_read(strm_task* task, strm_value data)
 {
-  struct fd_read_buffer *b = strm->data;
+  struct fd_read_buffer *b = task->data;
 
-  strm_io_start_read(strm, b->fd, read_cb);
+  strm_io_start_read(task, b->fd, read_cb);
 }
 
 static void
-read_close(strm_task *strm, strm_value d)
+read_close(strm_task* task, strm_value d)
 {
-  struct fd_read_buffer *b = strm->data;
+  struct fd_read_buffer *b = task->data;
 
   close(b->fd);
 }
@@ -264,9 +264,9 @@ struct write_data {
 };
 
 static void
-write_cb(strm_task *strm, strm_value data)
+write_cb(strm_task* task, strm_value data)
 {
-  struct write_data *d = (struct write_data*)strm->data;
+  struct write_data *d = (struct write_data*)task->data;
   strm_string *p = strm_to_str(data);
 
   fwrite(p->ptr, p->len, 1, d->f);
@@ -277,9 +277,9 @@ write_cb(strm_task *strm, strm_value data)
 }
 
 static void
-write_close(strm_task *strm, strm_value data)
+write_close(strm_task* task, strm_value data)
 {
-  struct write_data *d = (struct write_data*)strm->data;
+  struct write_data *d = (struct write_data*)task->data;
 
   /* tell peer we close the socket for writing (if it is) */
   shutdown(fileno(d->f), 1);

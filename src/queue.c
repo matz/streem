@@ -86,12 +86,12 @@ strm_queue_push(strm_queue *q, struct strm_queue_task *t)
 }
 
 struct strm_queue_task*
-strm_queue_task(strm_task *strm, strm_callback func, strm_value data)
+strm_queue_task(strm_task* task, strm_callback func, strm_value data)
 {
   struct strm_queue_task *t;
 
   t = malloc(sizeof(struct strm_queue_task));
-  t->strm = strm;
+  t->strm = task;
   t->func = func;
   t->data = data;
   t->next = NULL;

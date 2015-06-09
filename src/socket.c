@@ -17,13 +17,13 @@
 
 struct socket_data {
   int fd;
-  strm_state *strm;
+  strm_state *state;
 };
 
 static void
-accept_cb(strm_task *strm, strm_value data)
+accept_cb(strm_task* task, strm_value data)
 {
-  struct socket_data *sd = strm->data;
+  struct socket_data *sd = task->data;
   struct sockaddr_in writer_addr;
   socklen_t writer_len;
   int sock;
@@ -32,30 +32,30 @@ accept_cb(strm_task *strm, strm_value data)
   sock = accept(sd->fd, (struct sockaddr *)&writer_addr, &writer_len);
   if (sock < 0) {
     closesocket(sock);
-    if (sd->strm->strm)
-      strm_close(sd->strm->strm);
-    node_raise(sd->strm, "socket error: listen");
+    if (sd->state->strm)
+      strm_close(sd->state->strm);
+    node_raise(sd->state, "socket error: listen");
     return;
   }
 
 #ifdef _WIN32
   sock = _open_osfhandle(sock, 0);
 #endif
-  strm_emit(strm, strm_ptr_value(strm_io_new(sock, STRM_IO_READ|STRM_IO_WRITE|STRM_IO_FLUSH)), accept_cb);
+  strm_emit(task, strm_ptr_value(strm_io_new(sock, STRM_IO_READ|STRM_IO_WRITE|STRM_IO_FLUSH)), accept_cb);
 }
 
 static void
-server_accept(strm_task *strm, strm_value data)
+server_accept(strm_task* task, strm_value data)
 {
-  struct socket_data *sd = strm->data;
+  struct socket_data *sd = task->data;
 
-  strm_io_start_read(strm, sd->fd, accept_cb);
+  strm_io_start_read(task, sd->fd, accept_cb);
 }
 
 static void
-server_close(strm_task *strm, strm_value d)
+server_close(strm_task* task, strm_value d)
 {
-  struct socket_data *sd = strm->data;
+  struct socket_data *sd = task->data;
 
   closesocket(sd->fd);
 }
@@ -131,7 +131,7 @@ tcp_server(strm_state* strm, int argc, strm_value* args, strm_value *ret)
 #endif
   sd = malloc(sizeof(struct socket_data));
   sd->fd = sock;
-  sd->strm = strm;
+  sd->state = strm;
   task = strm_alloc_stream(strm_task_prod, server_accept, server_close, (void*)sd);
   *ret = strm_task_value(task);
   return 0;

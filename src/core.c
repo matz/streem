@@ -19,7 +19,7 @@ int strm_event_loop_started = FALSE;
 static void task_init();
 
 static int
-task_tid(strm_task *s, int tid)
+task_tid(strm_task* s, int tid)
 {
   int i;
 
@@ -67,10 +67,10 @@ strm_task_push(struct strm_queue_task *t)
 }
 
 void
-strm_emit(strm_task *strm, strm_value data, strm_callback func)
+strm_emit(strm_task* task, strm_value data, strm_callback func)
 {
-  strm_task *d = strm->dst;
-  int tid = strm->tid;
+  strm_task *d = task->dst;
+  int tid = task->tid;
 
   if (!strm_nil_p(data)) {
     while (d) {
@@ -80,14 +80,14 @@ strm_emit(strm_task *strm, strm_value data, strm_callback func)
     }
   }
   if (func) {
-    strm_task_push(strm_queue_task(strm, func, strm_nil_value()));
+    strm_task_push(strm_queue_task(task, func, strm_nil_value()));
   }
 }
 
 int
-strm_connect(strm_task *src, strm_task *dst)
+strm_connect(strm_task* src, strm_task* dst)
 {
-  strm_task *s;
+  strm_task* s;
 
   assert(dst->mode != strm_task_prod);
   s = src->dst;
@@ -111,7 +111,7 @@ strm_connect(strm_task *src, strm_task *dst)
 
 int cpu_count();
 void strm_init_io_loop();
-strm_task *strm_io_deque();
+strm_task* strm_io_deque();
 int strm_io_waiting();
 
 static int
@@ -209,7 +209,7 @@ strm_alloc_stream(strm_task_mode mode, strm_callback start_func, strm_callback c
 }
 
 void
-pipeline_finish(strm_task *strm, strm_value data)
+pipeline_finish(strm_task* task, strm_value data)
 {
   pthread_mutex_lock(&pipeline_mutex);
   pipeline_count--;
@@ -220,18 +220,18 @@ pipeline_finish(strm_task *strm, strm_value data)
 }
 
 void
-strm_close(strm_task *strm)
+strm_close(strm_task* task)
 {
-  if (strm->close_func) {
-    (*strm->close_func)(strm, strm_nil_value());
+  if (task->close_func) {
+    (*task->close_func)(task, strm_nil_value());
   }
-  strm_task *d = strm->dst;
+  strm_task *d = task->dst;
 
   while (d) {
     strm_task_push(strm_queue_task(d, (strm_callback)strm_close, strm_nil_value()));
     d = d->nextd;
   }
-  if (strm->mode == strm_task_prod) {
-    strm_task_push(strm_queue_task(strm, pipeline_finish, strm_nil_value()));
+  if (task->mode == strm_task_prod) {
+    strm_task_push(strm_queue_task(task, pipeline_finish, strm_nil_value()));
   }
 }

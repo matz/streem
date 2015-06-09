@@ -130,15 +130,15 @@ exec_neq(strm_state* strm, int argc, strm_value* args, strm_value* ret)
   return 0;
 }
 
-static void blk_exec(strm_task *strm, strm_value data);
+static void blk_exec(strm_task* strm, strm_value data);
 
 struct array_data {
   int n;
   strm_array* arr;
 };
 
-static void arr_exec(strm_task *strm, strm_value data);
-static void arr_finish(strm_task *strm, strm_value data);
+static void arr_exec(strm_task* strm, strm_value data);
+static void arr_finish(strm_task* strm, strm_value data);
 
 static int
 exec_bar(strm_state* strm, int argc, strm_value* args, strm_value* ret)
@@ -626,15 +626,15 @@ node_run(parser_state* p)
 }
 
 static void
-blk_exec(strm_task *strm, strm_value data)
+blk_exec(strm_task* task, strm_value data)
 {
-  strm_lambda *lambda = strm->data;
+  strm_lambda *lambda = task->data;
   strm_value ret = strm_nil_value();
   node_values* args = (node_values*)lambda->body->args;
   int n;
   strm_state c = {0};
 
-  c.strm = strm;
+  c.strm = task;
   c.prev = lambda->strm;
   assert(args->len == 1);
   strm_var_set(&c, (strm_string*)args->data[0], data);
@@ -650,21 +650,21 @@ blk_exec(strm_task *strm, strm_value data)
       return;
     }
   }
-  strm_emit(strm, ret, NULL);
+  strm_emit(task, ret, NULL);
 }
 
 static void
-arr_exec(strm_task *strm, strm_value data)
+arr_exec(strm_task* task, strm_value data)
 {
-  struct array_data *arrd = strm->data;
-  strm_emit(strm, arrd->arr->ptr[arrd->n++], NULL);
+  struct array_data *arrd = task->data;
+  strm_emit(task, arrd->arr->ptr[arrd->n++], NULL);
   if (arrd->n == arrd->arr->len)
-    strm_close(strm);
+    strm_close(task);
 }
 
 static void
-arr_finish(strm_task *strm, strm_value data)
+arr_finish(strm_task* task, strm_value data)
 {
-  struct array_data *d = strm->data;
+  struct array_data *d = task->data;
   free(d);
 }

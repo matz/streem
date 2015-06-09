@@ -8,15 +8,15 @@ struct seq_seeder {
 };
 
 static void
-seq_seed(strm_task *strm, strm_value data)
+seq_seed(strm_task* task, strm_value data)
 {
-  struct seq_seeder *s = strm->data;
+  struct seq_seeder *s = task->data;
 
   if (s->n > s->end) {
-    strm_close(strm);
+    strm_close(task);
     return;
   }
-  strm_emit(strm, strm_int_value(s->n), seq_seed);
+  strm_emit(task, strm_int_value(s->n), seq_seed);
   s->n += s->inc;
 }
 
