@@ -208,7 +208,7 @@ strm_task_new(strm_task_mode mode, strm_callback start_func, strm_callback close
   return s;
 }
 
-void
+static void
 pipeline_finish(strm_task* task, strm_value data)
 {
   pthread_mutex_lock(&pipeline_mutex);
