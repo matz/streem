@@ -33,7 +33,7 @@ accept_cb(strm_task* task, strm_value data)
   if (sock < 0) {
     closesocket(sock);
     if (sd->state->strm)
-      strm_close(sd->state->strm);
+      strm_task_close(sd->state->strm);
     node_raise(sd->state, "socket error: listen");
     return;
   }
@@ -132,7 +132,7 @@ tcp_server(strm_state* strm, int argc, strm_value* args, strm_value *ret)
   sd = malloc(sizeof(struct socket_data));
   sd->fd = sock;
   sd->state = strm;
-  task = strm_alloc_stream(strm_task_prod, server_accept, server_close, (void*)sd);
+  task = strm_task_new(strm_task_prod, server_accept, server_close, (void*)sd);
   *ret = strm_task_value(task);
   return 0;
 }

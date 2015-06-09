@@ -161,14 +161,14 @@ exec_bar(strm_state* strm, int argc, strm_value* args, strm_value* ret)
   /* lhs: lambda */
   else if (strm_lambda_p(lhs)) {
     strm_lambda *lmbd = strm_value_lambda(lhs)
-    lhs = strm_task_value(strm_alloc_stream(strm_task_filt, blk_exec, NULL, (void*)lmbd));
+    lhs = strm_task_value(strm_task_new(strm_task_filt, blk_exec, NULL, (void*)lmbd));
   }
   /* lhs: array */
   else if (strm_array_p(lhs)) {
     struct array_data *arrd = malloc(sizeof(struct array_data));
     arrd->arr = strm_value_array(lhs);
     arrd->n = 0;
-    lhs = strm_task_value(strm_alloc_stream(strm_task_prod, arr_exec, arr_finish, (void*)arrd));
+    lhs = strm_task_value(strm_task_new(strm_task_prod, arr_exec, arr_finish, (void*)arrd));
   }
   /* lhs: should be task */
 
@@ -181,7 +181,7 @@ exec_bar(strm_state* strm, int argc, strm_value* args, strm_value* ret)
   /* rhs: lambda */
   else if (strm_lambda_p(rhs)) {
     strm_lambda *lmbd = strm_value_lambda(rhs);
-    rhs = strm_task_value(strm_alloc_stream(strm_task_filt, blk_exec, NULL, (void*)lmbd));
+    rhs = strm_task_value(strm_task_new(strm_task_filt, blk_exec, NULL, (void*)lmbd));
   }
 
   /* task x task */
@@ -190,7 +190,7 @@ exec_bar(strm_state* strm, int argc, strm_value* args, strm_value* ret)
       node_raise(strm, "task error");
       return 1;
     }
-    strm_connect(strm_value_task(lhs), strm_value_task(rhs));
+    strm_task_connect(strm_value_task(lhs), strm_value_task(rhs));
     *ret = rhs;
     return 0;
   }
@@ -659,7 +659,7 @@ arr_exec(strm_task* task, strm_value data)
   struct array_data *arrd = task->data;
   strm_emit(task, arrd->arr->ptr[arrd->n++], NULL);
   if (arrd->n == arrd->arr->len)
-    strm_close(task);
+    strm_task_close(task);
 }
 
 static void

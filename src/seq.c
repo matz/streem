@@ -13,7 +13,7 @@ seq_seed(strm_task* task, strm_value data)
   struct seq_seeder *s = task->data;
 
   if (s->n > s->end) {
-    strm_close(task);
+    strm_task_close(task);
     return;
   }
   strm_emit(task, strm_int_value(s->n), seq_seed);
@@ -48,7 +48,7 @@ exec_seq(strm_state* strm, int argc, strm_value* args, strm_value* ret)
   s->n = start;
   s->inc = inc;
   s->end = end;
-  *ret = strm_task_value(strm_alloc_stream(strm_task_prod, seq_seed, NULL, (void*)s));
+  *ret = strm_task_value(strm_task_new(strm_task_prod, seq_seed, NULL, (void*)s));
   return 0;
 }
 

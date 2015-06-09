@@ -154,11 +154,11 @@ struct strm_task {
   strm_task *nextd;
 };
 
-strm_task* strm_alloc_stream(strm_task_mode mode, strm_callback start, strm_callback close, void *data);
+strm_task* strm_task_new(strm_task_mode mode, strm_callback start, strm_callback close, void *data);
 void strm_emit(strm_task *strm, strm_value data, strm_callback cb);
-int strm_connect(strm_task *src, strm_task *dst);
+int strm_task_connect(strm_task *src, strm_task *dst);
 int strm_loop();
-void strm_close(strm_task *strm);
+void strm_task_close(strm_task *strm);
 
 extern int strm_event_loop_started;
 strm_task* strm_value_task(strm_value);

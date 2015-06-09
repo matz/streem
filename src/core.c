@@ -85,7 +85,7 @@ strm_emit(strm_task* task, strm_value data, strm_callback func)
 }
 
 int
-strm_connect(strm_task* src, strm_task* dst)
+strm_task_connect(strm_task* src, strm_task* dst)
 {
   strm_task* s;
 
@@ -193,7 +193,7 @@ strm_loop()
 }
 
 strm_task*
-strm_alloc_stream(strm_task_mode mode, strm_callback start_func, strm_callback close_func, void *data)
+strm_task_new(strm_task_mode mode, strm_callback start_func, strm_callback close_func, void *data)
 {
   strm_task *s = malloc(sizeof(strm_task));
   s->tid = -1;                  /* -1 means uninitialized */
@@ -220,7 +220,7 @@ pipeline_finish(strm_task* task, strm_value data)
 }
 
 void
-strm_close(strm_task* task)
+strm_task_close(strm_task* task)
 {
   if (task->close_func) {
     (*task->close_func)(task, strm_nil_value());
@@ -228,7 +228,7 @@ strm_close(strm_task* task)
   strm_task *d = task->dst;
 
   while (d) {
-    strm_task_push(strm_queue_task(d, (strm_callback)strm_close, strm_nil_value()));
+    strm_task_push(strm_queue_task(d, (strm_callback)strm_task_close, strm_nil_value()));
     d = d->nextd;
   }
   if (task->mode == strm_task_prod) {

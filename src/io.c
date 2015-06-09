@@ -107,7 +107,7 @@ strm_io_stop(strm_task* task, int fd)
     io_wait_num--;
     io_pop(fd);
   }
-  strm_close(task);
+  strm_task_close(task);
 }
 
 struct fd_read_buffer {
@@ -252,7 +252,7 @@ strm_readio(strm_io* io)
     else {
       buf->beg = buf->end = buf->buf;
     }
-    io->read_task = strm_alloc_stream(strm_task_prod, cb, read_close, (void*)buf);
+    io->read_task = strm_task_new(strm_task_prod, cb, read_close, (void*)buf);
     io->read_task->flags |= flags;
   }
   return io->read_task;
@@ -298,7 +298,7 @@ strm_writeio(strm_io* io)
 
     d->f = fdopen(io->fd, "w");
     d->io = io;
-    io->write_task = strm_alloc_stream(strm_task_cons, write_cb, write_close, (void*)d);
+    io->write_task = strm_task_new(strm_task_cons, write_cb, write_close, (void*)d);
   }
   return io->write_task;
 }
