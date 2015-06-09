@@ -18,6 +18,8 @@
 #elif !TRUE
 # error TRUE must be true
 #endif
+#define STRM_OK 0
+#define STRM_NG 1
 
 /* ----- Values */
 enum strm_value_type {

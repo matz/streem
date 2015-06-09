@@ -79,7 +79,7 @@ tcp_server(strm_state* strm, int argc, strm_value* args, strm_value *ret)
 #endif
 
   if (argc != 1) {
-    return 1;
+    return STRM_NG;
   }
   if (strm_int_p(args[0])) {
     sprintf(buf, "%d", (int)strm_value_int(args[0]));
@@ -102,7 +102,7 @@ tcp_server(strm_state* strm, int argc, strm_value* args, strm_value *ret)
   s = getaddrinfo(NULL, service, &hints, &result);
   if (s != 0) {
     node_raise(strm, gai_strerror(s));
-    return 1;
+    return STRM_NG;
   }
 
   for (rp = result; rp != NULL; rp = rp->ai_next) {
@@ -116,14 +116,14 @@ tcp_server(strm_state* strm, int argc, strm_value* args, strm_value *ret)
 
   if (rp == NULL) {
     node_raise(strm, "socket error: bind");
-    return 1;
+    return STRM_NG;
   }
   freeaddrinfo(result);
 
   if (listen(sock, 5) < 0) {
     closesocket(sock);
     node_raise(strm, "socket error: listen");
-    return 1;
+    return STRM_NG;
   }
 
 #ifdef _WIN32
@@ -134,7 +134,7 @@ tcp_server(strm_state* strm, int argc, strm_value* args, strm_value *ret)
   sd->state = strm;
   task = strm_task_new(strm_task_prod, server_accept, server_close, (void*)sd);
   *ret = strm_task_value(task);
-  return 0;
+  return STRM_OK;
 }
 
 static int
@@ -155,7 +155,7 @@ tcp_socket(strm_state* strm, int argc, strm_value* args, strm_value *ret)
 #endif
 
   if (argc != 2) {
-    return 1;
+    return STRM_NG;
   }
   host = strm_value_str(args[0]);
   if (strm_int_p(args[1])) {
@@ -176,7 +176,7 @@ tcp_socket(strm_state* strm, int argc, strm_value* args, strm_value *ret)
 
   if (s != 0) {
     node_raise(strm, gai_strerror(s));
-    return 1;
+    return STRM_NG;
   }
 
   for (rp = result; rp != NULL; rp = rp->ai_next) {
@@ -190,14 +190,14 @@ tcp_socket(strm_state* strm, int argc, strm_value* args, strm_value *ret)
 
   if (rp == NULL) {
     node_raise(strm, "socket error: connect");
-    return 1;
+    return STRM_NG;
   }
   freeaddrinfo(result);
 #ifdef _WIN32
   sock = _open_osfhandle(sock, 0);
 #endif
   *ret = strm_ptr_value(strm_io_new(sock, STRM_IO_READ|STRM_IO_WRITE|STRM_IO_FLUSH));
-  return 0;
+  return STRM_OK;
 }
 
 void

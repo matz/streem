@@ -106,7 +106,7 @@ strm_task_connect(strm_task* src, strm_task* dst)
     pipeline_count++;
     strm_task_push(strm_queue_task(src, src->start_func, strm_nil_value()));
   }
-  return 1;
+  return STRM_OK;
 }
 
 int cpu_count();
@@ -173,7 +173,7 @@ task_init()
 int
 strm_loop()
 {
-  if (pipeline_count == 0) return 0;
+  if (pipeline_count == 0) return STRM_OK;
   task_init();
   for (;;) {
     pthread_mutex_lock(&pipeline_mutex);
@@ -189,7 +189,7 @@ strm_loop()
       if (i == thread_max) break;
     }
   }
-  return 1;
+  return STRM_OK;
 }
 
 strm_task*

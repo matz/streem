@@ -20,17 +20,17 @@ exec_plus(strm_state* strm, int argc, strm_value* args, strm_value* ret)
     memcpy(p+str1->len, str2->ptr, str2->len);
     p[str3->len] = '\0';
     *ret = strm_ptr_value(str3);
-    return 0;
+    return STRM_OK;
   }
   else if (strm_int_p(args[0]) && strm_int_p(args[1])) {
     *ret = strm_int_value(strm_value_int(args[0])+strm_value_int(args[1]));
-    return 0;
+    return STRM_OK;
   }
   else if (strm_num_p(args[0])) {
     *ret = strm_flt_value(strm_value_flt(args[0])+strm_value_flt(args[1]));
-    return 0;
+    return STRM_OK;
   }
-  return 1;
+  return STRM_NG;
 }
 
 static int
@@ -39,24 +39,24 @@ exec_minus(strm_state* strm, int argc, strm_value* args, strm_value* ret)
   if (argc == 1) {
     if (strm_int_p(args[0])) {
       *ret = strm_int_value(-strm_value_int(args[0]));
-      return 0;
+      return STRM_OK;
     }
     if (strm_flt_p(args[0])) {
       *ret = strm_flt_value(-strm_value_flt(args[0]));
-      return 0;
+      return STRM_OK;
     }
-    return 1;
+    return STRM_NG;
   }
   assert(argc == 2);
   if (strm_int_p(args[0]) && strm_int_p(args[1])) {
     *ret = strm_int_value(strm_value_int(args[0])-strm_value_int(args[1]));
-    return 0;
+    return STRM_OK;
   }
   else if (strm_num_p(args[0])) {
     *ret = strm_flt_value(strm_value_flt(args[0])-strm_value_flt(args[1]));
-    return 0;
+    return STRM_OK;
   }
-  return 1;
+  return STRM_NG;
 }
 
 static int
@@ -65,13 +65,13 @@ exec_mult(strm_state* strm, int argc, strm_value* args, strm_value* ret)
   assert(argc == 2);
   if (strm_int_p(args[0]) && strm_int_p(args[1])) {
     *ret = strm_int_value(strm_value_int(args[0])*strm_value_int(args[1]));
-    return 0;
+    return STRM_OK;
   }
   else if (strm_num_p(args[0])) {
     *ret = strm_flt_value(strm_value_flt(args[0])*strm_value_flt(args[1]));
-    return 0;
+    return STRM_OK;
   }
-  return 1;
+  return STRM_NG;
 }
 
 static int
@@ -79,7 +79,7 @@ exec_div(strm_state* strm, int argc, strm_value* args, strm_value* ret)
 {
   assert(argc == 2);
   *ret = strm_flt_value(strm_value_flt(args[0])/strm_value_flt(args[1]));
-  return 0;
+  return STRM_OK;
 }
 
 static int
@@ -87,7 +87,7 @@ exec_gt(strm_state* strm, int argc, strm_value* args, strm_value* ret)
 {
   assert(argc == 2);
   *ret = strm_bool_value(strm_value_flt(args[0])>strm_value_flt(args[1]));
-  return 0;
+  return STRM_OK;
 }
 
 static int
@@ -95,7 +95,7 @@ exec_ge(strm_state* strm, int argc, strm_value* args, strm_value* ret)
 {
   assert(argc == 2);
   *ret = strm_bool_value(strm_value_flt(args[0])>=strm_value_flt(args[1]));
-  return 0;
+  return STRM_OK;
 }
 
 static int
@@ -103,7 +103,7 @@ exec_lt(strm_state* strm, int argc, strm_value* args, strm_value* ret)
 {
   assert(argc == 2);
   *ret = strm_bool_value(strm_value_flt(args[0])<strm_value_flt(args[1]));
-  return 0;
+  return STRM_OK;
 }
 
 static int
@@ -111,7 +111,7 @@ exec_le(strm_state* strm, int argc, strm_value* args, strm_value* ret)
 {
   assert(argc == 2);
   *ret = strm_bool_value(strm_value_flt(args[0])<=strm_value_flt(args[1]));
-  return 0;
+  return STRM_OK;
 }
 
 static int
@@ -119,7 +119,7 @@ exec_eq(strm_state* strm, int argc, strm_value* args, strm_value* ret)
 {
   assert(argc == 2);
   *ret = strm_bool_value(strm_value_eq(args[0], args[1]));
-  return 0;
+  return STRM_OK;
 }
 
 static int
@@ -127,7 +127,7 @@ exec_neq(strm_state* strm, int argc, strm_value* args, strm_value* ret)
 {
   assert(argc == 2);
   *ret = strm_bool_value(!strm_value_eq(args[0], args[1]));
-  return 0;
+  return STRM_OK;
 }
 
 static void blk_exec(strm_task* strm, strm_value data);
@@ -149,7 +149,7 @@ exec_bar(strm_state* strm, int argc, strm_value* args, strm_value* ret)
   /* int x int */
   if (strm_int_p(args[0]) && strm_int_p(args[1])) {
     *ret = strm_int_value(strm_value_int(args[0])|strm_value_int(args[1]));
-    return 0;
+    return STRM_OK;
   }
 
   lhs = args[0];
@@ -188,15 +188,15 @@ exec_bar(strm_state* strm, int argc, strm_value* args, strm_value* ret)
   if (strm_task_p(lhs) && strm_task_p(rhs)) {
     if (lhs.val.p == NULL || rhs.val.p == NULL) {
       node_raise(strm, "task error");
-      return 1;
+      return STRM_NG;
     }
     strm_task_connect(strm_value_task(lhs), strm_value_task(rhs));
     *ret = rhs;
-    return 0;
+    return STRM_OK;
   }
 
   node_raise(strm, "type error");
-  return 1;
+  return STRM_NG;
 }
 
 static int
@@ -205,13 +205,13 @@ exec_mod(strm_state* strm, int argc, strm_value* args, strm_value* ret)
   assert(argc == 2);
   if (strm_int_p(args[0]) && strm_int_p(args[1])) {
     *ret = strm_int_value(strm_value_int(args[0])%strm_value_int(args[1]));
-    return 0;
+    return STRM_OK;
   }
   else if (strm_num_p(args[0])) {
     *ret = strm_flt_value((int)strm_value_flt(args[0])%(int)strm_value_flt(args[1]));
-    return 0;
+    return STRM_OK;
   }
-  return 1;
+  return STRM_NG;
 }
 
 typedef int (*exec_cfunc)(strm_state*, int, strm_value*, strm_value*);
@@ -238,7 +238,7 @@ exec_call(strm_state* strm, strm_string *name, int argc, strm_value* argv, strm_
 
         c.prev = lambda->state;
         if ((args == NULL && argc != 0) &&
-            (args->len != argc)) return 1;
+            (args->len != argc)) return STRM_NG;
         for (i=0; i<argc; i++) {
           n = strm_var_set(&c, (strm_string*)args->data[i], argv[i]);
           if (n) return n;
@@ -246,7 +246,7 @@ exec_call(strm_state* strm, strm_string *name, int argc, strm_value* argv, strm_
         n = exec_expr(&c, nlbd->compstmt, ret);
         if (c.exc && c.exc->type == NODE_ERROR_RETURN) {
           *ret = c.exc->arg;
-          return 0;
+          return STRM_OK;
         }
         return n;
       }
@@ -255,7 +255,7 @@ exec_call(strm_state* strm, strm_string *name, int argc, strm_value* argv, strm_
     }
   }
   node_raise(strm, "function not found");
-  return 1;
+  return STRM_NG;
 }
 
 static int
@@ -264,7 +264,7 @@ exec_expr(strm_state* strm, node* np, strm_value* val)
   int n;
 
   if (np == NULL) {
-    return 1;
+    return STRM_NG;
   }
 
   switch (np->type) {
@@ -277,7 +277,7 @@ exec_expr(strm_state* strm, node* np, strm_value* val)
        strm->exc = malloc(sizeof(node_error));
        strm->exc->type = NODE_ERROR_SKIP;
        strm->exc->arg = strm_nil_value();
-       return 0;
+       return STRM_OK;
     }
   case NODE_EMIT:
     {
@@ -294,7 +294,7 @@ exec_expr(strm_state* strm, node* np, strm_value* val)
         if (n) return n;
         strm_emit(strm->task, *val, NULL);
       }
-      return 0;
+      return STRM_OK;
     }
     break;
   case NODE_LET:
@@ -319,7 +319,7 @@ exec_expr(strm_state* strm, node* np, strm_value* val)
         if (n) return n;
       }
       *val = strm_ptr_value(arr);
-      return 0;
+      return STRM_OK;
     }
   case NODE_IDENT:
     n = strm_var_get(strm, np->value.v.s, val);
@@ -341,7 +341,7 @@ exec_expr(strm_state* strm, node* np, strm_value* val)
       }
       else {
         *val = strm_nil_value();
-        return 0;
+        return STRM_OK;
       }
     }
     break;
@@ -366,12 +366,12 @@ exec_expr(strm_state* strm, node* np, strm_value* val)
     {
       struct strm_lambda* lambda = malloc(sizeof(strm_lambda));
 
-      if (!lambda) return 1;
+      if (!lambda) return STRM_NG;
       lambda->type = STRM_OBJ_LAMBDA;
       lambda->body = (node_lambda*)np;
       lambda->state = strm;
       *val = strm_ptr_value(lambda);
-      return 0;
+      return STRM_OK;
     }
     break;
   case NODE_CALL:
@@ -416,7 +416,7 @@ exec_expr(strm_state* strm, node* np, strm_value* val)
         }
         break;
       }
-      return 1;
+      return STRM_NG;
     }
     break;
   case NODE_STMTS:
@@ -425,39 +425,39 @@ exec_expr(strm_state* strm, node* np, strm_value* val)
       node_values* v = (node_values*)np;
       for (i = 0; i < v->len; i++) {
         n = exec_expr(strm, v->data[i], val);
-        if (strm->exc != NULL) return 1;
+        if (strm->exc != NULL) return STRM_NG;
         if (n) return n;
       }
     }
-    return 0;
+    return STRM_OK;
   case NODE_VALUE:
     switch (np->value.t) {
     case NODE_VALUE_BOOL:
       *val = strm_bool_value(np->value.v.b);
-      return 0;
+      return STRM_OK;
     case NODE_VALUE_NIL:
       *val = strm_nil_value();
-      return 0;
+      return STRM_OK;
     case NODE_VALUE_STRING:
     case NODE_VALUE_IDENT:
       *val = strm_ptr_value(np->value.v.s);
-      return 0;
+      return STRM_OK;
     case NODE_VALUE_DOUBLE:
       *val = strm_flt_value(np->value.v.d);
-      return 0;
+      return STRM_OK;
     case NODE_VALUE_INT:
       *val = strm_int_value(np->value.v.i);
-      return 0;
+      return STRM_OK;
       /* following type should not be evaluated */
     case NODE_VALUE_ERROR:
     case NODE_VALUE_USER:
     default:
-      return 1;
+      return STRM_NG;
     }
   default:
     break;
   }
-  return 1;
+  return STRM_NG;
 }
 
 static int
@@ -465,7 +465,7 @@ cputs_ptr(strm_state* strm, FILE* out, struct strm_object *obj)
 {
   if (obj == NULL) {
     fprintf(out, "nil");
-    return 0;
+    return STRM_OK;
   }
   switch (obj->type) {
   case STRM_OBJ_ARRAY:
@@ -491,7 +491,7 @@ cputs_ptr(strm_state* strm, FILE* out, struct strm_object *obj)
     fprintf(out, "<%p>", obj);
     break;
   }
-  return 0;
+  return STRM_OK;
 }
 
 static int
@@ -528,7 +528,7 @@ exec_cputs(strm_state* strm, FILE* out, int argc, strm_value* args, strm_value *
     }
   }
   fprintf(out, "\n");
-  return 0;
+  return STRM_OK;
 }
 
 static int
@@ -548,9 +548,9 @@ exec_fread(strm_state* strm, int argc, strm_value* args, strm_value *ret)
   assert(strm_str_p(args[0]));
   path = strm_value_str(args[0]);
   fd = open(path->ptr, O_RDONLY);
-  if (fd < 0) return 1;
+  if (fd < 0) return STRM_NG;
   *ret = strm_ptr_value(strm_io_new(fd, STRM_IO_READ));
-  return 0;
+  return STRM_OK;
 }
 
 static int
@@ -563,9 +563,9 @@ exec_fwrite(strm_state* strm, int argc, strm_value* args, strm_value *ret)
   assert(strm_str_p(args[0]));
   path = strm_value_str(args[0]);
   fd = open(path->ptr, O_WRONLY|O_CREAT, 0644);
-  if (fd < 0) return 1;
+  if (fd < 0) return STRM_NG;
   *ret = strm_ptr_value(strm_io_new(fd, STRM_IO_WRITE));
-  return 0;
+  return STRM_OK;
 }
 
 void
@@ -622,7 +622,7 @@ node_run(parser_state* p)
       strm->exc = NULL;
     }
   }
-  return 0;
+  return STRM_OK;
 }
 
 static void

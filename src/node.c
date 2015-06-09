@@ -324,7 +324,7 @@ node_parse_file(parser_state* p, const char* fname)
   FILE* fp = fopen(fname, "rb");
   if (fp == NULL) {
     perror("fopen");
-    return 1;
+    return 0;
   }
   r = node_parse_input(p, fp, fname);
   fclose(fp);

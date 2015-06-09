@@ -42,14 +42,14 @@ exec_seq(strm_state* strm, int argc, strm_value* args, strm_value* ret)
     break;
   default:
     node_raise(strm, "wrong number of arguments");
-    return 1;
+    return STRM_NG;
   }
   s = malloc(sizeof(struct seq_seeder));
   s->n = start;
   s->inc = inc;
   s->end = end;
   *ret = strm_task_value(strm_task_new(strm_task_prod, seq_seed, NULL, (void*)s));
-  return 0;
+  return STRM_OK;
 }
 
 void

@@ -127,7 +127,7 @@ strm_queue_exec(strm_queue *q)
   free(t);
 
   (*func)(strm, data);
-  return 1;
+  return STRM_OK;
 }
 
 int
