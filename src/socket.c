@@ -114,11 +114,11 @@ tcp_server(strm_state* strm, int argc, strm_value* args, strm_value *ret)
     closesocket(sock);
   }
 
+  freeaddrinfo(result);
   if (rp == NULL) {
     node_raise(strm, "socket error: bind");
     return STRM_NG;
   }
-  freeaddrinfo(result);
 
   if (listen(sock, 5) < 0) {
     closesocket(sock);
@@ -188,11 +188,11 @@ tcp_socket(strm_state* strm, int argc, strm_value* args, strm_value *ret)
     closesocket(sock);
   }
 
+  freeaddrinfo(result);
   if (rp == NULL) {
     node_raise(strm, "socket error: connect");
     return STRM_NG;
   }
-  freeaddrinfo(result);
 #ifdef _WIN32
   sock = _open_osfhandle(sock, 0);
 #endif
