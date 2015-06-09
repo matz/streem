@@ -16,7 +16,7 @@
 #include "node.h"
 
 struct socket_data {
-  int fd;
+  int sock;
   strm_state *state;
 };
 
@@ -29,7 +29,7 @@ accept_cb(strm_task* task, strm_value data)
   int sock;
 
   writer_len = sizeof(writer_addr);
-  sock = accept(sd->fd, (struct sockaddr *)&writer_addr, &writer_len);
+  sock = accept(sd->sock, (struct sockaddr *)&writer_addr, &writer_len);
   if (sock < 0) {
     closesocket(sock);
     if (sd->state->task)
@@ -49,7 +49,7 @@ server_accept(strm_task* task, strm_value data)
 {
   struct socket_data *sd = task->data;
 
-  strm_io_start_read(task, sd->fd, accept_cb);
+  strm_io_start_read(task, sd->sock, accept_cb);
 }
 
 static void
@@ -57,7 +57,7 @@ server_close(strm_task* task, strm_value d)
 {
   struct socket_data *sd = task->data;
 
-  closesocket(sd->fd);
+  closesocket(sd->sock);
 }
 
 static int
@@ -131,7 +131,7 @@ tcp_server(strm_state* state, int argc, strm_value* args, strm_value *ret)
   sock = _open_osfhandle(sock, 0);
 #endif
   sd = malloc(sizeof(struct socket_data));
-  sd->fd = sock;
+  sd->sock = sock;
   sd->state = state;
   task = strm_task_new(strm_task_prod, server_accept, server_close, (void*)sd);
   *ret = strm_task_value(task);
