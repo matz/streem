@@ -79,6 +79,7 @@ tcp_server(strm_state* strm, int argc, strm_value* args, strm_value *ret)
 #endif
 
   if (argc != 1) {
+    node_raise(strm, "tcp_server: wrong number of arguments");
     return STRM_NG;
   }
   if (strm_int_p(args[0])) {
@@ -155,6 +156,7 @@ tcp_socket(strm_state* strm, int argc, strm_value* args, strm_value *ret)
 #endif
 
   if (argc != 2) {
+    node_raise(strm, "tcp_socket: wrong number of arguments");
     return STRM_NG;
   }
   host = strm_value_str(args[0]);
