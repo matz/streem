@@ -21,7 +21,7 @@ seq_seed(strm_task* task, strm_value data)
 }
 
 static int
-exec_seq(strm_state* strm, int argc, strm_value* args, strm_value* ret)
+exec_seq(strm_state* state, int argc, strm_value* args, strm_value* ret)
 {
   long start, end, inc=1;
   struct seq_seeder *s;
@@ -41,7 +41,7 @@ exec_seq(strm_state* strm, int argc, strm_value* args, strm_value* ret)
     end = strm_value_int(args[2]);
     break;
   default:
-    node_raise(strm, "wrong number of arguments");
+    node_raise(state, "wrong number of arguments");
     return STRM_NG;
   }
   s = malloc(sizeof(struct seq_seeder));
@@ -53,7 +53,7 @@ exec_seq(strm_state* strm, int argc, strm_value* args, strm_value* ret)
 }
 
 void
-strm_seq_init(strm_state* strm)
+strm_seq_init(strm_state* state)
 {
   strm_var_def("seq", strm_cfunc_value(exec_seq));
 }

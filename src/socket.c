@@ -61,7 +61,7 @@ server_close(strm_task* task, strm_value d)
 }
 
 static int
-tcp_server(strm_state* strm, int argc, strm_value* args, strm_value *ret)
+tcp_server(strm_state* state, int argc, strm_value* args, strm_value *ret)
 {
   struct addrinfo hints;
   struct addrinfo *result, *rp;
@@ -79,7 +79,7 @@ tcp_server(strm_state* strm, int argc, strm_value* args, strm_value *ret)
 #endif
 
   if (argc != 1) {
-    node_raise(strm, "tcp_server: wrong number of arguments");
+    node_raise(state, "tcp_server: wrong number of arguments");
     return STRM_NG;
   }
   if (strm_int_p(args[0])) {
@@ -102,7 +102,7 @@ tcp_server(strm_state* strm, int argc, strm_value* args, strm_value *ret)
 
   s = getaddrinfo(NULL, service, &hints, &result);
   if (s != 0) {
-    node_raise(strm, gai_strerror(s));
+    node_raise(state, gai_strerror(s));
     return STRM_NG;
   }
 
@@ -117,13 +117,13 @@ tcp_server(strm_state* strm, int argc, strm_value* args, strm_value *ret)
 
   freeaddrinfo(result);
   if (rp == NULL) {
-    node_raise(strm, "socket error: bind");
+    node_raise(state, "socket error: bind");
     return STRM_NG;
   }
 
   if (listen(sock, 5) < 0) {
     closesocket(sock);
-    node_raise(strm, "socket error: listen");
+    node_raise(state, "socket error: listen");
     return STRM_NG;
   }
 
@@ -132,14 +132,14 @@ tcp_server(strm_state* strm, int argc, strm_value* args, strm_value *ret)
 #endif
   sd = malloc(sizeof(struct socket_data));
   sd->fd = sock;
-  sd->state = strm;
+  sd->state = state;
   task = strm_task_new(strm_task_prod, server_accept, server_close, (void*)sd);
   *ret = strm_task_value(task);
   return STRM_OK;
 }
 
 static int
-tcp_socket(strm_state* strm, int argc, strm_value* args, strm_value *ret)
+tcp_socket(strm_state* state, int argc, strm_value* args, strm_value *ret)
 {
   struct addrinfo hints;
   struct addrinfo *result, *rp;
@@ -156,7 +156,7 @@ tcp_socket(strm_state* strm, int argc, strm_value* args, strm_value *ret)
 #endif
 
   if (argc != 2) {
-    node_raise(strm, "tcp_socket: wrong number of arguments");
+    node_raise(state, "tcp_socket: wrong number of arguments");
     return STRM_NG;
   }
   host = strm_value_str(args[0]);
@@ -177,7 +177,7 @@ tcp_socket(strm_state* strm, int argc, strm_value* args, strm_value *ret)
   s = getaddrinfo(host->ptr, service, &hints, &result);
 
   if (s != 0) {
-    node_raise(strm, gai_strerror(s));
+    node_raise(state, gai_strerror(s));
     return STRM_NG;
   }
 
@@ -192,7 +192,7 @@ tcp_socket(strm_state* strm, int argc, strm_value* args, strm_value *ret)
 
   freeaddrinfo(result);
   if (rp == NULL) {
-    node_raise(strm, "socket error: connect");
+    node_raise(state, "socket error: connect");
     return STRM_NG;
   }
 #ifdef _WIN32
@@ -203,7 +203,7 @@ tcp_socket(strm_state* strm, int argc, strm_value* args, strm_value *ret)
 }
 
 void
-strm_socket_init(strm_state* strm)
+strm_socket_init(strm_state* state)
 {
   strm_var_def("tcp_server", strm_cfunc_value(tcp_server));
   strm_var_def("tcp_socket", strm_cfunc_value(tcp_socket));

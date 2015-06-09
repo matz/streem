@@ -39,21 +39,21 @@ env_get(strm_env *env, strm_string* name, strm_value *val)
 
 
 int
-strm_var_set(strm_state *strm, strm_string* name, strm_value val)
+strm_var_set(strm_state *state, strm_string* name, strm_value val)
 {
   strm_env *e;
 
-  if (!strm) {
+  if (!state) {
     if (!globals) {
       globals = kh_init(env);
     }
     e = globals;
   }
   else {
-    if (!strm->env) {
-      strm->env = kh_init(env);
+    if (!state->env) {
+      state->env = kh_init(env);
     }
-    e = strm->env;
+    e = state->env;
   }
   return env_set(e, name, val);
 }
@@ -65,14 +65,14 @@ strm_var_def(const char* name, strm_value val)
 }
 
 int
-strm_var_get(strm_state *strm, strm_string* name, strm_value *val)
+strm_var_get(strm_state *state, strm_string* name, strm_value *val)
 {
-  while (strm) {
-    if (strm->env) {
-      if (env_get((strm_env*)strm->env, name, val) == 0)
+  while (state) {
+    if (state->env) {
+      if (env_get((strm_env*)state->env, name, val) == 0)
         return STRM_OK;
     }
-    strm = strm->prev;
+    state = state->prev;
   }
   if (!globals) return STRM_NG;
   return env_get(globals, name, val);
