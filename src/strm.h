@@ -216,7 +216,7 @@ void strm_io_start_read(strm_task *strm, int fd, strm_callback cb);
 typedef struct strm_lambda {
   STRM_OBJ_HEADER;
   struct node_lambda* body;
-  struct strm_state* strm;
+  struct strm_state* state;
 } strm_lambda;
 
 #define strm_value_lambda(v) (strm_lambda*)strm_value_obj(v, STRM_OBJ_LAMBDA);

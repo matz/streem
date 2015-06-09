@@ -236,7 +236,7 @@ exec_call(strm_state* strm, strm_string *name, int argc, strm_value* argv, strm_
         strm_state c = {0};
         int i;
 
-        c.prev = lambda->strm;
+        c.prev = lambda->state;
         if ((args == NULL && argc != 0) &&
             (args->len != argc)) return 1;
         for (i=0; i<argc; i++) {
@@ -369,7 +369,7 @@ exec_expr(strm_state* strm, node* np, strm_value* val)
       if (!lambda) return 1;
       lambda->type = STRM_OBJ_LAMBDA;
       lambda->body = (node_lambda*)np;
-      lambda->strm = strm;
+      lambda->state = strm;
       *val = strm_ptr_value(lambda);
       return 0;
     }
@@ -635,17 +635,17 @@ blk_exec(strm_task* task, strm_value data)
   strm_state c = {0};
 
   c.task = task;
-  c.prev = lambda->strm;
+  c.prev = lambda->state;
   assert(args->len == 1);
   strm_var_set(&c, (strm_string*)args->data[0], data);
 
   n = exec_expr(&c, lambda->body->compstmt, &ret);
   if (n) return;
-  if (lambda->strm->exc) {
-    if (lambda->strm->exc->type == NODE_ERROR_RETURN) {
-      ret = lambda->strm->exc->arg;
-      free(lambda->strm->exc);
-      lambda->strm->exc = NULL;
+  if (lambda->state->exc) {
+    if (lambda->state->exc->type == NODE_ERROR_RETURN) {
+      ret = lambda->state->exc->arg;
+      free(lambda->state->exc);
+      lambda->state->exc = NULL;
     } else {
       return;
     }
