@@ -575,6 +575,9 @@ node_raise(strm_state* strm, const char* msg) {
   strm->exc->arg = strm_str_value(msg, strlen(msg));
 }
 
+void strm_seq_init(strm_state* strm);
+void strm_socket_init(strm_state* strm);
+
 static void
 node_init(strm_state* strm)
 {
@@ -596,10 +599,10 @@ node_init(strm_state* strm)
   strm_var_def("%", strm_cfunc_value(exec_mod));
   strm_var_def("fread", strm_cfunc_value(exec_fread));
   strm_var_def("fwrite", strm_cfunc_value(exec_fwrite));
-}
 
-void strm_seq_init(strm_state* strm);
-void strm_socket_init(strm_state* strm);
+  strm_seq_init(strm);
+  strm_socket_init(strm);
+}
 
 int
 node_run(parser_state* p)
@@ -609,9 +612,6 @@ node_run(parser_state* p)
 
   memset(strm, 0, sizeof(strm_state));
   node_init(strm);
-
-  strm_seq_init(strm);
-  strm_socket_init(strm);
 
   exec_expr(strm, (node*)p->lval, &v);
   if (strm->exc != NULL) {
