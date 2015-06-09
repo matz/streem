@@ -188,7 +188,7 @@ typedef struct strm_state {
   struct node_error* exc;
   void *env;
   struct strm_state *prev;
-  strm_task *strm;
+  strm_task *task;
 } strm_state;
 int strm_var_set(strm_state*, strm_string*, strm_value);
 int strm_var_def(const char*, strm_value);

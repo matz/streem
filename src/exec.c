@@ -284,7 +284,7 @@ exec_expr(strm_state* strm, node* np, strm_value* val)
       int i, n;
       node_values* v0;
 
-      if (!strm->strm) {
+      if (!strm->task) {
         node_raise(strm, "failed to emit");
       }
       v0 = (node_values*)np->value.v.p;
@@ -292,7 +292,7 @@ exec_expr(strm_state* strm, node* np, strm_value* val)
       for (i = 0; i < v0->len; i++) {
         n = exec_expr(strm, v0->data[i], val);
         if (n) return n;
-        strm_emit(strm->strm, *val, NULL);
+        strm_emit(strm->task, *val, NULL);
       }
       return 0;
     }
@@ -634,7 +634,7 @@ blk_exec(strm_task* task, strm_value data)
   int n;
   strm_state c = {0};
 
-  c.strm = task;
+  c.task = task;
   c.prev = lambda->strm;
   assert(args->len == 1);
   strm_var_set(&c, (strm_string*)args->data[0], data);

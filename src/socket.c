@@ -32,8 +32,8 @@ accept_cb(strm_task* task, strm_value data)
   sock = accept(sd->fd, (struct sockaddr *)&writer_addr, &writer_len);
   if (sock < 0) {
     closesocket(sock);
-    if (sd->state->strm)
-      strm_task_close(sd->state->strm);
+    if (sd->state->task)
+      strm_task_close(sd->state->task);
     node_raise(sd->state, "socket error: listen");
     return;
   }
