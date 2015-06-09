@@ -39,21 +39,21 @@ env_get(strm_env *env, strm_string* name, strm_value *val)
 
 
 int
-strm_var_set(node_ctx *ctx, strm_string* name, strm_value val)
+strm_var_set(strm_state *strm, strm_string* name, strm_value val)
 {
   strm_env *e;
 
-  if (!ctx) {
+  if (!strm) {
     if (!globals) {
       globals = kh_init(env);
     }
     e = globals;
   }
   else {
-    if (!ctx->env) {
-      ctx->env = kh_init(env);
+    if (!strm->env) {
+      strm->env = kh_init(env);
     }
-    e = ctx->env;
+    e = strm->env;
   }
   return env_set(e, name, val);
 }
@@ -65,14 +65,14 @@ strm_var_def(const char* name, strm_value val)
 }
 
 int
-strm_var_get(node_ctx *ctx, strm_string* name, strm_value *val)
+strm_var_get(strm_state *strm, strm_string* name, strm_value *val)
 {
-  while (ctx) {
-    if (ctx->env) {
-      if (env_get((strm_env*)ctx->env, name, val) == 0)
+  while (strm) {
+    if (strm->env) {
+      if (env_get((strm_env*)strm->env, name, val) == 0)
         return 0;
     }
-    ctx = ctx->prev;
+    strm = strm->prev;
   }
   if (!globals) return 1;
   return env_get(globals, name, val);

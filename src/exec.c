@@ -6,7 +6,7 @@
 #define NODE_ERROR_SKIP 2
 
 static int
-exec_plus(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
+exec_plus(strm_state* strm, int argc, strm_value* args, strm_value* ret)
 {
   assert(argc == 2);
   if (strm_str_p(*args)) {
@@ -34,7 +34,7 @@ exec_plus(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
 }
 
 static int
-exec_minus(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
+exec_minus(strm_state* strm, int argc, strm_value* args, strm_value* ret)
 {
   if (argc == 1) {
     if (strm_int_p(args[0])) {
@@ -60,7 +60,7 @@ exec_minus(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
 }
 
 static int
-exec_mult(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
+exec_mult(strm_state* strm, int argc, strm_value* args, strm_value* ret)
 {
   assert(argc == 2);
   if (strm_int_p(args[0]) && strm_int_p(args[1])) {
@@ -75,7 +75,7 @@ exec_mult(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
 }
 
 static int
-exec_div(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
+exec_div(strm_state* strm, int argc, strm_value* args, strm_value* ret)
 {
   assert(argc == 2);
   *ret = strm_flt_value(strm_value_flt(args[0])/strm_value_flt(args[1]));
@@ -83,7 +83,7 @@ exec_div(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
 }
 
 static int
-exec_gt(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
+exec_gt(strm_state* strm, int argc, strm_value* args, strm_value* ret)
 {
   assert(argc == 2);
   *ret = strm_bool_value(strm_value_flt(args[0])>strm_value_flt(args[1]));
@@ -91,7 +91,7 @@ exec_gt(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
 }
 
 static int
-exec_ge(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
+exec_ge(strm_state* strm, int argc, strm_value* args, strm_value* ret)
 {
   assert(argc == 2);
   *ret = strm_bool_value(strm_value_flt(args[0])>=strm_value_flt(args[1]));
@@ -99,7 +99,7 @@ exec_ge(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
 }
 
 static int
-exec_lt(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
+exec_lt(strm_state* strm, int argc, strm_value* args, strm_value* ret)
 {
   assert(argc == 2);
   *ret = strm_bool_value(strm_value_flt(args[0])<strm_value_flt(args[1]));
@@ -107,7 +107,7 @@ exec_lt(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
 }
 
 static int
-exec_le(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
+exec_le(strm_state* strm, int argc, strm_value* args, strm_value* ret)
 {
   assert(argc == 2);
   *ret = strm_bool_value(strm_value_flt(args[0])<=strm_value_flt(args[1]));
@@ -115,7 +115,7 @@ exec_le(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
 }
 
 static int
-exec_eq(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
+exec_eq(strm_state* strm, int argc, strm_value* args, strm_value* ret)
 {
   assert(argc == 2);
   *ret = strm_bool_value(strm_value_eq(args[0], args[1]));
@@ -123,7 +123,7 @@ exec_eq(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
 }
 
 static int
-exec_neq(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
+exec_neq(strm_state* strm, int argc, strm_value* args, strm_value* ret)
 {
   assert(argc == 2);
   *ret = strm_bool_value(!strm_value_eq(args[0], args[1]));
@@ -141,7 +141,7 @@ static void arr_exec(strm_task *strm, strm_value data);
 static void arr_finish(strm_task *strm, strm_value data);
 
 static int
-exec_bar(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
+exec_bar(strm_state* strm, int argc, strm_value* args, strm_value* ret)
 {
   strm_value lhs, rhs;
 
@@ -187,7 +187,7 @@ exec_bar(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
   /* task x task */
   if (strm_task_p(lhs) && strm_task_p(rhs)) {
     if (lhs.val.p == NULL || rhs.val.p == NULL) {
-      node_raise(ctx, "task error");
+      node_raise(strm, "task error");
       return 1;
     }
     strm_connect(strm_value_task(lhs), strm_value_task(rhs));
@@ -195,12 +195,12 @@ exec_bar(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
     return 0;
   }
 
-  node_raise(ctx, "type error");
+  node_raise(strm, "type error");
   return 1;
 }
 
 static int
-exec_mod(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
+exec_mod(strm_state* strm, int argc, strm_value* args, strm_value* ret)
 {
   assert(argc == 2);
   if (strm_int_p(args[0]) && strm_int_p(args[1])) {
@@ -214,29 +214,29 @@ exec_mod(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
   return 1;
 }
 
-typedef int (*exec_cfunc)(node_ctx*, int, strm_value*, strm_value*);
-static int exec_expr(node_ctx* ctx, node* np, strm_value* val);
+typedef int (*exec_cfunc)(strm_state*, int, strm_value*, strm_value*);
+static int exec_expr(strm_state* strm, node* np, strm_value* val);
 
 static int
-exec_call(node_ctx* ctx, strm_string *name, int argc, strm_value* argv, strm_value* ret)
+exec_call(strm_state* strm, strm_string *name, int argc, strm_value* argv, strm_value* ret)
 {
   int n;
   strm_value m;
 
-  n = strm_var_get(ctx, name, &m);
+  n = strm_var_get(strm, name, &m);
   if (n == 0) {
     switch (m.type) {
     case STRM_VALUE_CFUNC:
-      return ((exec_cfunc)m.val.p)(ctx, argc, argv, ret);
+      return ((exec_cfunc)m.val.p)(strm, argc, argv, ret);
     case STRM_VALUE_PTR:
       {
         strm_lambda* lambda = strm_value_ptr(m);
         node_lambda* nlbd = lambda->body;
         node_values* args = (node_values*)nlbd->args;
-        node_ctx c = {0};
+        strm_state c = {0};
         int i;
 
-        c.prev = lambda->ctx;
+        c.prev = lambda->strm;
         if ((args == NULL && argc != 0) &&
             (args->len != argc)) return 1;
         for (i=0; i<argc; i++) {
@@ -254,12 +254,12 @@ exec_call(node_ctx* ctx, strm_string *name, int argc, strm_value* argv, strm_val
       break;
     }
   }
-  node_raise(ctx, "function not found");
+  node_raise(strm, "function not found");
   return 1;
 }
 
 static int
-exec_expr(node_ctx* ctx, node* np, strm_value* val)
+exec_expr(strm_state* strm, node* np, strm_value* val)
 {
   int n;
 
@@ -274,9 +274,9 @@ exec_expr(node_ctx* ctx, node* np, strm_value* val)
 */
   case NODE_SKIP:
     {
-       ctx->exc = malloc(sizeof(node_error));
-       ctx->exc->type = NODE_ERROR_SKIP;
-       ctx->exc->arg = strm_nil_value();
+       strm->exc = malloc(sizeof(node_error));
+       strm->exc->type = NODE_ERROR_SKIP;
+       strm->exc->arg = strm_nil_value();
        return 0;
     }
   case NODE_EMIT:
@@ -284,15 +284,15 @@ exec_expr(node_ctx* ctx, node* np, strm_value* val)
       int i, n;
       node_values* v0;
 
-      if (!ctx->strm) {
-        node_raise(ctx, "failed to emit");
+      if (!strm->strm) {
+        node_raise(strm, "failed to emit");
       }
       v0 = (node_values*)np->value.v.p;
 
       for (i = 0; i < v0->len; i++) {
-        n = exec_expr(ctx, v0->data[i], val);
+        n = exec_expr(strm, v0->data[i], val);
         if (n) return n;
-        strm_emit(ctx->strm, *val, NULL);
+        strm_emit(strm->strm, *val, NULL);
       }
       return 0;
     }
@@ -300,12 +300,12 @@ exec_expr(node_ctx* ctx, node* np, strm_value* val)
   case NODE_LET:
     {
       node_let *nlet = (node_let*)np;
-      n = exec_expr(ctx, nlet->rhs, val);
+      n = exec_expr(strm, nlet->rhs, val);
       if (n) {
-        node_raise(ctx, "failed to assign");
+        node_raise(strm, "failed to assign");
         return n;
       }
-      return strm_var_set(ctx, nlet->lhs, *val);
+      return strm_var_set(strm, nlet->lhs, *val);
     }
   case NODE_ARRAY:
     {
@@ -315,29 +315,29 @@ exec_expr(node_ctx* ctx, node* np, strm_value* val)
       int i=0;
 
       for (i = 0; i < v0->len; i++, ptr++) {
-        n = exec_expr(ctx, v0->data[i], ptr);
+        n = exec_expr(strm, v0->data[i], ptr);
         if (n) return n;
       }
       *val = strm_ptr_value(arr);
       return 0;
     }
   case NODE_IDENT:
-    n = strm_var_get(ctx, np->value.v.s, val);
+    n = strm_var_get(strm, np->value.v.s, val);
     if (n) {
-      node_raise(ctx, "failed to reference variable");
+      node_raise(strm, "failed to reference variable");
     }
     return n;
   case NODE_IF:
     {
       strm_value v;
       node_if* nif = (node_if*)np;
-      n = exec_expr(ctx, nif->cond, &v);
+      n = exec_expr(strm, nif->cond, &v);
       if (n) return n;
       if (strm_value_bool(v) && v.val.i) {
-        return exec_expr(ctx, nif->then, val);
+        return exec_expr(strm, nif->then, val);
       }
       else if (nif->opt_else != NULL) {
-        return exec_expr(ctx, nif->opt_else, val);
+        return exec_expr(strm, nif->opt_else, val);
       }
       else {
         *val = strm_nil_value();
@@ -352,14 +352,14 @@ exec_expr(node_ctx* ctx, node* np, strm_value* val)
       int i=0;
 
       if (nop->lhs) {
-        n = exec_expr(ctx, nop->lhs, &args[i++]);
+        n = exec_expr(strm, nop->lhs, &args[i++]);
         if (n) return n;
       }
       if (nop->rhs) {
-        n = exec_expr(ctx, nop->rhs, &args[i++]);
+        n = exec_expr(strm, nop->rhs, &args[i++]);
         if (n) return n;
       }
-      return exec_call(ctx, nop->op, i, args, val);
+      return exec_call(strm, nop->op, i, args, val);
     }
     break;
   case NODE_LAMBDA:
@@ -369,7 +369,7 @@ exec_expr(node_ctx* ctx, node* np, strm_value* val)
       if (!lambda) return 1;
       lambda->type = STRM_OBJ_LAMBDA;
       lambda->body = (node_lambda*)np;
-      lambda->ctx = ctx;
+      lambda->strm = strm;
       *val = strm_ptr_value(lambda);
       return 0;
     }
@@ -383,10 +383,10 @@ exec_expr(node_ctx* ctx, node* np, strm_value* val)
       strm_value *args = malloc(sizeof(strm_value)*v0->len);
 
       for (i = 0; i < v0->len; i++) {
-        n = exec_expr(ctx, v0->data[i], &args[i]);
+        n = exec_expr(strm, v0->data[i], &args[i]);
         if (n) return n;
       }
-      return exec_call(ctx, ncall->ident, i, args, val);
+      return exec_call(strm, ncall->ident, i, args, val);
     }
     break;
   case NODE_RETURN:
@@ -394,14 +394,14 @@ exec_expr(node_ctx* ctx, node* np, strm_value* val)
       node_return* nreturn = (node_return*)np;
       node_values* args = (node_values*)nreturn->rv;
 
-      ctx->exc = malloc(sizeof(node_error));
-      ctx->exc->type = NODE_ERROR_RETURN;
+      strm->exc = malloc(sizeof(node_error));
+      strm->exc->type = NODE_ERROR_RETURN;
       switch (args->len) {
       case 0:
-        ctx->exc->arg = strm_nil_value();
+        strm->exc->arg = strm_nil_value();
         break;
       case 1:
-        n = exec_expr(ctx, args->data[0], &ctx->exc->arg);
+        n = exec_expr(strm, args->data[0], &strm->exc->arg);
         if (n) return n;
         break;
       default:
@@ -410,7 +410,7 @@ exec_expr(node_ctx* ctx, node* np, strm_value* val)
           size_t i;
 
           for (i=0; i<args->len; i++) {
-            n = exec_expr(ctx, args->data[i], (strm_value*)&ary->ptr[i]);
+            n = exec_expr(strm, args->data[i], (strm_value*)&ary->ptr[i]);
             if (n) return n;
           }
         }
@@ -424,8 +424,8 @@ exec_expr(node_ctx* ctx, node* np, strm_value* val)
       int i;
       node_values* v = (node_values*)np;
       for (i = 0; i < v->len; i++) {
-        n = exec_expr(ctx, v->data[i], val);
-        if (ctx->exc != NULL) return 1;
+        n = exec_expr(strm, v->data[i], val);
+        if (strm->exc != NULL) return 1;
         if (n) return n;
       }
     }
@@ -461,7 +461,7 @@ exec_expr(node_ctx* ctx, node* np, strm_value* val)
 }
 
 static int
-cputs_ptr(node_ctx* ctx, FILE* out, struct strm_object *obj)
+cputs_ptr(strm_state* strm, FILE* out, struct strm_object *obj)
 {
   if (obj == NULL) {
     fprintf(out, "nil");
@@ -495,7 +495,7 @@ cputs_ptr(node_ctx* ctx, FILE* out, struct strm_object *obj)
 }
 
 static int
-exec_cputs(node_ctx* ctx, FILE* out, int argc, strm_value* args, strm_value *ret)
+exec_cputs(strm_state* strm, FILE* out, int argc, strm_value* args, strm_value *ret)
 {
   int i;
   for (i = 0; i < argc; i++) {
@@ -514,7 +514,7 @@ exec_cputs(node_ctx* ctx, FILE* out, int argc, strm_value* args, strm_value *ret
       fprintf(out, "%g", v.val.f);
       break;
     case STRM_VALUE_PTR:
-      cputs_ptr(ctx, out, v.val.p);
+      cputs_ptr(strm, out, v.val.p);
       break;
     case STRM_VALUE_CFUNC:
       fprintf(out, "<cfunc:%p>", v.val.p);
@@ -532,14 +532,14 @@ exec_cputs(node_ctx* ctx, FILE* out, int argc, strm_value* args, strm_value *ret
 }
 
 static int
-exec_puts(node_ctx* ctx, int argc, strm_value* args, strm_value *ret) {
-  return exec_cputs(ctx, stdout, argc, args, ret);
+exec_puts(strm_state* strm, int argc, strm_value* args, strm_value *ret) {
+  return exec_cputs(strm, stdout, argc, args, ret);
 }
 
 #include <fcntl.h>
 
 static int
-exec_fread(node_ctx* ctx, int argc, strm_value* args, strm_value *ret)
+exec_fread(strm_state* strm, int argc, strm_value* args, strm_value *ret)
 {
   int fd;
   strm_string *path;
@@ -554,7 +554,7 @@ exec_fread(node_ctx* ctx, int argc, strm_value* args, strm_value *ret)
 }
 
 static int
-exec_fwrite(node_ctx* ctx, int argc, strm_value* args, strm_value *ret)
+exec_fwrite(strm_state* strm, int argc, strm_value* args, strm_value *ret)
 {
   int fd;
   strm_string *path;
@@ -569,14 +569,14 @@ exec_fwrite(node_ctx* ctx, int argc, strm_value* args, strm_value *ret)
 }
 
 void
-node_raise(node_ctx* ctx, const char* msg) {
-  ctx->exc = malloc(sizeof(node_error));
-  ctx->exc->type = NODE_ERROR_RUNTIME;
-  ctx->exc->arg = strm_str_value(msg, strlen(msg));
+node_raise(strm_state* strm, const char* msg) {
+  strm->exc = malloc(sizeof(node_error));
+  strm->exc->type = NODE_ERROR_RUNTIME;
+  strm->exc->arg = strm_str_value(msg, strlen(msg));
 }
 
 static void
-node_init(node_ctx* ctx)
+node_init(strm_state* strm)
 {
   strm_var_def("STDIN", strm_ptr_value(strm_io_new(0, STRM_IO_READ)));
   strm_var_def("STDOUT", strm_ptr_value(strm_io_new(1, STRM_IO_WRITE)));
@@ -598,28 +598,28 @@ node_init(node_ctx* ctx)
   strm_var_def("fwrite", strm_cfunc_value(exec_fwrite));
 }
 
-void strm_seq_init(node_ctx* ctx);
-void strm_socket_init(node_ctx* ctx);
+void strm_seq_init(strm_state* strm);
+void strm_socket_init(strm_state* strm);
 
 int
 node_run(parser_state* p)
 {
   strm_value v;
-  node_ctx *ctx = malloc(sizeof(node_ctx));
+  strm_state *strm = malloc(sizeof(strm_state));
 
-  memset(ctx, 0, sizeof(node_ctx));
-  node_init(ctx);
+  memset(strm, 0, sizeof(strm_state));
+  node_init(strm);
 
-  strm_seq_init(ctx);
-  strm_socket_init(ctx);
+  strm_seq_init(strm);
+  strm_socket_init(strm);
 
-  exec_expr(ctx, (node*)p->lval, &v);
-  if (ctx->exc != NULL) {
-    if (ctx->exc->type != NODE_ERROR_RETURN) {
+  exec_expr(strm, (node*)p->lval, &v);
+  if (strm->exc != NULL) {
+    if (strm->exc->type != NODE_ERROR_RETURN) {
       strm_value v;
-      exec_cputs(ctx, stderr, 1, &ctx->exc->arg, &v);
+      exec_cputs(strm, stderr, 1, &strm->exc->arg, &v);
       /* TODO: garbage correct previous exception value */
-      ctx->exc = NULL;
+      strm->exc = NULL;
     }
   }
   return 0;
@@ -632,20 +632,20 @@ blk_exec(strm_task *strm, strm_value data)
   strm_value ret = strm_nil_value();
   node_values* args = (node_values*)lambda->body->args;
   int n;
-  node_ctx c = {0};
+  strm_state c = {0};
 
   c.strm = strm;
-  c.prev = lambda->ctx;
+  c.prev = lambda->strm;
   assert(args->len == 1);
   strm_var_set(&c, (strm_string*)args->data[0], data);
 
   n = exec_expr(&c, lambda->body->compstmt, &ret);
   if (n) return;
-  if (lambda->ctx->exc) {
-    if (lambda->ctx->exc->type == NODE_ERROR_RETURN) {
-      ret = lambda->ctx->exc->arg;
-      free(lambda->ctx->exc);
-      lambda->ctx->exc = NULL;
+  if (lambda->strm->exc) {
+    if (lambda->strm->exc->type == NODE_ERROR_RETURN) {
+      ret = lambda->strm->exc->arg;
+      free(lambda->strm->exc);
+      lambda->strm->exc = NULL;
     } else {
       return;
     }

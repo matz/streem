@@ -17,7 +17,7 @@
 
 struct socket_data {
   int fd;
-  node_ctx *ctx;
+  strm_state *strm;
 };
 
 static void
@@ -32,9 +32,9 @@ accept_cb(strm_task *strm, strm_value data)
   sock = accept(sd->fd, (struct sockaddr *)&writer_addr, &writer_len);
   if (sock < 0) {
     closesocket(sock);
-    if (sd->ctx->strm)
-      strm_close(sd->ctx->strm);
-    node_raise(sd->ctx, "socket error: listen");
+    if (sd->strm->strm)
+      strm_close(sd->strm->strm);
+    node_raise(sd->strm, "socket error: listen");
     return;
   }
 
@@ -62,7 +62,7 @@ server_close(strm_task *strm, strm_value d)
 }
 
 static int
-tcp_server(node_ctx* ctx, int argc, strm_value* args, strm_value *ret)
+tcp_server(strm_state* strm, int argc, strm_value* args, strm_value *ret)
 {
   struct addrinfo hints;
   struct addrinfo *result, *rp;
@@ -102,7 +102,7 @@ tcp_server(node_ctx* ctx, int argc, strm_value* args, strm_value *ret)
 
   s = getaddrinfo(NULL, service, &hints, &result);
   if (s != 0) {
-    node_raise(ctx, gai_strerror(s));
+    node_raise(strm, gai_strerror(s));
     return 1;
   }
 
@@ -116,14 +116,14 @@ tcp_server(node_ctx* ctx, int argc, strm_value* args, strm_value *ret)
   }
 
   if (rp == NULL) {
-    node_raise(ctx, "socket error: bind");
+    node_raise(strm, "socket error: bind");
     return 1;
   }
   freeaddrinfo(result);
 
   if (listen(sock, 5) < 0) {
     closesocket(sock);
-    node_raise(ctx, "socket error: listen");
+    node_raise(strm, "socket error: listen");
     return 1;
   }
 
@@ -132,14 +132,14 @@ tcp_server(node_ctx* ctx, int argc, strm_value* args, strm_value *ret)
 #endif
   sd = malloc(sizeof(struct socket_data));
   sd->fd = sock;
-  sd->ctx = ctx;
+  sd->strm = strm;
   task = strm_alloc_stream(strm_task_prod, server_accept, server_close, (void*)sd);
   *ret = strm_task_value(task);
   return 0;
 }
 
 static int
-tcp_socket(node_ctx* ctx, int argc, strm_value* args, strm_value *ret)
+tcp_socket(strm_state* strm, int argc, strm_value* args, strm_value *ret)
 {
   struct addrinfo hints;
   struct addrinfo *result, *rp;
@@ -176,7 +176,7 @@ tcp_socket(node_ctx* ctx, int argc, strm_value* args, strm_value *ret)
   s = getaddrinfo(host->ptr, service, &hints, &result);
 
   if (s != 0) {
-    node_raise(ctx, gai_strerror(s));
+    node_raise(strm, gai_strerror(s));
     return 1;
   }
 
@@ -190,7 +190,7 @@ tcp_socket(node_ctx* ctx, int argc, strm_value* args, strm_value *ret)
   }
 
   if (rp == NULL) {
-    node_raise(ctx, "socket error: connect");
+    node_raise(strm, "socket error: connect");
     return 1;
   }
   freeaddrinfo(result);
@@ -202,7 +202,7 @@ tcp_socket(node_ctx* ctx, int argc, strm_value* args, strm_value *ret)
 }
 
 void
-strm_socket_init(node_ctx* ctx)
+strm_socket_init(strm_state* strm)
 {
   strm_var_def("tcp_server", strm_cfunc_value(tcp_server));
   strm_var_def("tcp_socket", strm_cfunc_value(tcp_socket));

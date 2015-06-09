@@ -23,17 +23,10 @@ typedef struct {
   } v;
 } node_value;
 
-typedef struct {
+typedef struct node_error {
   int type;
   strm_value arg;
 } node_error;
-
-typedef struct node_ctx {
-  node_error* exc;
-  void *env;
-  struct node_ctx *prev;
-  strm_task *strm;
-} node_ctx;
 
 typedef struct parser_state {
   int nerr;
@@ -50,7 +43,7 @@ int node_parse_file(parser_state*, const char*);
 int node_parse_input(parser_state*, FILE* in, const char*);
 int node_parse_string(parser_state*, const char*);
 int node_run(parser_state*);
-void node_raise(node_ctx*, const char*);
+void node_raise(strm_state*, const char*);
 
 typedef enum {
   NODE_ARGS,

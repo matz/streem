@@ -105,11 +105,6 @@ int strm_str_eq(strm_string *a, strm_string *b);
 int strm_str_p(strm_value v);
 
 strm_string *strm_to_str(strm_value v);
-/* ----- Variables */
-struct node_ctx;
-int strm_var_set(struct node_ctx*, strm_string*, strm_value);
-int strm_var_def(const char*, strm_value);
-int strm_var_get(struct node_ctx*, strm_string*, strm_value*);
 /* ----- Arrays */
 typedef struct strm_array {
   STRM_OBJ_HEADER;
@@ -187,6 +182,18 @@ int strm_queue_p(strm_queue *q);
 
 void strm_task_push(struct strm_queue_task *t);
 
+/* ----- Variables */
+struct node_error;
+typedef struct strm_state {
+  struct node_error* exc;
+  void *env;
+  struct strm_state *prev;
+  strm_task *strm;
+} strm_state;
+int strm_var_set(strm_state*, strm_string*, strm_value);
+int strm_var_def(const char*, strm_value);
+int strm_var_get(strm_state*, strm_string*, strm_value*);
+
 /* ----- I/O */
 #define STRM_IO_READ  1
 #define STRM_IO_WRITE 2
@@ -209,7 +216,7 @@ void strm_io_start_read(strm_task *strm, int fd, strm_callback cb);
 typedef struct strm_lambda {
   STRM_OBJ_HEADER;
   struct node_lambda* body;
-  struct node_ctx* ctx;
+  struct strm_state* strm;
 } strm_lambda;
 
 #define strm_value_lambda(v) (strm_lambda*)strm_value_obj(v, STRM_OBJ_LAMBDA);
