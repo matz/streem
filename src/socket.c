@@ -96,9 +96,6 @@ tcp_server(strm_state* state, int argc, strm_value* args, strm_value *ret)
   hints.ai_socktype = SOCK_STREAM;/* Datagram socket */
   hints.ai_flags = AI_PASSIVE;    /* For wildcard IP address */
   hints.ai_protocol = 0;          /* Any protocol */
-  hints.ai_canonname = NULL;
-  hints.ai_addr = NULL;
-  hints.ai_next = NULL;
 
   s = getaddrinfo(NULL, service, &hints, &result);
   if (s != 0) {
@@ -172,7 +169,6 @@ tcp_socket(strm_state* state, int argc, strm_value* args, strm_value *ret)
   memset(&hints, 0, sizeof(struct addrinfo));
   hints.ai_family = AF_UNSPEC;    /* Allow IPv4 or IPv6 */
   hints.ai_socktype = SOCK_STREAM;
-  hints.ai_flags = 0;
   hints.ai_protocol = 0;          /* Any protocol */
   s = getaddrinfo(host->ptr, service, &hints, &result);
 
