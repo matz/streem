@@ -110,6 +110,13 @@ strm_io_stop(strm_task* task, int fd)
   strm_task_close(task);
 }
 
+void
+strm_io_emit(strm_task* task, strm_value data, int fd, strm_callback cb)
+{
+  strm_emit(task, data, NULL);
+  io_kick(fd, task, cb);
+}
+
 struct fd_read_buffer {
   int fd;
   char *beg, *end;
@@ -146,8 +153,7 @@ read_cb(strm_task* task, strm_value data)
     if (b->buf < b->end) {
       strm_value s = read_str(b->beg, b->end-b->beg);
       b->beg = b->end = b->buf;
-      strm_emit(task, s, NULL);
-      io_kick(b->fd, task, read_cb);
+      strm_io_emit(task, s, b->fd, read_cb);
     }
     else {
       strm_io_stop(task, b->fd);
