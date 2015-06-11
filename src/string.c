@@ -5,7 +5,7 @@
 #if defined(NO_READONLY_DATA_CHECK) || defined(_WIN32)
 
 static inline int
-readonly_data_p(const char *s)
+readonly_data_p(const char* s)
 {
   return 0;
 }
@@ -15,7 +15,7 @@ readonly_data_p(const char *s)
 #include <mach-o/getsect.h>
 
 static inline int
-readonly_data_p(const char *p)
+readonly_data_p(const char* p)
 {
   return (void*)get_etext() < (void*)p && (void*)p < (void*)get_edata();
 }
@@ -26,7 +26,7 @@ extern char _etext[];
 extern char __init_array_start[];
 
 static inline int
-readonly_data_p(const char *p)
+readonly_data_p(const char* p)
 {
   return _etext < p && p < (char*)&__init_array_start;
 }
@@ -65,7 +65,7 @@ static pthread_mutex_t sym_mutex = PTHREAD_MUTEX_INITIALIZER;
 static khash_t(sym) *sym_table;
 
 static strm_string*
-str_new(const char *p, size_t len)
+str_new(const char* p, size_t len)
 {
   strm_string *str;
 
@@ -124,7 +124,7 @@ str_intern(const char *p, size_t len)
 #endif
 
 strm_string*
-strm_str_new(const char *p, size_t len)
+strm_str_new(const char* p, size_t len)
 {
   if (!strm_event_loop_started) {
     /* single thread mode */
@@ -136,7 +136,7 @@ strm_str_new(const char *p, size_t len)
 }
 
 strm_string*
-strm_str_intern(const char *p, size_t len)
+strm_str_intern(const char* p, size_t len)
 {
   strm_string *str;
 
@@ -152,7 +152,7 @@ strm_str_intern(const char *p, size_t len)
 }
 
 int
-strm_str_eq(strm_string *a, strm_string *b)
+strm_str_eq(strm_string* a, strm_string* b)
 {
   if (a == b) return TRUE;
   if (a->flags & b->flags & STRM_STR_INTERNED) {

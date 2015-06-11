@@ -19,7 +19,7 @@ epoll_create(int size)
 }
 
 int
-epoll_ctl(int epfd, int op, int fd, struct epoll_event *event)
+epoll_ctl(int epfd, int op, int fd, struct epoll_event* event)
 {
   struct kevent kev = {0};
   struct timespec tv = {0};
@@ -47,7 +47,7 @@ epoll_ctl(int epfd, int op, int fd, struct epoll_event *event)
 #define MAX_KEVENTS 10
 
 int
-epoll_wait(int epfd, struct epoll_event *events, int maxevents, int timeout)
+epoll_wait(int epfd, struct epoll_event* events, int maxevents, int timeout)
 {
   struct kevent kev[MAX_KEVENTS] = {{0}};
   struct timespec tv, *tp;
@@ -146,7 +146,7 @@ epoll_ctl(int epfd, int op, int fd, struct epoll_event *event)
 
 #ifdef _WIN32
 int
-epoll_wait(int epfd, struct epoll_event *events, int maxevents, int timeout)
+epoll_wait(int epfd, struct epoll_event* events, int maxevents, int timeout)
 {
   struct epoll_event* ee;
   DWORD ct;
@@ -207,7 +207,7 @@ unsigned long current_time()
 }
 
 int
-epoll_wait(int epfd, struct epoll_event *events, int maxevents, int timeout)
+epoll_wait(int epfd, struct epoll_event* events, int maxevents, int timeout)
 {
   struct epoll_event* ee;
   unsigned long ct;

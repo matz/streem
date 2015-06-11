@@ -2,7 +2,7 @@
 #include <assert.h>
 
 strm_value
-strm_ptr_value(void *p)
+strm_ptr_value(void* p)
 {
   strm_value v;
 
@@ -12,7 +12,7 @@ strm_ptr_value(void *p)
 }
 
 strm_value
-strm_cfunc_value(void *p)
+strm_cfunc_value(void* p)
 {
   strm_value v;
 
@@ -22,7 +22,7 @@ strm_cfunc_value(void *p)
 }
 
 strm_value
-strm_task_value(void *p)
+strm_task_value(void* p)
 {
   strm_value v;
 
@@ -201,7 +201,7 @@ strm_io_p(strm_value v)
 }
 
 int
-strm_ptr_eq(struct strm_object *a, struct strm_object *b)
+strm_ptr_eq(struct strm_object* a, struct strm_object* b)
 {
   if (a == b) return TRUE;
   if (a == NULL) return FALSE;

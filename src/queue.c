@@ -19,7 +19,7 @@ strm_queue_alloc()
 }
 
 void
-strm_queue_free(strm_queue *q)
+strm_queue_free(strm_queue* q)
 {
   if (!q) return;
   if (q->fo) {
@@ -38,7 +38,7 @@ strm_queue_free(strm_queue *q)
 }
 
 static void
-push_high_task(strm_queue *q, struct strm_queue_task *t)
+push_high_task(strm_queue* q, struct strm_queue_task* t)
 {
   pthread_mutex_lock(&q->mutex);
   if (q->hi) {
@@ -58,7 +58,7 @@ push_high_task(strm_queue *q, struct strm_queue_task *t)
 }
 
 static void
-push_low_task(strm_queue *q, struct strm_queue_task *t)
+push_low_task(strm_queue* q, struct strm_queue_task* t)
 {
   pthread_mutex_lock(&q->mutex);
   if (q->fi) {
@@ -75,7 +75,7 @@ push_low_task(strm_queue *q, struct strm_queue_task *t)
 }
 
 void
-strm_queue_push(strm_queue *q, struct strm_queue_task *t)
+strm_queue_push(strm_queue* q, struct strm_queue_task* t)
 {
   if (!q) return;
 
@@ -100,7 +100,7 @@ strm_queue_task(strm_task* task, strm_callback func, strm_value data)
 }
 
 int
-strm_queue_exec(strm_queue *q)
+strm_queue_exec(strm_queue* q)
 {
   struct strm_queue_task *t;
   strm_task *strm;
@@ -131,7 +131,7 @@ strm_queue_exec(strm_queue *q)
 }
 
 int
-strm_queue_size(strm_queue *q)
+strm_queue_size(strm_queue* q)
 {
   int n = 0;
   struct strm_queue_task *e = q->fo;
@@ -144,7 +144,7 @@ strm_queue_size(strm_queue *q)
 }
 
 int
-strm_queue_p(strm_queue *q)
+strm_queue_p(strm_queue* q)
 {
   return q->fi != NULL;
 }

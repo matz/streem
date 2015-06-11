@@ -9,7 +9,7 @@
 */
 
 strm_list*
-strm_list_new(const strm_value car, strm_list *cdr)
+strm_list_new(const strm_value car, strm_list* cdr)
 {
   strm_list *list;
 
@@ -27,7 +27,7 @@ strm_list_new(const strm_value car, strm_list *cdr)
 }
 
 static int
-list_ary_eq(strm_list *a, strm_array *b)
+list_ary_eq(strm_list* a, strm_array* b)
 {
   size_t i, j, len;
 
@@ -46,7 +46,7 @@ list_ary_eq(strm_list *a, strm_array *b)
 }
 
 int
-strm_list_eq(strm_list *a, strm_list *b)
+strm_list_eq(strm_list* a, strm_list* b)
 {
   if (a == b) return TRUE;
   if (a->len != b->len) return FALSE;
@@ -69,7 +69,7 @@ strm_list_eq(strm_list *a, strm_list *b)
 }
 
 strm_value
-strm_list_nth(strm_list *list, size_t n)
+strm_list_nth(strm_list* list, size_t n)
 {
   size_t len = list->len;
 

@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 static void
-print_id(const char* pre, strm_string *name)
+print_id(const char* pre, strm_string* name)
 {
   fputs(pre, stdout);
   fprintf(stdout, "%*s\n", (int)name->len, name->ptr);

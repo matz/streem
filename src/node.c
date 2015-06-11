@@ -212,7 +212,7 @@ node_ident_new(strm_string* name)
 }
 
 node*
-node_ident_str(strm_string *name)
+node_ident_str(strm_string* name)
 {
   node* np = malloc(sizeof(node));
 
@@ -234,7 +234,7 @@ node_id(const char* s)
 }
 
 strm_string*
-node_id_str(strm_string *s)
+node_id_str(strm_string* s)
 {
   if (s->flags & STRM_STR_INTERNED) {
     return s;
@@ -308,7 +308,7 @@ node_break_new(node* value)
 }
 
 void
-node_parse_init(parser_state *p)
+node_parse_init(parser_state* p)
 {
   p->nerr = 0;
   p->lval = NULL;
@@ -332,7 +332,7 @@ node_parse_file(parser_state* p, const char* fname)
 }
 
 int
-node_parse_input(parser_state* p, FILE *f, const char *fname)
+node_parse_input(parser_state* p, FILE* f, const char* fname)
 {
   int n;
 
@@ -346,7 +346,7 @@ node_parse_input(parser_state* p, FILE *f, const char *fname)
 }
 
 int
-node_parse_string(parser_state* p, const char *prog)
+node_parse_string(parser_state* p, const char* prog)
 {
   int n;
 

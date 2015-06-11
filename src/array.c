@@ -1,7 +1,7 @@
 #include "strm.h"
 
 strm_array*
-strm_ary_new(const strm_value *p, size_t len)
+strm_ary_new(const strm_value* p, size_t len)
 {
   strm_array *ary;
   strm_value *buf;
@@ -23,7 +23,7 @@ strm_ary_new(const strm_value *p, size_t len)
 }
 
 int
-strm_ary_eq(strm_array *a, strm_array *b)
+strm_ary_eq(strm_array* a, strm_array* b)
 {
   size_t i, len;
 

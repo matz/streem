@@ -62,7 +62,7 @@ server_close(strm_task* task, strm_value d)
 }
 
 static int
-tcp_server(strm_state* state, int argc, strm_value* args, strm_value *ret)
+tcp_server(strm_state* state, int argc, strm_value* args, strm_value* ret)
 {
   struct addrinfo hints;
   struct addrinfo *result, *rp;
@@ -137,7 +137,7 @@ tcp_server(strm_state* state, int argc, strm_value* args, strm_value *ret)
 }
 
 static int
-tcp_socket(strm_state* state, int argc, strm_value* args, strm_value *ret)
+tcp_socket(strm_state* state, int argc, strm_value* args, strm_value* ret)
 {
   struct addrinfo hints;
   struct addrinfo *result, *rp;

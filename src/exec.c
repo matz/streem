@@ -218,7 +218,7 @@ typedef int (*exec_cfunc)(strm_state*, int, strm_value*, strm_value*);
 static int exec_expr(strm_state* state, node* np, strm_value* val);
 
 static int
-exec_call(strm_state* state, strm_string *name, int argc, strm_value* argv, strm_value* ret)
+exec_call(strm_state* state, strm_string* name, int argc, strm_value* argv, strm_value* ret)
 {
   int n;
   strm_value m;
@@ -461,7 +461,7 @@ exec_expr(strm_state* state, node* np, strm_value* val)
 }
 
 static int
-cputs_ptr(strm_state* state, FILE* out, struct strm_object *obj)
+cputs_ptr(strm_state* state, FILE* out, struct strm_object* obj)
 {
   if (obj == NULL) {
     fprintf(out, "nil");
@@ -495,7 +495,7 @@ cputs_ptr(strm_state* state, FILE* out, struct strm_object *obj)
 }
 
 static int
-exec_cputs(strm_state* state, FILE* out, int argc, strm_value* args, strm_value *ret)
+exec_cputs(strm_state* state, FILE* out, int argc, strm_value* args, strm_value* ret)
 {
   int i;
   for (i = 0; i < argc; i++) {
@@ -532,14 +532,14 @@ exec_cputs(strm_state* state, FILE* out, int argc, strm_value* args, strm_value 
 }
 
 static int
-exec_puts(strm_state* state, int argc, strm_value* args, strm_value *ret) {
+exec_puts(strm_state* state, int argc, strm_value* args, strm_value* ret) {
   return exec_cputs(state, stdout, argc, args, ret);
 }
 
 #include <fcntl.h>
 
 static int
-exec_fread(strm_state* state, int argc, strm_value* args, strm_value *ret)
+exec_fread(strm_state* state, int argc, strm_value* args, strm_value* ret)
 {
   int fd;
   strm_string *path;
@@ -554,7 +554,7 @@ exec_fread(strm_state* state, int argc, strm_value* args, strm_value *ret)
 }
 
 static int
-exec_fwrite(strm_state* state, int argc, strm_value* args, strm_value *ret)
+exec_fwrite(strm_state* state, int argc, strm_value* args, strm_value* ret)
 {
   int fd;
   strm_string *path;

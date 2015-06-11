@@ -159,9 +159,9 @@ struct strm_task {
 strm_task* strm_task_new(strm_task_mode mode, strm_callback start, strm_callback close, void *data);
 void strm_emit(strm_task* task, strm_value data, strm_callback cb);
 void strm_io_emit(strm_task* task, strm_value data, int fd, strm_callback cb);
-int strm_task_connect(strm_task *src, strm_task *dst);
+int strm_task_connect(strm_task* src, strm_task* dst);
 int strm_loop();
-void strm_task_close(strm_task *strm);
+void strm_task_close(strm_task* strm);
 
 extern int strm_event_loop_started;
 strm_task* strm_value_task(strm_value);
@@ -176,14 +176,14 @@ struct strm_queue_task {
 };
 
 strm_queue* strm_queue_alloc(void);
-struct strm_queue_task* strm_queue_task(strm_task *strm, strm_callback func, strm_value data);
-void strm_queue_free(strm_queue *q);
-void strm_queue_push(strm_queue *q, struct strm_queue_task *t);
-int strm_queue_exec(strm_queue *q);
-int strm_queue_size(strm_queue *q);
-int strm_queue_p(strm_queue *q);
+struct strm_queue_task* strm_queue_task(strm_task* strm, strm_callback func, strm_value data);
+void strm_queue_free(strm_queue* q);
+void strm_queue_push(strm_queue* q, struct strm_queue_task* t);
+int strm_queue_exec(strm_queue* q);
+int strm_queue_size(strm_queue* q);
+int strm_queue_p(strm_queue* q);
 
-void strm_task_push(struct strm_queue_task *t);
+void strm_task_push(struct strm_queue_task* t);
 
 /* ----- Variables */
 struct node_error;
@@ -211,8 +211,8 @@ typedef struct strm_io {
 } strm_io;
 
 strm_io* strm_io_new(int fd, int mode);
-strm_task* strm_io_open(strm_io *io, int mode);
-void strm_io_start_read(strm_task *strm, int fd, strm_callback cb);
+strm_task* strm_io_open(strm_io* io, int mode);
+void strm_io_start_read(strm_task* strm, int fd, strm_callback cb);
 #define strm_value_io(v) (strm_io*)strm_value_obj(v, STRM_OBJ_IO)
 
 /* ----- lambda */

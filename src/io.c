@@ -63,10 +63,10 @@ io_pop(int fd)
   return epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL);
 }
 
-void strm_task_push_task(struct strm_queue_task *t);
+void strm_task_push_task(struct strm_queue_task* t);
 
 static void*
-io_loop(void *d)
+io_loop(void* d)
 {
   struct epoll_event events[MAX_EVENTS];
   int i, n;
@@ -132,7 +132,7 @@ struct fd_read_buffer {
 static void readline_cb(strm_task* task, strm_value data);
 
 static strm_value
-read_str(const char *beg, size_t len)
+read_str(const char* beg, size_t len)
 {
   char *p = malloc(len);
 
@@ -322,7 +322,7 @@ strm_io_new(int fd, int mode)
 }
 
 strm_task*
-strm_io_open(strm_io *io, int mode)
+strm_io_open(strm_io* io, int mode)
 {
   switch (mode) {
   case STRM_IO_READ:

@@ -51,7 +51,7 @@ task_tid(strm_task* s, int tid)
 }
 
 static void
-task_push(int tid, struct strm_queue_task *t)
+task_push(int tid, struct strm_queue_task* t)
 {
   strm_task *s = t->strm;
 
@@ -61,7 +61,7 @@ task_push(int tid, struct strm_queue_task *t)
 }
 
 void
-strm_task_push(struct strm_queue_task *t)
+strm_task_push(struct strm_queue_task* t)
 {
   task_push(-1, t);
 }
@@ -193,7 +193,7 @@ strm_loop()
 }
 
 strm_task*
-strm_task_new(strm_task_mode mode, strm_callback start_func, strm_callback close_func, void *data)
+strm_task_new(strm_task_mode mode, strm_callback start_func, strm_callback close_func, void* data)
 {
   strm_task *s = malloc(sizeof(strm_task));
   s->tid = -1;                  /* -1 means uninitialized */
