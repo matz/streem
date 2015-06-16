@@ -45,7 +45,7 @@ it will be invoked for each element in the stream.
 
 ## Compiling
 
-### Install dependencies
+### Installing dependencies
 
 * bison
 * flex
