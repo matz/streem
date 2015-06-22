@@ -67,7 +67,7 @@ exec_mult(node_ctx* ctx, int argc, strm_value* args, strm_value* ret)
     *ret = strm_int_value(strm_value_int(args[0])*strm_value_int(args[1]));
     return 0;
   }
-  else if (strm_num_p(args[0])) {
+  if (strm_num_p(args[0])) {
     *ret = strm_flt_value(strm_value_flt(args[0])*strm_value_flt(args[1]));
     return 0;
   }
