@@ -2,7 +2,7 @@
 #include "khash.h"
 #include <pthread.h>
 
-#if defined(NO_READONLY_DATA_CHECK) || defined(_WIN32)
+#if defined(NO_READONLY_DATA_CHECK) || defined(_WIN32) || defined(__CYGWIN__)
 
 static inline int
 readonly_data_p(const char* s)
