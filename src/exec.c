@@ -139,6 +139,7 @@ struct array_data {
 
 static void arr_exec(strm_task* strm, strm_value data);
 static void arr_finish(strm_task* strm, strm_value data);
+static void cfunc_exec(strm_task* strm, strm_value data);
 
 static int
 exec_bar(strm_state* state, int argc, strm_value* args, strm_value* ret)
@@ -182,6 +183,11 @@ exec_bar(strm_state* state, int argc, strm_value* args, strm_value* ret)
   else if (strm_lambda_p(rhs)) {
     strm_lambda *lmbd = strm_value_lambda(rhs);
     rhs = strm_task_value(strm_task_new(strm_task_filt, blk_exec, NULL, (void*)lmbd));
+  }
+  /* rhs: cfunc */
+  else if (strm_cfunc_p(rhs)) {
+    void *func = rhs.val.p;
+    rhs = strm_task_value(strm_task_new(strm_task_filt, cfunc_exec, NULL, func));
   }
 
   /* task x task */
@@ -667,4 +673,16 @@ arr_finish(strm_task* task, strm_value data)
 {
   struct array_data *d = task->data;
   free(d);
+}
+
+static void
+cfunc_exec(strm_task* task, strm_value data)
+{
+  strm_value ret;
+  exec_cfunc func = task->data;
+  strm_state c = {0};
+
+  if ((*func)(&c, 1, &data, &ret) == STRM_OK) {
+    strm_emit(task, ret, NULL);
+  }
 }
