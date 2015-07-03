@@ -6,7 +6,7 @@ static void
 print_id(const char* pre, strm_string* name)
 {
   fputs(pre, stdout);
-  fprintf(stdout, "%*s\n", (int)name->len, name->ptr);
+  fprintf(stdout, "%.*s\n", (int)name->len, name->ptr);
 }
 
 static void
@@ -30,7 +30,7 @@ dump_node(node* np, int indent) {
         strm_string *s = args->data[i];
         for (i = 0; i < indent+1; i++)
           putchar(' ');
-        printf("%*s\n", (int)s->len, s->ptr);
+        printf("%.*s\n", (int)s->len, s->ptr);
       }
     }
     break;
@@ -75,7 +75,7 @@ dump_node(node* np, int indent) {
       putchar(' ');
     {
       strm_string *s = ((node_call*)np)->ident;
-      printf("%*s\n", (int)s->len, s->ptr);
+      printf("%.*s\n", (int)s->len, s->ptr);
     }
     dump_node(((node_call*) np)->args, indent+2);
     dump_node(((node_call*) np)->blk, indent+2);
@@ -130,7 +130,7 @@ dump_node(node* np, int indent) {
       printf("VALUE(NUMBER): %f\n", np->value.v.d);
       break;
     case NODE_VALUE_STRING:
-      printf("VALUE(STRING): \"%*s\"\n", (int)np->value.v.s->len, np->value.v.s->ptr);
+      printf("VALUE(STRING): \"%.*s\"\n", (int)np->value.v.s->len, np->value.v.s->ptr);
       break;
     case NODE_VALUE_BOOL:
       printf("VALUE(BOOL): %s\n", np->value.v.i ? "true" : "false");
