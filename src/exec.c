@@ -583,6 +583,7 @@ node_raise(strm_state* state, const char* msg) {
 
 void strm_seq_init(strm_state* state);
 void strm_socket_init(strm_state* state);
+void strm_csv_init(strm_state* state);
 
 static void
 node_init(strm_state* state)
@@ -608,6 +609,7 @@ node_init(strm_state* state)
 
   strm_seq_init(state);
   strm_socket_init(state);
+  strm_csv_init(state);
 }
 
 int
