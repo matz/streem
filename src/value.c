@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include "strm.h"
 #include <assert.h>
 
@@ -234,6 +235,123 @@ strm_value_eq(strm_value a, strm_value b)
   }
 }
 
+static size_t
+str_dump_len(strm_string *str)
+{
+  size_t len = 2;               /* first and last quotes */
+  const unsigned char *p = (unsigned char*)str->ptr;
+  const unsigned char *pend = p + str->len;
+
+  while (p < pend) {
+    if (isprint(*p) || (*p&0xff) > 0x7f) {
+      len++;
+    }
+    else {
+      switch (*p) {
+      case '\n': case '\r': case '\t':
+        len += 2;
+        break;
+      default:
+        len += 3;
+      }
+    }
+    p++;
+  }
+  return len;
+}
+
+static strm_string*
+str_dump(strm_string *str, size_t len)
+{
+  char *buf = malloc(len);
+  char *s = buf;
+  char *p = (char*)str->ptr;
+  char *pend = p + str->len;
+
+  *s++ = '"';
+  while (p<pend) {
+    if (isprint(*p) || (*p&0xff) > 0x7f) {
+      *s++ = (*p&0xff);
+    }
+    else {
+      switch (*p) {
+      case '\n':
+        *s++ = '\\';
+        *s++ = 'n';
+        break;
+      case '\r':
+        *s++ = '\\';
+        *s++ = 'r';
+        break;
+      case '\t':
+        *s++ = '\\';
+        *s++ = 't';
+        break;
+      default:
+        sprintf(s, "\\%02x", (int)*p&0xff);
+        s+=3;
+      }
+    }
+    p++;
+  }
+  *s++ = '"';
+  
+  return strm_str_new(buf, len);
+}
+
+strm_string*
+strm_inspect(strm_value v)
+{
+  if (v.type == STRM_VALUE_PTR) {
+    if (v.val.p) {
+      switch (((struct strm_object*)v.val.p)->type) {
+      case STRM_OBJ_STRING:
+        {
+          strm_string *str = (strm_string*)v.val.p;
+          return str_dump(str, str_dump_len(str));
+        }
+      case STRM_OBJ_ARRAY:
+        {
+          char *buf = malloc(32);
+          size_t i, bi = 0, capa = 32;
+          strm_array *a = (strm_array*)v.val.p;
+
+          for (i=0; i<a->len; i++) {
+            strm_string *str = strm_inspect(a->ptr[i]);
+            strm_string *key = a->headers ? strm_value_str(a->headers->ptr[i]) : NULL;
+            size_t slen = (key ? (key->len+1) : 0) + str->len + 3;
+
+            if (bi+slen > capa) {
+              capa *= 2;
+              buf = realloc(buf, capa);
+            }
+            if (bi == 0) {
+              buf[bi++] = '[';
+            }
+            else {
+              buf[bi++] = ',';
+              buf[bi++] = ' ';
+            }
+            if (key) {
+              memcpy(buf+bi, key->ptr, key->len);
+              bi += key->len;
+              buf[bi++] = ':';
+            }
+            memcpy(buf+bi, str->ptr, str->len);
+            bi += str->len;
+          }
+          buf[bi++] = ']';
+          return strm_str_new(buf, bi);
+        }
+      case STRM_OBJ_MAP:
+      default:
+        break;
+      }
+    }
+  }
+  return strm_to_str(v);
+}
+
 strm_string*
 strm_to_str(strm_value v)
 {
@@ -254,8 +372,8 @@ strm_to_str(strm_value v)
     case STRM_OBJ_STRING:
       return (strm_string*)v.val.p;
     case STRM_OBJ_ARRAY:
-      /* TODO */
-      return strm_str_new("[...]", 5);
+    case STRM_OBJ_MAP:
+      return strm_inspect(v);
     default:
       /* fall through */
       break;

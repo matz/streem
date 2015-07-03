@@ -112,6 +112,7 @@ typedef struct strm_array {
   STRM_OBJ_HEADER;
   size_t len;
   const strm_value *ptr;
+  struct strm_array *headers;
 } strm_array;
 
 strm_array *strm_ary_new(const strm_value*,size_t len);
