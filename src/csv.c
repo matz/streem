@@ -99,6 +99,7 @@ csv_value(const char* p, size_t len)
 struct csv_data {
   strm_array *headers;
   enum csv_type *types;
+  strm_string *prev;
   int n;
 };
 
@@ -117,18 +118,32 @@ csv_accept(strm_task* task, strm_value data)
   strm_string *line = strm_value_str(data);
   strm_value *bp;
   char *tmp, *tptr;
-  const char *ptr = line->ptr;
-  const char *pend = ptr + line->len;
+  const char *ptr;
+  const char *pend;
   int fieldcnt, len;
   int in_quote = 0, quoted = 0, all_str = 1;;
   struct csv_data *cd = task->data;
 
+  if (cd->prev) {
+    strm_string *str = strm_str_new(NULL, cd->prev->len+line->len+1);
+
+    tmp = (char*)str->ptr;
+    memcpy(tmp, cd->prev->ptr, cd->prev->len);
+    *(tmp+cd->prev->len) = '\n';
+    memcpy(tmp+cd->prev->len+1, line->ptr, line->len);
+    line = str;
+    cd->prev = NULL;
+  }
   fieldcnt = count_fields(line);
-  if (fieldcnt == -1)
+  if (fieldcnt == -1) {
+    cd->prev = line;
     return;
+  }
   if (cd->n > 0 && fieldcnt != cd->n)
     return;
 
+  ptr = line->ptr;
+  pend = ptr + line->len;
   ary = strm_ary_new(NULL, fieldcnt);
   if (!ary) return;
   bp = (strm_value*)ary->ptr;
@@ -237,6 +252,7 @@ csv(strm_state* state, int argc, strm_value* args, strm_value* ret)
   if (!cd) return STRM_NG;
   cd->headers = NULL;
   cd->types = NULL;
+  cd->prev = NULL;
   cd->n = 0;
 
   task = strm_task_new(strm_task_filt, csv_accept, NULL, (void*)cd);
