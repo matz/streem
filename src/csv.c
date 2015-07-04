@@ -1,4 +1,5 @@
 /* copied and modified from https://github.com/semitrivial/csv_parser */
+/*                                                        MIT license */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -204,7 +205,15 @@ csv_accept(strm_task* task, strm_value data)
 
   /* check headers */
   if (!cd->headers) {
-    if (all_str) {
+    if (all_str) { /* intern header strings */
+      strm_value *p = (strm_value*)ary->ptr;
+      int i;
+
+      for (i=0; i<ary->len; i++) {
+        strm_string *str = strm_value_str(p[i]);
+
+        p[i] = strm_ptr_value(strm_str_intern(str->ptr, str->len));
+      }
       cd->headers = ary;
       ary = NULL;
     }
