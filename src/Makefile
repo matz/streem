@@ -30,7 +30,7 @@ test : all
 
 .PHONY : test
 
-y.tab.c y.tab.h : parse.y
+y.tab.c y.tab.h : parse.y lex.yy.c
 	$(YACC) -o y.tab.c parse.y
 
 lex.yy.c lex.yy.h : lex.l
