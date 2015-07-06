@@ -9,7 +9,7 @@ TESTS=$(wildcard examples/*.strm)
 .PHONY : all test clean
 
 all clean:
-	make -C src $@
+	$(MAKE) -C src $@
 
 test : all
 	$(TARGET) -c $(TESTS)

@@ -23,7 +23,7 @@ all : $(TARGET)
 .PHONY : all
 
 test : all
-	make -C $(TOP) $@
+	$(MAKE) -C $(TOP) $@
 
 %.o: %.c
 	$(CC) $(CFLAGS) -MMD -MP -c -o $@ $<
