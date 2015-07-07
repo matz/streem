@@ -380,11 +380,11 @@ primary0        : lit_number
                     }
                 | '[' map_args ']'
                     {
-                      $$ = node_map_of($2);
+                      $$ = node_map_new($2);
                     }
                 | '[' ':' ']'
                     {
-                      $$ = node_map_of(NULL);
+                      $$ = node_map_new(NULL);
                     }
                 | keyword_if condition '{' compstmt '}' opt_else
                     {
@@ -444,17 +444,17 @@ primary         : primary0
 
 map             : lit_string ':' expr
                     {
-                      $$ = node_pair_new($1, $3);
+                      $$ = node_pair_new($1->value.v.s, $3);
                     }
                 | identifier ':' expr
                     {
-                      $$ = node_pair_new(node_ident_str($1), $3);
+                      $$ = node_pair_new($1, $3);
                     }
                 ;
 
 map_args        : map
                     {
-                      $$ = node_map_new();
+                      $$ = node_array_new();
                       node_array_add($$, $1);
                     }
                 | map_args ',' map

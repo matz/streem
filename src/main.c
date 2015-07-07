@@ -103,12 +103,16 @@ dump_node(node* np, int indent) {
   case NODE_MAP:
     printf("MAP:\n");
     {
-      node_values* map = (node_values*)np;
-      for (i = 0; i < map->len; i++) {
-        node* pair = map->data[i];
-        node_pair* pair0 = (node_pair*)pair;
-        dump_node(pair0->key, indent+1);
-        dump_node(pair0->value, indent+1);
+      node_map* map = (node_map*)np;
+      node_values* v = (node_values*)map->values;
+      int j;
+      
+      for (i = 0; i < v->len; i++) {
+        strm_string *key = strm_value_str(map->headers->ptr[i]);
+        for (j = 0; j < indent+1; j++)
+          putchar(' ');
+        printf("key: \"%.*s\"\n", (int)key->len, key->ptr);
+        dump_node(v->data[i], indent+1);
       }
     }
     break;
