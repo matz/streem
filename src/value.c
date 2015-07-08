@@ -287,9 +287,13 @@ str_dump(strm_string *str, size_t len)
         *s++ = '\\';
         *s++ = 't';
         break;
+      case '\0':
+        *s++ = '\\';
+        *s++ = '0';
+        break;
       default:
-        sprintf(s, "\\%02x", (int)*p&0xff);
-        s+=3;
+        sprintf(s, "\\x%02x", (int)*p&0xff);
+        s+=4;
       }
     }
     p++;
