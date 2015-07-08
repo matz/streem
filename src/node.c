@@ -199,14 +199,77 @@ node_double_new(double d)
   return np;
 }
 
+static size_t
+string_escape(char* s, size_t len)
+{
+  char* t = s;
+  char* tend = t + len;
+  char* p = s;
+
+  while (t < tend) {
+    switch (*t) {
+    case '\\':
+      t++;
+      if (t == tend) break;
+      switch (*t) {
+      case 'n':
+        *p++ = '\n'; break;
+      case 'r':
+        *p++ = '\r'; break;
+      case 't':
+        *p++ = '\t'; break;
+      case '0':
+        *p++ = '\0'; break;
+      case 'x':
+        {
+          unsigned char c = 0;
+          char* xend = t+3;
+
+          t++;
+          while (t < tend && t < xend) {
+            switch (*t) {
+            case '0': case '1': case '2': case '3': case '4':
+            case '5': case '6': case '7': case '8': case '9':
+              c *= 16;
+              c += *t - '0';
+              break;
+            case 'a': case 'b': case 'c':
+            case 'd': case 'e': case 'f':
+              c *= 16;
+              c += *t - 'a' + 10;
+              break;
+            default:
+              xend = t;
+              break;
+            }
+            t++;
+          }
+          *p++ = (char)c;
+          t--;
+        }
+        break;
+      default:
+        *p++ = *t; break;
+      }
+      t++;
+      break;
+    default:
+      *p++ = *t++;
+      break;
+    }
+  }
+  return (size_t)(p - s);
+}
+
 node*
-node_string_new(const char* s, size_t l)
+node_string_new(const char* s, size_t len)
 {
   node* np = malloc(sizeof(node));
 
   np->type = NODE_VALUE;
   np->value.t = NODE_VALUE_STRING;
-  np->value.v.s = strm_str_new(s, l);
+  len = string_escape((char*)s, len);
+  np->value.v.s = strm_str_new(s, len);
   return np;
 }
 
