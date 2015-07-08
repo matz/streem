@@ -194,6 +194,10 @@ csv_accept(strm_task* task, strm_value data)
       continue;
     }
   }
+  /* trim newline at the end */
+  if (tptr > tmp && tptr[-1] == '\n') {
+    tptr--;
+  }
   /* trim carriage return at the end */
   if (tptr > tmp && tptr[-1] == '\r') {
     tptr--;
