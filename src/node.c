@@ -218,6 +218,8 @@ string_escape(char* s, size_t len)
         *p++ = '\r'; break;
       case 't':
         *p++ = '\t'; break;
+      case 'e':
+        *p++ = 033; break;
       case '0':
         *p++ = '\0'; break;
       case 'x':

@@ -287,6 +287,10 @@ str_dump(strm_string *str, size_t len)
         *s++ = '\\';
         *s++ = 't';
         break;
+      case 033:
+        *s++ = '\\';
+        *s++ = 'e';
+        break;
       case '\0':
         *s++ = '\\';
         *s++ = '0';
