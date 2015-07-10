@@ -243,15 +243,15 @@ str_dump_len(strm_string *str)
   const unsigned char *pend = p + str->len;
 
   while (p < pend) {
-    if (isprint(*p) || (*p&0xff) > 0x7f) {
-      len++;
-    }
-    else {
-      switch (*p) {
-      case '\n': case '\r': case '\t':
-        len += 2;
-        break;
-      default:
+    switch (*p) {
+    case '\n': case '\r': case '\t': case '"':
+      len += 2;
+      break;
+    default:
+      if (isprint(*p) || (*p&0xff) > 0x7f) {
+        len++;
+      }
+      else {
         len += 3;
       }
     }
@@ -270,32 +270,36 @@ str_dump(strm_string *str, size_t len)
 
   *s++ = '"';
   while (p<pend) {
-    if (isprint(*p) || (*p&0xff) > 0x7f) {
-      *s++ = (*p&0xff);
-    }
-    else {
-      switch (*p) {
-      case '\n':
-        *s++ = '\\';
-        *s++ = 'n';
-        break;
-      case '\r':
-        *s++ = '\\';
-        *s++ = 'r';
-        break;
-      case '\t':
-        *s++ = '\\';
-        *s++ = 't';
-        break;
-      case 033:
-        *s++ = '\\';
-        *s++ = 'e';
-        break;
-      case '\0':
-        *s++ = '\\';
-        *s++ = '0';
-        break;
-      default:
+    switch (*p) {
+    case '\n':
+      *s++ = '\\';
+      *s++ = 'n';
+      break;
+    case '\r':
+      *s++ = '\\';
+      *s++ = 'r';
+      break;
+    case '\t':
+      *s++ = '\\';
+      *s++ = 't';
+      break;
+    case 033:
+      *s++ = '\\';
+      *s++ = 'e';
+      break;
+    case '\0':
+      *s++ = '\\';
+      *s++ = '0';
+      break;
+    case '"':
+      *s++ = '\\';
+      *s++ = '"';
+      break;
+    default:
+      if (isprint(*p) || (*p&0xff) > 0x7f) {
+        *s++ = (*p&0xff);
+      }
+      else {
         sprintf(s, "\\x%02x", (int)*p&0xff);
         s+=4;
       }
