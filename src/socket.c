@@ -98,10 +98,14 @@ tcp_server(strm_state* state, int argc, strm_value* args, strm_value* ret)
   hints.ai_flags = AI_PASSIVE;    /* For wildcard IP address */
   hints.ai_protocol = 0;          /* Any protocol */
 
-  s = getaddrinfo(NULL, service, &hints, &result);
-  if (s != 0) {
-    node_raise(state, gai_strerror(s));
-    return STRM_NG;
+  for (;;) {
+    s = getaddrinfo(NULL, service, &hints, &result);
+    if (s != 0) {
+      if (s == EAI_AGAIN) continue;
+      node_raise(state, gai_strerror(s));
+      return STRM_NG;
+    }
+    break;
   }
 
   for (rp = result; rp != NULL; rp = rp->ai_next) {
