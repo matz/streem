@@ -47,8 +47,7 @@ count_fields(const strm_string* line)
 
 enum csv_type {
   STRING_TYPE,
-  INT_TYPE,
-  FLOAT_TYPE,
+  NUMBER_TYPE,
 };
 
 static strm_value
@@ -58,7 +57,7 @@ csv_value(const char* p, size_t len)
   const char *send = s+len;
   long i=0;
   double f, pow = 1;
-  enum csv_type type = STRING_TYPE;
+  int type = 0;                 /* 0: string, 1: int, 2: float */
 
   /* skip preceding white spaces */
   while (isspace(*s)) s++;
@@ -68,12 +67,12 @@ csv_value(const char* p, size_t len)
     switch (*s) {
     case '0': case '1': case '2': case '3': case '4':
     case '5': case '6': case '7': case '8': case '9':
-      if (type == STRING_TYPE) type = INT_TYPE;
+      if (type == STRING_TYPE) type = 1;
       i = i*10 + (*s - '0');
       pow *= 10;
       break;
     case '.':
-      type = FLOAT_TYPE;
+      type = 2;
       f = i;
       i = 0;
       pow = 1;
@@ -85,12 +84,11 @@ csv_value(const char* p, size_t len)
   }
 
   switch (type) {
-  case INT_TYPE:
+  case 1:                       /* int */
     return strm_int_value(i);
-  case FLOAT_TYPE:
+  case 2:                       /* float */
     f += i / pow;
     return strm_flt_value(f);
-  case STRING_TYPE:
   default:
     return strm_str_value(p, len);
   }
@@ -107,8 +105,8 @@ struct csv_data {
 enum csv_type
 csv_type(strm_value v)
 {
-  if (strm_int_p(v)) return INT_TYPE;
-  else if (strm_flt_p(v)) return FLOAT_TYPE;
+  if (strm_int_p(v)) return NUMBER_TYPE;
+  else if (strm_flt_p(v)) return NUMBER_TYPE;
   else return STRING_TYPE;
 }
 
