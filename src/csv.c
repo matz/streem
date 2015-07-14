@@ -206,7 +206,7 @@ csv_accept(strm_task* task, strm_value data)
   free(tmp);
 
   /* check headers */
-  if (!cd->headers) {
+  if (!cd->headers && !cd->types) {
     if (all_str) { /* intern header strings */
       strm_value *p = (strm_value*)ary->ptr;
       int i;
