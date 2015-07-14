@@ -234,7 +234,7 @@ csv_accept(strm_task* task, strm_value data)
           for (i=0; i<h->len; i++) {
             strm_string *str = strm_value_str(p[i]);
 
-            p[i] = strm_ptr_value(strm_str_intern(str->ptr, str->len));
+            p[i] = strm_ptr_value(strm_str_intern_str(str));
           }
         }
       }
