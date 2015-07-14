@@ -151,6 +151,22 @@ strm_str_intern(const char* p, size_t len)
   return str;
 }
 
+strm_string*
+strm_str_intern_str(strm_string* str)
+{
+  if (str->flags & STRM_STR_INTERNED) {
+    return str;
+  }
+  if (!strm_event_loop_started) {
+    return str_intern(str->ptr, str->len);
+  }
+  pthread_mutex_lock(&sym_mutex);
+  str = str_intern(str->ptr, str->len);
+  pthread_mutex_unlock(&sym_mutex);
+
+  return str;
+}
+
 int
 strm_str_eq(strm_string* a, strm_string* b)
 {

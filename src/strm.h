@@ -103,6 +103,7 @@ strm_string *strm_str_new(const char*,size_t len);
 #define strm_value_str(v) (strm_string*)strm_value_obj(v, STRM_OBJ_STRING)
 
 strm_string *strm_str_intern(const char *p, size_t len);
+strm_string *strm_str_intern_str(strm_string *s);
 int strm_str_eq(strm_string *a, strm_string *b);
 int strm_str_p(strm_value v);
 
