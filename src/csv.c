@@ -207,15 +207,7 @@ csv_accept(strm_task* task, strm_value data)
 
   /* check headers */
   if (!cd->headers && !cd->types) {
-    if (all_str) { /* intern header strings */
-      strm_value *p = (strm_value*)ary->ptr;
-      int i;
-
-      for (i=0; i<ary->len; i++) {
-        strm_string *str = strm_value_str(p[i]);
-
-        p[i] = strm_ptr_value(strm_str_intern(str->ptr, str->len));
-      }
+    if (all_str) {
       cd->headers = ary;
       ary = NULL;
     }
@@ -233,6 +225,17 @@ csv_accept(strm_task* task, strm_value data)
         if (all_str) {          /* data line is all string; emit header line */
           strm_emit(task, strm_ptr_value(cd->headers), NULL);
           cd->headers = NULL;
+        }
+        else {                  /* intern header strings */
+          strm_array *h = cd->headers;
+          strm_value *p = (strm_value*)h->ptr;
+          int i;
+
+          for (i=0; i<h->len; i++) {
+            strm_string *str = strm_value_str(p[i]);
+
+            p[i] = strm_ptr_value(strm_str_intern(str->ptr, str->len));
+          }
         }
       }
       /* initialize types (determined by first data line) */
