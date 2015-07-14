@@ -60,7 +60,7 @@ csv_value(const char* p, size_t len)
   int type = 0;                 /* 0: string, 1: int, 2: float */
 
   /* skip preceding white spaces */
-  while (isspace(*s)) s++;
+  while (isspace((int)*s)) s++;
 
   /* check if numbers */
   while (s<send) {

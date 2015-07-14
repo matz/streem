@@ -296,7 +296,7 @@ str_dump(strm_string *str, size_t len)
       *s++ = '"';
       break;
     default:
-      if (isprint(*p) || (*p&0xff) > 0x7f) {
+      if (isprint((int)*p) || (*p&0xff) > 0x7f) {
         *s++ = (*p&0xff);
       }
       else {
