@@ -228,7 +228,14 @@ csv_accept(strm_task* task, strm_value data)
     if (cd->headers)
       ary->headers = cd->headers;
     if (!cd->types) {
-      /* initialize types (determined by first line) */
+      /* first data line (after optinal header line) */
+      if (cd->headers) {
+        if (all_str) {          /* data line is all string; emit header line */
+          strm_emit(task, strm_ptr_value(cd->headers), NULL);
+          cd->headers = NULL;
+        }
+      }
+      /* initialize types (determined by first data line) */
       cd->types = malloc(sizeof(enum csv_type)*fieldcnt);
       if (!cd->types) return;
       for (i=0; i<fieldcnt; i++) {
