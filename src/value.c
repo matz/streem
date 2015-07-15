@@ -235,6 +235,20 @@ strm_value_eq(strm_value a, strm_value b)
   }
 }
 
+static int
+str_symbol_p(strm_string *str)
+{
+  const char *p = str->ptr;
+  const char *pend = p + str->len;
+
+  if (!isalpha((int)*p)) return 0;
+  p++;
+  while (p<pend) {
+    if (!isalnum((int)*p)) return 0;
+  }
+  return 1;
+}
+
 static size_t
 str_dump_len(strm_string *str)
 {
@@ -345,6 +359,9 @@ strm_inspect(strm_value v)
               buf[bi++] = ' ';
             }
             if (key) {
+              if (!str_symbol_p(key)) {
+                key = str_dump(key, str_dump_len(key));
+              }
               memcpy(buf+bi, key->ptr, key->len);
               bi += key->len;
               buf[bi++] = ':';
