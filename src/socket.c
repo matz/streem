@@ -20,7 +20,7 @@ struct socket_data {
   strm_state *state;
 };
 
-static void
+static int
 accept_cb(strm_task* task, strm_value data)
 {
   struct socket_data *sd = task->data;
@@ -35,7 +35,7 @@ accept_cb(strm_task* task, strm_value data)
     if (sd->state->task)
       strm_task_close(sd->state->task);
     node_raise(sd->state, "socket error: listen");
-    return;
+    return STRM_NG;
   }
 
 #ifdef _WIN32
@@ -43,22 +43,25 @@ accept_cb(strm_task* task, strm_value data)
 #endif
   strm_io_emit(task, strm_ptr_value(strm_io_new(sock, STRM_IO_READ|STRM_IO_WRITE|STRM_IO_FLUSH)),
                sd->sock, accept_cb);
+  return STRM_OK;
 }
 
-static void
+static int
 server_accept(strm_task* task, strm_value data)
 {
   struct socket_data *sd = task->data;
 
   strm_io_start_read(task, sd->sock, accept_cb);
+  return STRM_OK;
 }
 
-static void
+static int
 server_close(strm_task* task, strm_value d)
 {
   struct socket_data *sd = task->data;
 
   closesocket(sd->sock);
+  return STRM_OK;
 }
 
 static int

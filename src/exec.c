@@ -130,16 +130,16 @@ exec_neq(strm_state* state, int argc, strm_value* args, strm_value* ret)
   return STRM_OK;
 }
 
-static void blk_exec(strm_task* strm, strm_value data);
+static int blk_exec(strm_task* strm, strm_value data);
 
 struct array_data {
   int n;
   strm_array* arr;
 };
 
-static void arr_exec(strm_task* strm, strm_value data);
-static void arr_finish(strm_task* strm, strm_value data);
-static void cfunc_exec(strm_task* strm, strm_value data);
+static int arr_exec(strm_task* strm, strm_value data);
+static int arr_finish(strm_task* strm, strm_value data);
+static int cfunc_exec(strm_task* strm, strm_value data);
 
 static int
 exec_bar(strm_state* state, int argc, strm_value* args, strm_value* ret)
@@ -647,7 +647,7 @@ node_run(parser_state* p)
   return STRM_OK;
 }
 
-static void
+static int
 blk_exec(strm_task* task, strm_value data)
 {
   strm_lambda *lambda = task->data;
@@ -662,36 +662,39 @@ blk_exec(strm_task* task, strm_value data)
   strm_var_set(&c, (strm_string*)args->data[0], data);
 
   n = exec_expr(&c, lambda->body->compstmt, &ret);
-  if (n) return;
+  if (n) return STRM_NG;
   if (lambda->state->exc) {
     if (lambda->state->exc->type == NODE_ERROR_RETURN) {
       ret = lambda->state->exc->arg;
       free(lambda->state->exc);
       lambda->state->exc = NULL;
     } else {
-      return;
+      return STRM_NG;
     }
   }
   strm_emit(task, ret, NULL);
+  return STRM_OK;
 }
 
-static void
+static int
 arr_exec(strm_task* task, strm_value data)
 {
   struct array_data *arrd = task->data;
   strm_emit(task, arrd->arr->ptr[arrd->n++], NULL);
   if (arrd->n == arrd->arr->len)
     strm_task_close(task);
+  return STRM_OK;
 }
 
-static void
+static int
 arr_finish(strm_task* task, strm_value data)
 {
   struct array_data *d = task->data;
   free(d);
+  return STRM_OK;
 }
 
-static void
+static int
 cfunc_exec(strm_task* task, strm_value data)
 {
   strm_value ret;
@@ -700,5 +703,7 @@ cfunc_exec(strm_task* task, strm_value data)
 
   if ((*func)(&c, 1, &data, &ret) == STRM_OK) {
     strm_emit(task, ret, NULL);
+    return STRM_OK;
   }
+  return STRM_NG;
 }

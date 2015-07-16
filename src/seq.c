@@ -7,17 +7,18 @@ struct seq_seeder {
   long inc;
 };
 
-static void
+static int
 seq_seed(strm_task* task, strm_value data)
 {
   struct seq_seeder *s = task->data;
 
   if (s->n > s->end) {
     strm_task_close(task);
-    return;
+    return STRM_OK;
   }
   strm_emit(task, strm_int_value(s->n), seq_seed);
   s->n += s->inc;
+  return STRM_OK;
 }
 
 static int

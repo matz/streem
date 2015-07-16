@@ -144,7 +144,7 @@ typedef enum {
 } strm_task_mode;
 
 typedef struct strm_task strm_task;
-typedef void (*strm_callback)(strm_task*, strm_value);
+typedef int (*strm_callback)(strm_task*, strm_value);
 typedef strm_value (*strm_map_func)(strm_task*, strm_value);
 
 struct strm_task {

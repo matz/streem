@@ -129,7 +129,7 @@ struct fd_read_buffer {
 #endif
 };
 
-static void readline_cb(strm_task* task, strm_value data);
+static int readline_cb(strm_task* task, strm_value data);
 
 static strm_value
 read_str(const char* beg, size_t len)
@@ -140,7 +140,7 @@ read_str(const char* beg, size_t len)
   return strm_str_value(p, len);
 }
 
-static void
+static int
 read_cb(strm_task* task, strm_value data)
 {
   struct fd_read_buffer *b = task->data;
@@ -158,13 +158,14 @@ read_cb(strm_task* task, strm_value data)
     else {
       strm_io_stop(task, b->fd);
     }
-    return;
+    return STRM_OK;
   }
   b->end += n;
   (*readline_cb)(task, strm_nil_value());
+  return STRM_OK;
 }
 
-static void
+static int
 readline_cb(strm_task* task, strm_value data)
 {
   struct fd_read_buffer *b = task->data;
@@ -185,7 +186,7 @@ readline_cb(strm_task* task, strm_value data)
       }
 #endif
       strm_io_stop(task, b->fd);
-      return;
+      return STRM_OK;
     }
   }
   else {
@@ -200,27 +201,30 @@ readline_cb(strm_task* task, strm_value data)
     else {
       io_kick(b->fd, task, read_cb);
     }
-    return;
+    return STRM_OK;
   }
   s = read_str(b->beg, len);
   b->beg += len + 1;
   strm_emit(task, s, readline_cb);
+  return STRM_OK;
 }
 
-static void
+static int
 stdio_read(strm_task* task, strm_value data)
 {
   struct fd_read_buffer *b = task->data;
 
   strm_io_start_read(task, b->fd, read_cb);
+  return STRM_OK;
 }
 
-static void
+static int
 read_close(strm_task* task, strm_value d)
 {
   struct fd_read_buffer *b = task->data;
 
   close(b->fd);
+  return STRM_OK;
 }
 
 static strm_task*
@@ -269,7 +273,7 @@ struct write_data {
   strm_io* io;
 };
 
-static void
+static int
 write_cb(strm_task* task, strm_value data)
 {
   struct write_data *d = (struct write_data*)task->data;
@@ -280,9 +284,10 @@ write_cb(strm_task* task, strm_value data)
   if (d->io->mode & STRM_IO_FLUSH) {
     fflush(d->f);
   }
+  return STRM_OK;
 }
 
-static void
+static int
 write_close(strm_task* task, strm_value data)
 {
   struct write_data *d = (struct write_data*)task->data;
@@ -294,6 +299,7 @@ write_close(strm_task* task, strm_value data)
     fclose(d->f);
   }
   free(d);
+  return STRM_OK;
 }
 
 static strm_task*

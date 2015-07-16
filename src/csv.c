@@ -110,7 +110,7 @@ csv_type(strm_value v)
   else return STRING_TYPE;
 }
 
-static void
+static int
 csv_accept(strm_task* task, strm_value data)
 {
   strm_array *ary;
@@ -136,20 +136,20 @@ csv_accept(strm_task* task, strm_value data)
   fieldcnt = count_fields(line);
   if (fieldcnt == -1) {
     cd->prev = line;
-    return;
+    return STRM_NG;
   }
   if (cd->n > 0 && fieldcnt != cd->n)
-    return;
+    return STRM_NG;
 
   ptr = line->ptr;
   pend = ptr + line->len;
   ary = strm_ary_new(NULL, fieldcnt);
-  if (!ary) return;
+  if (!ary) return STRM_NG;
   bp = (strm_value*)ary->ptr;
 
   len = line->len;
   tmp = malloc(len+1);
-  if (!tmp) return;
+  if (!tmp) return STRM_NG;
   *tmp='\0';
 
   ptr=line->ptr;
@@ -240,7 +240,7 @@ csv_accept(strm_task* task, strm_value data)
       }
       /* initialize types (determined by first data line) */
       cd->types = malloc(sizeof(enum csv_type)*fieldcnt);
-      if (!cd->types) return;
+      if (!cd->types) return STRM_NG;
       for (i=0; i<fieldcnt; i++) {
         cd->types[i] = csv_type(ary->ptr[i]);
       }
@@ -255,13 +255,14 @@ csv_accept(strm_task* task, strm_value data)
           }
           else {
             /* type mismatch (error); skip this line */
-            return;
+            return STRM_NG;
           }
         }
       }
     }
     strm_emit(task, strm_ptr_value(ary), NULL);
   }
+  return STRM_OK;
 }
 
 static int
