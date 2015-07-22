@@ -266,6 +266,18 @@ csv_accept(strm_task* task, strm_value data)
 }
 
 static int
+csv_finish(strm_task* task, strm_value data)
+{
+  struct csv_data *cd = task->data;
+
+  if (cd->headers) {
+    strm_emit(task, strm_ptr_value(cd->headers), NULL);
+    cd->headers = NULL;
+  }
+  return STRM_OK;
+}
+
+static int
 csv(strm_state* state, int argc, strm_value* args, strm_value* ret)
 {
   strm_task *task;
@@ -277,7 +289,7 @@ csv(strm_state* state, int argc, strm_value* args, strm_value* ret)
   cd->prev = NULL;
   cd->n = 0;
 
-  task = strm_task_new(strm_task_filt, csv_accept, NULL, (void*)cd);
+  task = strm_task_new(strm_task_filt, csv_accept, csv_finish, (void*)cd);
   *ret = strm_task_value(task);
   return STRM_OK;
 }
