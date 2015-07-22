@@ -51,7 +51,47 @@ enum csv_type {
 };
 
 static strm_value
-csv_value(const char* p, size_t len)
+csv_string(const char* p, size_t len, int ftype)
+{
+  if (ftype == 2) {             /* escaped_string */
+    strm_string *str = strm_str_new(p, len);
+    const char *pend = p + len;
+    char *t = (char*)p;
+    int in_quote = 0;
+
+    t = (char*)str->ptr;
+    while (p<pend) {
+      if (in_quote) {
+        if (*p == '\"') {
+          if (p[1] == '\"') {
+            p++;
+            *t++ = '"';
+            continue;
+          }
+          else {
+            in_quote = 0;
+          }
+        }
+        else {
+          *t++ = *p;
+        }
+      }
+      else if (*p == '"') {
+        in_quote = 1;
+      }
+      else {
+        *t++ = *p;
+      }
+      p++;
+    }
+    str->len = t - str->ptr;
+    return strm_ptr_value(str);
+  }
+  return strm_str_value(p, len);
+}
+
+static strm_value
+csv_value(const char* p, size_t len, int ftype)
 {
   const char *s = p;
   const char *send = s+len;
@@ -59,28 +99,30 @@ csv_value(const char* p, size_t len)
   double f, pow = 1;
   int type = 0;                 /* 0: string, 1: int, 2: float */
 
-  /* skip preceding white spaces */
-  while (isspace((int)*s)) s++;
+  if (ftype == 0) {
+    /* skip preceding white spaces */
+    while (isspace((int)*s)) s++;
 
-  /* check if numbers */
-  while (s<send) {
-    switch (*s) {
-    case '0': case '1': case '2': case '3': case '4':
-    case '5': case '6': case '7': case '8': case '9':
-      if (type == STRING_TYPE) type = 1;
-      i = i*10 + (*s - '0');
-      pow *= 10;
-      break;
-    case '.':
-      type = 2;
-      f = i;
-      i = 0;
-      pow = 1;
-      break;
-    default:
-      return strm_str_value(p, len);
+    /* check if numbers */
+    while (s<send) {
+      switch (*s) {
+      case '0': case '1': case '2': case '3': case '4':
+      case '5': case '6': case '7': case '8': case '9':
+        if (type == STRING_TYPE) type = 1;
+        i = i*10 + (*s - '0');
+        pow *= 10;
+        break;
+      case '.':
+        type = 2;
+        f = i;
+        i = 0;
+        pow = 1;
+        break;
+      default:
+        return strm_str_value(p, len);
+      }
+      s++;
     }
-    s++;
   }
 
   switch (type) {
@@ -90,7 +132,7 @@ csv_value(const char* p, size_t len)
     f += i / pow;
     return strm_flt_value(f);
   default:
-    return strm_str_value(p, len);
+    return csv_string(p, len, ftype);
   }
   /* not reached */
 }
@@ -116,17 +158,18 @@ csv_accept(strm_task* task, strm_value data)
   strm_array *ary;
   strm_string *line = strm_value_str(data);
   strm_value *bp;
-  char *tmp, *tptr;
+  const char *fbeg;
   const char *ptr;
   const char *pend;
-  int fieldcnt, len;
-  int in_quote = 0, quoted = 0, all_str = 1;;
+  int fieldcnt;
+  int in_quote = 0, all_str = 1;;
+  int ftype = 0;               /* 0: unspecified, 1: string, 2: escaped_string */
   struct csv_data *cd = task->data;
 
   if (cd->prev) {
     strm_string *str = strm_str_new(NULL, cd->prev->len+line->len+1);
+    char *tmp = (char*)str->ptr;
 
-    tmp = (char*)str->ptr;
     memcpy(tmp, cd->prev->ptr, cd->prev->len);
     *(tmp+cd->prev->len) = '\n';
     memcpy(tmp+cd->prev->len+1, line->ptr, line->len);
@@ -147,63 +190,52 @@ csv_accept(strm_task* task, strm_value data)
   if (!ary) return STRM_NG;
   bp = (strm_value*)ary->ptr;
 
-  len = line->len;
-  tmp = malloc(len+1);
-  if (!tmp) return STRM_NG;
-  *tmp='\0';
-
-  ptr=line->ptr;
-  tptr=tmp;
-  for (;ptr<pend; ptr++) {
+  for (fbeg=ptr; ptr<pend; ptr++) {
     if (in_quote) {
       if (*ptr == '\"') {
         if (ptr[1] == '\"') {
-          *tptr++ = '\"';
           ptr++;
+          ftype = 2;            /* escaped_string */
           continue;
         }
         in_quote = 0;
       }
-      else
-        *tptr++ = *ptr;
       continue;
     }
 
     switch(*ptr) {
     case '\"':
       in_quote = 1;
-      quoted = 1;
-      continue;
-    case ',':
-      if (quoted) {
-        *bp = strm_str_value(tmp, tptr-tmp);
+      if (ptr == fbeg) {
+        ftype = 1;              /* string */
+        fbeg = ptr+1;
       }
       else {
-        *bp = csv_value(tmp, tptr-tmp);
+        ftype = 2;              /* escaped_string */
       }
+      continue;
+    case ',':
+      *bp = csv_value(fbeg, ptr-fbeg, ftype);
       if (!strm_str_p(*bp)) all_str = 0;
       bp++;
-      tptr = tmp;
-      quoted = 0;
+      fbeg = ptr+1;
+      ftype = 0;                /* unspecified */
       break;
 
     default:
-      *tptr++ = *ptr;
       continue;
     }
   }
   /* trim newline at the end */
-  if (tptr > tmp && tptr[-1] == '\n') {
-    tptr--;
+  if (ptr[-1] == '\n') {
+    ptr--;
   }
   /* trim carriage return at the end */
-  if (tptr > tmp && tptr[-1] == '\r') {
-    tptr--;
+  if (ptr[-1] == '\r') {
+    ptr--;
   }
-  *bp = csv_value(tmp, tptr-tmp);
+  *bp = csv_value(fbeg, ptr-fbeg, ftype);
   if (!strm_str_p(*bp)) all_str = 0;
-
-  free(tmp);
 
   /* check headers */
   if (!cd->headers && !cd->types) {
