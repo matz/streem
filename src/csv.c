@@ -13,23 +13,23 @@ count_fields(const strm_string* line)
 {
   const char *ptr = line->ptr;
   const char *pend = ptr + line->len;
-  int cnt, fQuote = 0;
+  int cnt, quoted = 0;
 
   for (cnt = 1; ptr<pend; ptr++) {
-    if (fQuote) {
+    if (quoted) {
       if (ptr[0] == '\"') {
         if (ptr[1] == '\"') {
           ptr++;
           continue;
         }
-        fQuote = 0;
+        quoted = 0;
       }
       continue;
     }
 
     switch(*ptr) {
     case '\"':
-      fQuote = 1;
+      quoted = 1;
       continue;
     case ',':
       cnt++;
@@ -39,7 +39,7 @@ count_fields(const strm_string* line)
     }
   }
 
-  if (fQuote)
+  if (quoted)
     return -1;
 
   return cnt;
