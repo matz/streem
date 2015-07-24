@@ -84,6 +84,11 @@ false{TRAIL}        LEX_RETURN(keyword_false);
   LEX_RETURN(lit_string);
 };
 
+:[0-9a-zA-Z_][0-9a-zA-Z_]* {
+  lval->nd = node_string_new(yytext+1, strlen(yytext)-1);
+  LEX_RETURN(lit_string);
+};
+
 [ \t] ; 
 
 . { 
