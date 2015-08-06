@@ -372,7 +372,6 @@ strm_inspect(strm_value v)
           buf[bi++] = ']';
           return strm_str_new(buf, bi);
         }
-      case STRM_OBJ_MAP:
       default:
         break;
       }
@@ -401,7 +400,6 @@ strm_to_str(strm_value v)
     case STRM_OBJ_STRING:
       return (strm_string*)v.val.p;
     case STRM_OBJ_ARRAY:
-    case STRM_OBJ_MAP:
       return strm_inspect(v);
     default:
       /* fall through */

@@ -492,9 +492,6 @@ cputs_ptr(strm_state* state, FILE* out, struct strm_object* obj)
   case STRM_OBJ_LIST:
     fprintf(out, "<list:%p>", obj);
     break;
-  case STRM_OBJ_MAP:
-    fprintf(out, "<map:%p>", obj);
-    break;
   case STRM_OBJ_STRING:
     {
       strm_string* str = (strm_string*)obj;

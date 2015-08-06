@@ -70,7 +70,6 @@ int strm_array_p(strm_value);
 enum strm_obj_type {
   STRM_OBJ_ARRAY,
   STRM_OBJ_LIST,
-  STRM_OBJ_MAP,
   STRM_OBJ_STRING,
   STRM_OBJ_LAMBDA,
   STRM_OBJ_IO,
