@@ -86,7 +86,7 @@ tcp_server(strm_state* state, int argc, strm_value* args, strm_value* ret)
     node_raise(state, "tcp_server: wrong number of arguments");
     return STRM_NG;
   }
-  if (strm_int_p(args[0])) {
+  if (strm_num_p(args[0])) {
     sprintf(buf, "%d", (int)strm_value_int(args[0]));
     service = buf;
   }
@@ -165,7 +165,7 @@ tcp_socket(strm_state* state, int argc, strm_value* args, strm_value* ret)
     return STRM_NG;
   }
   host = strm_value_str(args[0]);
-  if (strm_int_p(args[1])) {
+  if (strm_num_p(args[1])) {
     sprintf(buf, "%d", (int)strm_value_int(args[1]));
     service = buf;
   }

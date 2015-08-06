@@ -1,6 +1,9 @@
 #include "strm.h"
 #include "node.h"
 
+int strm_int_p(strm_value);
+int strm_flt_p(strm_value);
+
 #define NODE_ERROR_RUNTIME 0
 #define NODE_ERROR_RETURN 1
 #define NODE_ERROR_SKIP 2

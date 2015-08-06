@@ -59,8 +59,6 @@ double strm_value_flt(strm_value);
 int strm_value_eq(strm_value, strm_value);
 int strm_nil_p(strm_value);
 int strm_num_p(strm_value);
-int strm_int_p(strm_value);
-int strm_flt_p(strm_value);
 int strm_io_p(strm_value);
 int strm_task_p(strm_value);
 int strm_cfunc_p(strm_value);

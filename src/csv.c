@@ -147,8 +147,7 @@ struct csv_data {
 enum csv_type
 csv_type(strm_value v)
 {
-  if (strm_int_p(v)) return NUMBER_TYPE;
-  else if (strm_flt_p(v)) return NUMBER_TYPE;
+  if (strm_num_p(v)) return NUMBER_TYPE;
   else return STRING_TYPE;
 }
 
