@@ -69,7 +69,6 @@ int strm_array_p(strm_value);
 
 enum strm_obj_type {
   STRM_OBJ_ARRAY,
-  STRM_OBJ_LIST,
   STRM_OBJ_STRING,
   STRM_OBJ_LAMBDA,
   STRM_OBJ_IO,
@@ -120,20 +119,6 @@ strm_array *strm_ary_new(const strm_value*,size_t len);
 #define strm_value_ary(v) (strm_array*)strm_value_obj(v, STRM_OBJ_ARRAY)
 
 int strm_ary_eq(strm_array *a, strm_array *b);
-
-/* ----- Lists */
-typedef struct strm_list {
-  STRM_OBJ_HEADER;
-  size_t len;
-  strm_value car;
-  struct strm_list *cdr;
-} strm_list;
-
-strm_list *strm_list_new(strm_value car, strm_list *cdr);
-#define strm_value_list(v) (strm_list*)strm_value_obj(v, STRM_OBJ_LIST)
-
-int strm_list_eq(strm_list *a, strm_list *b);
-strm_value strm_list_nth(strm_list *a, size_t n);
 
 /* ----- Tasks */
 typedef enum {

@@ -489,7 +489,6 @@ cputs_ptr(strm_state* state, FILE* out, struct strm_object* obj)
   }
   switch (obj->type) {
   case STRM_OBJ_ARRAY:
-  case STRM_OBJ_LIST:
     fprintf(out, "<list:%p>", obj);
     break;
   case STRM_OBJ_STRING:
