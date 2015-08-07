@@ -104,15 +104,14 @@ dump_node(node* np, int indent) {
     printf("MAP:\n");
     {
       node_map* map = (node_map*)np;
-      node_values* v = (node_values*)map->values;
       int j;
       
-      for (i = 0; i < v->len; i++) {
+      for (i = 0; i < map->len; i++) {
         strm_string *key = strm_value_str(map->headers->ptr[i]);
         for (j = 0; j < indent+1; j++)
           putchar(' ');
         printf("key: \"%.*s\"\n", (int)key->len, key->ptr);
-        dump_node(v->data[i], indent+1);
+        dump_node(map->data[i], indent+1);
       }
     }
     break;

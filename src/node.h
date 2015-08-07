@@ -89,8 +89,10 @@ typedef struct {
 
 typedef struct {
   NODE_HEADER;
+  int len;
+  int max;
+  void** data;
   strm_array* headers;
-  node* values;
 } node_map;
 
 typedef struct {

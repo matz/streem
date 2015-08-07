@@ -87,17 +87,21 @@ node_array_headers(node* np)
 
   map->type = NODE_MAP;
   map->headers = NULL;
-  map->values = NULL;
 
   if (np == NULL)
     np = node_array_new();
 
   v = (node_values*)np;
-  for (i = 0; i < v->len; i++) {
-    node_pair* npair = (node_pair*)v->data[i];
+  map->len = v->len;
+  map->max = v->max;
+  map->data = v->data;
+  free(v);
+
+  for (i = 0; i < map->len; i++) {
+    node_pair* npair = (node_pair*)map->data[i];
     if (npair->type == NODE_PAIR) {
       if (!headers) {
-        headers = strm_ary_new(NULL, v->len);
+        headers = strm_ary_new(NULL, map->len);
         p = (strm_value*)headers->ptr;
       }
       p[i] = strm_ptr_value(npair->key);
@@ -105,7 +109,6 @@ node_array_headers(node* np)
     }
   }
   map->headers = headers;
-  map->values = np;
 
   return (node*)map;
 }
@@ -115,8 +118,7 @@ node_map_free(node* np)
 {
   node_map* v = (node_map*)np;
   v->headers = NULL;            /* leave free() upto GC */
-  node_free(v->values);
-  free(np);
+  node_array_free(np);
 }
 
 node*
