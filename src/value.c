@@ -377,7 +377,18 @@ strm_inspect(strm_value v)
         {
           char buf[32];
           strm_io* io = (strm_io*)v.val.p;
-          int n = sprintf(buf, "<io: fd=%d mode=%d>", io->fd, io->mode);
+          int n;
+          char *mode;
+
+          switch (io->mode & 3) {
+          case STRM_IO_READ:
+            mode = "r"; break;
+          case STRM_IO_WRITE:
+            mode = "w"; break;
+          case STRM_IO_READ|STRM_IO_WRITE:
+            mode = "rw"; break;
+          }
+          n = sprintf(buf, "<io: fd=%d mode=%s>", io->fd, mode);
           return strm_str_new(buf, n);
         }
       default:
