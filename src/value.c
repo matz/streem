@@ -373,8 +373,19 @@ strm_inspect(strm_value v)
           buf[bi++] = ']';
           return strm_str_new(buf, bi);
         }
+      case STRM_OBJ_IO:
+        {
+          char buf[32];
+          strm_io* io = (strm_io*)v.val.p;
+          int n = sprintf(buf, "<io: fd=%d mode=%d>", io->fd, io->mode);
+          return strm_str_new(buf, n);
+        }
       default:
-        break;
+        {
+          char buf[12];
+          int n = sprintf(buf, "<%p>", v.val.p);
+          return strm_str_new(buf, n);
+        }
       }
     }
   }
@@ -394,6 +405,18 @@ strm_to_str(strm_value v)
   case STRM_VALUE_INT:
     n = sprintf(buf, "%ld", v.val.i);
     return strm_str_new(buf, n);
+  case STRM_VALUE_BOOL:
+    n = sprintf(buf, v.val.i ? "true" : "false");
+    return strm_str_new(buf, n);
+  case STRM_VALUE_CFUNC:
+    n = sprintf(buf, "<cfunc:%p>", v.val.p);
+    return strm_str_new(buf, n);
+  case STRM_VALUE_BLK:
+    n = sprintf(buf, "<blk:%p>", v.val.p);
+    return strm_str_new(buf, n);
+  case STRM_VALUE_TASK:
+    n = sprintf(buf, "<task:%p>", v.val.p);
+    return strm_str_new(buf, n);
   case STRM_VALUE_PTR:
     if (v.val.p == NULL)
       return strm_str_new("nil", 3);
@@ -401,10 +424,8 @@ strm_to_str(strm_value v)
     case STRM_OBJ_STRING:
       return (strm_string*)v.val.p;
     case STRM_OBJ_ARRAY:
-      return strm_inspect(v);
     default:
-      /* fall through */
-      break;
+      return strm_inspect(v);
     }
   default:
     n = sprintf(buf, "<%p>", v.val.p);

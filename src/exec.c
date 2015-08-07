@@ -474,69 +474,19 @@ exec_expr(strm_state* state, node* np, strm_value* val)
 }
 
 static int
-cputs_ptr(strm_state* state, FILE* out, struct strm_object* obj)
-{
-  if (obj == NULL) {
-    fprintf(out, "nil");
-    return STRM_OK;
-  }
-  switch (obj->type) {
-  case STRM_OBJ_ARRAY:
-    fprintf(out, "<array:%p>", obj);
-    break;
-  case STRM_OBJ_STRING:
-    {
-      strm_string* str = (strm_string*)obj;
-      fprintf(out, "%.*s", (int)str->len, str->ptr);
-    }
-    break;
-  case STRM_OBJ_IO:
-    {
-      strm_io* io = (strm_io*)obj;
-      fprintf(out, "<io: fd=%d mode=%d>", io->fd, io->mode);
-    }
-    break;
-  default:
-    fprintf(out, "<%p>", obj);
-    break;
-  }
-  return STRM_OK;
-}
-
-static int
 exec_cputs(strm_state* state, FILE* out, int argc, strm_value* args, strm_value* ret)
 {
   int i;
+
   for (i = 0; i < argc; i++) {
-    strm_value v;
+    strm_string *s;
+
     if (i != 0)
-      fprintf(out, ", ");
-    v = args[i];
-    switch (v.type) {
-    case STRM_VALUE_BOOL:
-      fprintf(out, v.val.i ? "true" : "false");
-      break;
-    case STRM_VALUE_INT:
-      fprintf(out, "%ld", v.val.i);
-      break;
-    case STRM_VALUE_FLT:
-      fprintf(out, "%g", v.val.f);
-      break;
-    case STRM_VALUE_PTR:
-      cputs_ptr(state, out, v.val.p);
-      break;
-    case STRM_VALUE_CFUNC:
-      fprintf(out, "<cfunc:%p>", v.val.p);
-      break;
-    case STRM_VALUE_BLK:
-      fprintf(out, "<blk:%p>", v.val.p);
-      break;
-    case STRM_VALUE_TASK:
-      fprintf(out, "<task:%p>", v.val.p);
-      break;
-    }
+      fputs(", ", out);
+    s = strm_to_str(args[i]);
+    fwrite(s->ptr, s->len, 1, out);
   }
-  fprintf(out, "\n");
+  fputs("\n", out);
   return STRM_OK;
 }
 
