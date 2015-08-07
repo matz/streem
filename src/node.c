@@ -303,6 +303,13 @@ node_id_str(strm_string* s)
   return strm_str_intern(s->ptr, s->len);
 }
 
+strm_string*
+node_id_escaped(const char* s, size_t len)
+{
+  len = string_escape((char*)s, len);
+  return strm_str_intern(s, len);
+}
+
 node*
 node_nil()
 {

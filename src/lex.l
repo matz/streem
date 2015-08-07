@@ -90,15 +90,14 @@ false{TRAIL}        LEX_RETURN(keyword_false);
   LEX_RETURN(lit_string);
 };
 
-\"([^\\\"]|\\.)*\": {
-  yytext[yyleng-2]='\0';
-  lval->id = node_id(yytext+1);
-  LEX_RETURN(label);
-};
-
 :[0-9a-zA-Z_][0-9a-zA-Z_]* {
   lval->nd = node_string_new(yytext+1, yyleng-1);
   LEX_RETURN(lit_string);
+};
+
+\"([^\\\"]|\\.)*\": {
+  lval->id = node_id_escaped(yytext+1, yyleng-3);
+  LEX_RETURN(label);
 };
 
 [ \t] ; 

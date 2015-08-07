@@ -156,6 +156,7 @@ extern node* node_break_new();
 extern node* node_ident_new(strm_string*);
 extern strm_string* node_id(const char*);
 extern strm_string* node_id_str(strm_string*);
+extern strm_string* node_id_escaped(const char* s, size_t len);
 extern node* node_nil();
 extern node* node_true();
 extern node* node_false();
