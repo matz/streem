@@ -62,7 +62,7 @@ false{TRAIL}        LEX_RETURN(keyword_false);
 };
 
 [A-Za-z_][A-Za-z0-9_]*: {
-  yytext[strlen(yytext)-1]='\0';
+  yytext[yyleng-1]='\0';
   lval->id = node_id(yytext);
   LEX_RETURN(label);
 };
@@ -86,18 +86,18 @@ false{TRAIL}        LEX_RETURN(keyword_false);
 };
 
 \"([^\\\"]|\\.)*\"      {
-  lval->nd = node_string_new(yytext+1, strlen(yytext)-2);
+  lval->nd = node_string_new(yytext+1, yyleng-2);
   LEX_RETURN(lit_string);
 };
 
 \"([^\\\"]|\\.)*\": {
-  yytext[strlen(yytext)-1]='\0';
-  lval->id = node_id(yytext);
+  yytext[yyleng-2]='\0';
+  lval->id = node_id(yytext+1);
   LEX_RETURN(label);
 };
 
 :[0-9a-zA-Z_][0-9a-zA-Z_]* {
-  lval->nd = node_string_new(yytext+1, strlen(yytext)-1);
+  lval->nd = node_string_new(yytext+1, yyleng-1);
   LEX_RETURN(lit_string);
 };
 
