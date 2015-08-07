@@ -133,13 +133,12 @@ typedef struct {
 } node_return;
 
 extern node* node_array_new();
-extern node* node_array_of(node*);
+extern node* node_array_headers(node*);
 extern void node_array_add(node*, node*);
 extern void node_array_free(node*);
 extern node* node_stmts_new();
 extern void node_stmts_add(node*, node*);
 extern node* node_pair_new(strm_string*, node*);
-extern node* node_map_new(node*);
 extern node* node_args_new();
 extern void node_args_add(node*, strm_string*);
 extern node* node_let_new(strm_string*, node*);

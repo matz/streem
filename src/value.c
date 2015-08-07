@@ -344,7 +344,8 @@ strm_inspect(strm_value v)
 
           for (i=0; i<a->len; i++) {
             strm_string *str = strm_inspect(a->ptr[i]);
-            strm_string *key = a->headers ? strm_value_str(a->headers->ptr[i]) : NULL;
+            strm_string *key = (a->headers && strm_str_p(a->headers->ptr[i])) ?
+              strm_value_ptr(a->headers->ptr[i]) : NULL;
             size_t slen = (key ? (key->len+1) : 0) + str->len + 3;
 
             if (bi+slen > capa) {

@@ -61,6 +61,12 @@ false{TRAIL}        LEX_RETURN(keyword_false);
   LEX_RETURN(identifier);
 };
 
+[A-Za-z_][A-Za-z0-9_]*: {
+  yytext[strlen(yytext)-1]='\0';
+  lval->id = node_id(yytext);
+  LEX_RETURN(label);
+};
+
 {TRAIL}\.{TRAIL} LEX_RETURN('.');
 [(\[{,;:]{TRAIL} LEX_RETURN(yytext[0]);
 [)\]}]           LEX_RETURN(yytext[0]);
@@ -82,6 +88,12 @@ false{TRAIL}        LEX_RETURN(keyword_false);
 \"([^\\\"]|\\.)*\"      {
   lval->nd = node_string_new(yytext+1, strlen(yytext)-2);
   LEX_RETURN(lit_string);
+};
+
+\"([^\\\"]|\\.)*\": {
+  yytext[strlen(yytext)-1]='\0';
+  lval->id = node_id(yytext);
+  LEX_RETURN(label);
 };
 
 :[0-9a-zA-Z_][0-9a-zA-Z_]* {

@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define YYDEBUG 1
+
 #include "y.tab.h"
 #include "lex.yy.h"
 /* old bison does not have yyparse prototype in y.tab.h */
@@ -34,14 +36,6 @@ node*
 node_array_new()
 {
   return node_values_new(NODE_ARRAY);
-}
-
-node*
-node_array_of(node* np)
-{
-  if (np == NULL)
-    np = node_array_new();
-  return np;
 }
 
 void
@@ -83,12 +77,12 @@ node_pair_new(strm_string* key, node* value)
 }
 
 node*
-node_map_new(node* np)
+node_array_headers(node* np)
 {
   int i;
   node_values* v;
-  strm_array *headers;
-  strm_value *p;
+  strm_array *headers = NULL;
+  strm_value *p = NULL;
   node_map* map = malloc(sizeof(node_map));
 
   map->type = NODE_MAP;
@@ -99,13 +93,16 @@ node_map_new(node* np)
     np = node_array_new();
 
   v = (node_values*)np;
-  headers = strm_ary_new(NULL, v->len);
-  p = (strm_value*)headers->ptr;
   for (i = 0; i < v->len; i++) {
     node_pair* npair = (node_pair*)v->data[i];
-
-    p[i] = strm_ptr_value(npair->key);
-    v->data[i] = npair->value;
+    if (npair->type == NODE_PAIR) {
+      if (!headers) {
+        headers = strm_ary_new(NULL, v->len);
+        p = (strm_value*)headers->ptr;
+      }
+      p[i] = strm_ptr_value(npair->key);
+      v->data[i] = npair->value;
+    }
   }
   map->headers = headers;
   map->values = np;

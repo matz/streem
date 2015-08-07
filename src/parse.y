@@ -19,9 +19,9 @@
 
 %type <nd> program compstmt
 %type <nd> stmt expr condition block cond primary primary0
-%type <nd> stmts args opt_args opt_block f_args map map_args bparam
+%type <nd> stmts arg args opt_args opt_block f_args bparam
 %type <nd> opt_else opt_elsif
-%type <id> identifier var
+%type <id> identifier var label
 %type <nd> lit_string lit_number
 
 %pure-parser
@@ -67,6 +67,7 @@ static void yyerror(parser_state *p, const char *s);
         lit_number
         lit_string
         identifier
+        label
 
 /*
  * precedence table
@@ -344,16 +345,25 @@ opt_args        : /* none */
                     }
                 | args
                     {
-                      $$ = $1;
+                      $$ = node_array_headers($1);
                     }
                 ;
 
-args            : expr
+
+arg             : expr
+                | label expr
+                    {
+                      $$ = node_pair_new($1, $2);
+                    }
+                ;
+
+
+args            : arg
                     {
                       $$ = node_array_new();
                       node_array_add($$, $1);
                     }
-                | args ',' expr
+                | args ',' arg
                     {
                       $$ = $1;
                       node_array_add($1, $3);
@@ -372,19 +382,11 @@ primary0        : lit_number
                     }
                 | '[' args ']'
                     {
-                      $$ = node_array_of($2);
+                      $$ = node_array_headers($2);
                     }
                 | '[' ']'
                     {
-                      $$ = node_array_of(NULL);
-                    }
-                | '[' map_args ']'
-                    {
-                      $$ = node_map_new($2);
-                    }
-                | '[' ':' ']'
-                    {
-                      $$ = node_map_new(NULL);
+                      $$ = node_array_new();
                     }
                 | keyword_if condition '{' compstmt '}' opt_else
                     {
@@ -439,28 +441,6 @@ primary         : primary0
                 | primary '.' identifier opt_block
                     {
                       $$ = node_call_new($1, node_id_str($3), NULL, $4);
-                    }
-                ;
-
-map             : lit_string ':' expr
-                    {
-                      $$ = node_pair_new($1->value.v.s, $3);
-                    }
-                | identifier ':' expr
-                    {
-                      $$ = node_pair_new($1, $3);
-                    }
-                ;
-
-map_args        : map
-                    {
-                      $$ = node_array_new();
-                      node_array_add($$, $1);
-                    }
-                | map_args ',' map
-                    {
-                      $$ = $1;
-                      node_array_add($$, $3);
                     }
                 ;
 
