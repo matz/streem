@@ -57,13 +57,13 @@ true{TRAIL}         LEX_RETURN(keyword_true);
 false{TRAIL}        LEX_RETURN(keyword_false);
 
 [A-Za-z_][A-Za-z0-9_]* {
-  lval->id = node_id(yytext);
+  lval->id = node_id(yytext, yyleng);
   LEX_RETURN(identifier);
 };
 
 [A-Za-z_][A-Za-z0-9_]*: {
   yytext[yyleng-1]='\0';
-  lval->id = node_id(yytext);
+  lval->id = node_id(yytext, yyleng);
   LEX_RETURN(label);
 };
 

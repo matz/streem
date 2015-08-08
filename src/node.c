@@ -149,7 +149,7 @@ node_op_new(const char* op, node* lhs, node* rhs)
   node_op* nop = malloc(sizeof(node_op));
   nop->type = NODE_OP;
   nop->lhs = lhs;
-  nop->op = node_id(op);
+  nop->op = node_id(op, strlen(op));
   nop->rhs = rhs;
   return (node*)nop;
 }
@@ -286,13 +286,13 @@ node_ident_new(strm_string* name)
 }
 
 strm_string*
-node_id(const char* s)
+node_id(const char* s, size_t len)
 {
   extern int strm_event_loop_started;
   strm_string *str;
 
   assert(!strm_event_loop_started);
-  str = strm_str_intern(s, strlen(s));
+  str = strm_str_intern(s, len);
   return str;
 }
 
