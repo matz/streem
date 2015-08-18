@@ -301,7 +301,7 @@ csv_finish(strm_task* task, strm_value data)
 {
   struct csv_data *cd = task->data;
 
-  if (cd->headers) {
+  if (cd->headers && cd->types == NULL) {
     strm_emit(task, strm_ptr_value(cd->headers), NULL);
     cd->headers = NULL;
   }
