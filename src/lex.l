@@ -78,7 +78,7 @@ false{TRAIL}        LEX_RETURN(keyword_false);
   LEX_RETURN(lit_number);
 };
 
-(([1-9][0-9]*)|0)(\.[0-9]*)? {
+(([1-9][0-9]*)|0)(\.[0-9][0-9]*)? {
   double temp;
   sscanf(yytext, "%lf", &temp);
   lval->nd = node_double_new(temp);
