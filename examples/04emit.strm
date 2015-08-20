@@ -1,5 +1,5 @@
 # repeat twice
-seq(100) | {x -> emit x, x} | STDOUT
+seq(100) | {x -> emit x, x} | stdout
 # output:
 #  1
 #  1

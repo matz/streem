@@ -541,9 +541,9 @@ void strm_csv_init(strm_state* state);
 static void
 node_init(strm_state* state)
 {
-  strm_var_def("STDIN", strm_ptr_value(strm_io_new(0, STRM_IO_READ)));
-  strm_var_def("STDOUT", strm_ptr_value(strm_io_new(1, STRM_IO_WRITE)));
-  strm_var_def("STDERR", strm_ptr_value(strm_io_new(2, STRM_IO_WRITE)));
+  strm_var_def("stdin", strm_ptr_value(strm_io_new(0, STRM_IO_READ)));
+  strm_var_def("stdout", strm_ptr_value(strm_io_new(1, STRM_IO_WRITE)));
+  strm_var_def("stderr", strm_ptr_value(strm_io_new(2, STRM_IO_WRITE)));
   strm_var_def("puts", strm_cfunc_value(exec_puts));
   strm_var_def("+", strm_cfunc_value(exec_plus));
   strm_var_def("-", strm_cfunc_value(exec_minus));

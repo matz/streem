@@ -1,5 +1,5 @@
 # pick even numbers
-seq(100) | {x -> if x % 2 == 1 {skip}; x} | STDOUT
+seq(100) | {x -> if x % 2 == 1 {skip}; x} | stdout
 # output:
 #  2
 #  4

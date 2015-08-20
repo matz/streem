@@ -12,11 +12,11 @@ __Note:__ Streem is still in the design stage. It's not working yet.  Stay tuned
 In Streem, a simple `cat` program looks like this:
 
 ```
-STDIN | STDOUT
+stdin | stdout
 ```
 
 Streem is a (sort of) DSL for data flows.  Above code means
-building data-flow connection between `STDIN` and `STDOUT`.
+building data-flow connection between `stdin` and `stdout`.
 Actual data processing will be done in the event loop
 invoked after program execution.
 
@@ -36,7 +36,7 @@ seq(100) | {x ->
   else {
     x
   }
-} | STDOUT
+} | stdout
 ```
 
 The second part in the pipeline (`{x ->...}`) is a function

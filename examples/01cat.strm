@@ -1,6 +1,6 @@
 # most fundamental Streem program
 
-# build pipeline from STDIN to STDOUT
-STDIN | STDOUT
+# build pipeline from stdin to stdout
+stdin | stdout
 # actual stream processing will happen in the event loop
 # that starts after all program execution.
