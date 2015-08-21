@@ -177,14 +177,14 @@ epoll_wait(int epfd, struct epoll_event* events, int maxevents, int timeout)
             (FD_ISSET(ee->fds[i], &fdset[0]) ||
              FD_ISSET(ee->fds[i], &fdset[1]) ||
              FD_ISSET(ee->fds[i], &fdset[2]))) {
-          events[e++] = *ee;
+          memcpy(&events[e++], ee, sizeof(struct epoll_event));
           if (ee->events & EPOLLONESHOT)
             ee->fds[i] = -1;
         }
       } else {
         HANDLE h = (HANDLE) _get_osfhandle(ee->fds[i]);
         if (h != INVALID_HANDLE_VALUE && WaitForSingleObject(h, timeout < 0 ? INFINITE : timeout) == WAIT_OBJECT_0) {
-          events[e++] = *ee;
+          memcpy(&events[e++], ee, sizeof(struct epoll_event));
           if (ee->events & EPOLLONESHOT)
             ee->fds[i] = -1;
         }
@@ -236,7 +236,7 @@ epoll_wait(int epfd, struct epoll_event* events, int maxevents, int timeout)
           (FD_ISSET(ee->fds[i], &fdset[0]) ||
            FD_ISSET(ee->fds[i], &fdset[1]) ||
            FD_ISSET(ee->fds[i], &fdset[2]))) {
-        events[e++] = *ee;
+        memcpy(&events[e++], ee, sizeof(struct epoll_event));
         if (ee->events & EPOLLONESHOT)
           ee->fds[i] = -1;
       }
