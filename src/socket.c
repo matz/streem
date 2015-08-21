@@ -26,12 +26,18 @@ accept_cb(strm_task* task, strm_value data)
   struct socket_data *sd = task->data;
   struct sockaddr_in writer_addr;
   socklen_t writer_len;
+  int fd = sd->sock;
   int sock;
 
+#ifdef _WIN32
+  fd = _get_osfhandle(fd);
+#endif
+
+  memset(&writer_addr, 0, sizeof(writer_addr));
   writer_len = sizeof(writer_addr);
-  sock = accept(sd->sock, (struct sockaddr *)&writer_addr, &writer_len);
+  sock = accept(fd, (struct sockaddr *)&writer_addr, &writer_len);
   if (sock < 0) {
-    closesocket(sock);
+    closesocket(fd);
     if (sd->state->task)
       strm_task_close(sd->state->task);
     node_raise(sd->state, "socket error: listen");
@@ -96,7 +102,11 @@ tcp_server(strm_state* state, int argc, strm_value* args, strm_value* ret)
   }
 
   memset(&hints, 0, sizeof(struct addrinfo));
+#ifdef _WIN32
+  hints.ai_family = AF_INET;      /* TODO: IPv6 doesn't work on windows */
+#else
   hints.ai_family = AF_UNSPEC;    /* Allow IPv4 or IPv6 */
+#endif
   hints.ai_socktype = SOCK_STREAM;/* Datagram socket */
   hints.ai_flags = AI_PASSIVE;    /* For wildcard IP address */
   hints.ai_protocol = 0;          /* Any protocol */
