@@ -1,5 +1,5 @@
-#ifndef _NODE_H_
-#define _NODE_H_
+#ifndef STRM_NODE_H
+#define STRM_NODE_H
 
 typedef enum {
   NODE_VALUE_BOOL,
@@ -164,4 +164,4 @@ extern node* node_true();
 extern node* node_false();
 extern void node_free(node*);
 
-#endif /* _NODE_H_ */
+#endif /* STRM_NODE_H */

@@ -1,5 +1,5 @@
-#ifndef _STRM_H_
-#define _STRM_H_
+#ifndef STRM_H
+#define STRM_H
 
 #include <stdio.h>
 #include <stdlib.h>
