@@ -619,9 +619,12 @@ static int
 arr_exec(strm_task* task, strm_value data)
 {
   struct array_data *arrd = task->data;
-  strm_emit(task, arrd->arr->ptr[arrd->n++], NULL);
-  if (arrd->n == arrd->arr->len)
+
+  if (arrd->n == arrd->arr->len) {
     strm_task_close(task);
+    return STRM_OK;
+  }
+  strm_emit(task, arrd->arr->ptr[arrd->n++], arr_exec);
   return STRM_OK;
 }
 
