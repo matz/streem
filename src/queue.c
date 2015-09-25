@@ -64,8 +64,6 @@ push_low_task(strm_queue* q, struct strm_queue_task* t)
   if (q->fi) {
     q->fi->next = t;
   }
-  if (!q->hi)
-    q->hi = t;
   q->fi = t;
   if (!q->fo) {
     q->fo = t;
