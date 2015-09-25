@@ -271,6 +271,7 @@ strm_readio(strm_io* io)
 struct write_data {
   FILE *f;
   strm_io* io;
+  size_t rc;
 };
 
 static int
@@ -292,6 +293,8 @@ write_close(strm_task* task, strm_value data)
 {
   struct write_data *d = (struct write_data*)task->data;
 
+  d->rc--;                      /* decrement reference count */
+  if (d->rc > 0) return STRM_OK;
   /* tell peer we close the socket for writing (if it is) */
   shutdown(fileno(d->f), 1);
   /* if we have a reading task, let it close the fd */
@@ -305,11 +308,18 @@ write_close(strm_task* task, strm_value data)
 static strm_task*
 strm_writeio(strm_io* io)
 {
-  if (io->write_task == NULL) {
-    struct write_data *d = malloc(sizeof(struct write_data));
+  struct write_data *d;
+
+  if (io->write_task) {
+    d = (struct write_data*)io->write_task->data;
+    d->rc++;
+  }
+  else {
+    d = malloc(sizeof(struct write_data));
 
     d->f = fdopen(io->fd, "w");
     d->io = io;
+    d->rc = 1;
     io->write_task = strm_task_new(strm_task_cons, write_cb, write_close, (void*)d);
   }
   return io->write_task;
@@ -332,13 +342,11 @@ strm_io_open(strm_io* io, int mode)
 {
   switch (mode) {
   case STRM_IO_READ:
-    if (io->read_task) return io->read_task;
     if (io->mode & STRM_IO_READ) {
       return strm_readio(io);
     }
     break;
   case STRM_IO_WRITE:
-    if (io->write_task) return io->read_task;
     if (io->mode & STRM_IO_WRITE) {
       return strm_writeio(io);
     }
