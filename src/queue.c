@@ -132,12 +132,15 @@ int
 strm_queue_size(strm_queue* q)
 {
   int n = 0;
-  struct strm_queue_task *e = q->fo;
+  struct strm_queue_task *e;
 
+  pthread_mutex_lock(&q->mutex);
+  e = q->fo;
   while (e) {
     n++;
     e = e->next;
   }
+  pthread_mutex_unlock(&q->mutex);
   return n;
 }
 
