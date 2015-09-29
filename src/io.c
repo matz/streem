@@ -295,6 +295,8 @@ write_close(strm_task* task, strm_value data)
 
   d->rc--;                      /* decrement reference count */
   if (d->rc > 0) return STRM_OK;
+  /* do not close stdout duing execution */
+  if (fileno(d->f) == fileno(stdout)) return STRM_OK;
   /* tell peer we close the socket for writing (if it is) */
   shutdown(fileno(d->f), 1);
   /* if we have a reading task, let it close the fd */
