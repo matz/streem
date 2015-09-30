@@ -183,7 +183,7 @@ strm_loop()
       int i;
 
       for (i=0; i<thread_max; i++) {
-        if (strm_queue_size(threads[i].queue) > 0)
+        if (strm_queue_p(threads[i].queue))
           break;
       }
       if (i == thread_max) break;
