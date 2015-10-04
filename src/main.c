@@ -94,6 +94,7 @@ dump_node(node* np, int indent) {
 
   case NODE_ARRAY:
     printf("ARRAY:\n");
+  array_dump:
     {
       node_values* ary = (node_values*)np;
       for (i = 0; i < ary->len; i++)
@@ -105,7 +106,8 @@ dump_node(node* np, int indent) {
     {
       node_map* map = (node_map*)np;
       int j;
-      
+
+      if (!map->headers) goto array_dump;
       for (i = 0; i < map->len; i++) {
         strm_string *key = strm_value_str(map->headers->ptr[i]);
         for (j = 0; j < indent+1; j++)
