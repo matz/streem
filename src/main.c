@@ -109,10 +109,13 @@ dump_node(node* np, int indent) {
 
       if (!map->headers) goto array_dump;
       for (i = 0; i < map->len; i++) {
-        strm_string *key = strm_value_str(map->headers->ptr[i]);
-        for (j = 0; j < indent+1; j++)
-          putchar(' ');
-        printf("key: \"%.*s\"\n", (int)key->len, key->ptr);
+        strm_value v = map->headers->ptr[i];
+        if (strm_str_p(v)) {
+          strm_string *key = strm_value_str(v);
+          for (j = 0; j < indent+1; j++)
+            putchar(' ');
+          printf("key: \"%.*s\"\n", (int)key->len, key->ptr);
+        }
         dump_node(map->data[i], indent+1);
       }
     }
