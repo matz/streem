@@ -94,32 +94,30 @@ dump_node(node* np, int indent) {
 
   case NODE_ARRAY:
     printf("ARRAY:\n");
-  array_dump:
     {
       node_values* ary = (node_values*)np;
-      for (i = 0; i < ary->len; i++)
-        dump_node(ary->data[i], indent+1);
-    }
-    break;
-  case NODE_MAP:
-    printf("MAP:\n");
-    {
-      node_map* map = (node_map*)np;
-      int j;
 
-      if (!map->headers) goto array_dump;
-      for (i = 0; i < map->len; i++) {
-        strm_value v = map->headers->ptr[i];
-        if (strm_str_p(v)) {
-          strm_string *key = strm_value_str(v);
-          for (j = 0; j < indent+1; j++)
-            putchar(' ');
-          printf("key: \"%.*s\"\n", (int)key->len, key->ptr);
+      if (ary->headers) {
+        int j;
+
+        for (i = 0; i < ary->len; i++) {
+          strm_value v = ary->headers->ptr[i];
+          if (strm_str_p(v)) {
+            strm_string *key = strm_value_str(v);
+            for (j = 0; j < indent+1; j++)
+              putchar(' ');
+            printf("key: \"%.*s\"\n", (int)key->len, key->ptr);
+          }
+          dump_node(ary->data[i], indent+1);
         }
-        dump_node(map->data[i], indent+1);
+      }
+      else {
+        for (i = 0; i < ary->len; i++)
+          dump_node(ary->data[i], indent+1);
       }
     }
     break;
+
   case NODE_STMTS:
     printf("STMTS:\n");
     {

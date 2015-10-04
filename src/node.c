@@ -18,6 +18,7 @@ node_values_new(node_type type) {
   v->len = 0;
   v->max = 0;
   v->data = NULL;
+  v->headers = NULL;
   return (node*)v;
 }
 
@@ -49,6 +50,7 @@ node_array_free(node* np)
 {
   int i;
   node_values* v = (node_values*)np;
+  v->headers = NULL;            /* leave free() upto GC */
   for (i = 0; i < v->len; i++)
     node_free(v->data[i]);
   free(np);
@@ -83,42 +85,24 @@ node_array_headers(node* np)
   node_values* v;
   strm_array *headers = NULL;
   strm_value *p = NULL;
-  node_map* map = malloc(sizeof(node_map));
 
-  map->type = NODE_MAP;
-  map->headers = NULL;
-
-  if (np == NULL)
+  if (!np)
     np = node_array_new();
-
   v = (node_values*)np;
-  map->len = v->len;
-  map->max = v->max;
-  map->data = v->data;
-  free(v);
-
-  for (i = 0; i < map->len; i++) {
-    node_pair* npair = (node_pair*)map->data[i];
+  for (i = 0; i < v->len; i++) {
+    node_pair* npair = (node_pair*)v->data[i];
     if (npair->type == NODE_PAIR) {
       if (!headers) {
-        headers = strm_ary_new(NULL, map->len);
+        headers = strm_ary_new(NULL, v->len);
         p = (strm_value*)headers->ptr;
       }
       p[i] = strm_ptr_value(npair->key);
       v->data[i] = npair->value;
     }
   }
-  map->headers = headers;
+  v->headers = headers;
 
-  return (node*)map;
-}
-
-void
-node_map_free(node* np)
-{
-  node_map* v = (node_map*)np;
-  v->headers = NULL;            /* leave free() upto GC */
-  node_array_free(np);
+  return np;
 }
 
 node*
@@ -474,9 +458,6 @@ node_free(node* np) {
     break;
   case NODE_ARRAY:
     node_array_free(np);
-    break;
-  case NODE_MAP:
-    node_map_free(np);
     break;
   case NODE_VALUE:
     switch (np->value.t) {

@@ -63,7 +63,6 @@ typedef enum {
   NODE_OP,
   NODE_CALL,
   NODE_ARRAY,
-  NODE_MAP,
   NODE_STMTS,
 } node_type;
 
@@ -85,15 +84,8 @@ typedef struct {
   int len;
   int max;
   void** data;
-} node_values;
-
-typedef struct {
-  NODE_HEADER;
-  int len;
-  int max;
-  void** data;
   strm_array* headers;
-} node_map;
+} node_values;
 
 typedef struct {
   NODE_HEADER;

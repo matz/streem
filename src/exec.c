@@ -317,7 +317,6 @@ exec_expr(strm_state* state, node* np, strm_value* val)
       return strm_var_set(state, nlet->lhs, *val);
     }
   case NODE_ARRAY:
-  case NODE_MAP:
     {
       node_values* v0 = (node_values*)np;
       strm_array *arr = strm_ary_new(NULL, v0->len);
@@ -328,9 +327,7 @@ exec_expr(strm_state* state, node* np, strm_value* val)
         n = exec_expr(state, v0->data[i], ptr);
         if (n) return n;
       }
-      if (np->type == NODE_MAP) {
-        arr->headers = ((node_map*)np)->headers;
-      }
+      arr->headers = v0->headers;
       *val = strm_ptr_value(arr);
       return STRM_OK;
     }
