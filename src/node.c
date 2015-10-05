@@ -33,6 +33,15 @@ node_values_add(node_values* v, void* data) {
   v->len++;
 }
 
+void
+node_values_free(node* np)
+{
+  node_values* v = (node_values*)np;
+  v->headers = NULL;            /* leave free() upto GC */
+  free(v->data);
+  free(np);
+}
+
 node*
 node_array_new()
 {
@@ -50,10 +59,9 @@ node_array_free(node* np)
 {
   int i;
   node_values* v = (node_values*)np;
-  v->headers = NULL;            /* leave free() upto GC */
   for (i = 0; i < v->len; i++)
     node_free(v->data[i]);
-  free(np);
+  node_values_free(np);
 }
 
 node*
@@ -421,7 +429,7 @@ node_free(node* np) {
 
   switch (np->type) {
   case NODE_ARGS:
-    node_array_free(np);
+    node_values_free(np);
     break;
   case NODE_IF:
     node_free(((node_if*)np)->cond);
