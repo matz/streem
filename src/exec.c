@@ -594,8 +594,10 @@ blk_exec(strm_task* task, strm_value data)
 
   c.task = task;
   c.prev = lambda->state;
-  assert(args->len == 1);
-  strm_var_set(&c, (strm_string*)args->data[0], data);
+  if (args) {
+    assert(args->len == 1);
+    strm_var_set(&c, (strm_string*)args->data[0], data);
+  }
 
   n = exec_expr(&c, lambda->body->compstmt, &ret);
   if (n) return STRM_NG;
