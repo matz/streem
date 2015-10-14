@@ -17,9 +17,9 @@
   strm_string* id;
 }
 
-%type <nd> program compstmt
+%type <nd> program stmts stmt_list
 %type <nd> stmt expr condition block cond primary primary0
-%type <nd> stmts arg args opt_args opt_block f_args bparam
+%type <nd> arg args opt_args opt_block f_args bparam
 %type <nd> opt_else opt_elsif
 %type <id> identifier var label
 %type <nd> lit_string lit_number
@@ -88,21 +88,24 @@ static void yyerror(parser_state *p, const char *s);
 %token op_HIGHEST
 
 %%
-program         : compstmt
+program         : stmts
                     { 
                       p->lval = $1;  
                     }
                 ;
 
-compstmt        : stmts opt_terms
+stmts           : stmt_list opt_terms
+                    {
+                      $$ = $1;
+                    }
                 ;
 
-stmts           :
+stmt_list       :
                     {
                       $$ = NULL;
                     }
                 | stmt
-                | stmts terms stmt
+                | stmt_list terms stmt
                     {
                       if (!$1 || $1->type != NODE_STMTS) {
                         $$ = node_stmts_new();
@@ -138,9 +141,6 @@ stmt            : var '=' expr
                       $$ = node_break_new();
                     }
                 | expr
-                    {
-                      $$ = $1;
-                    }
                 ;
 
 var             : identifier
@@ -314,7 +314,7 @@ opt_elsif       : /* none */
                     {
                       $$ = NULL;
                     }
-                | opt_elsif keyword_else keyword_if condition '{' compstmt '}'
+                | opt_elsif keyword_else keyword_if condition '{' stmts '}'
                     {
                       if ($1)
                         ((node_if*)$1)->opt_else = node_if_new($4, $6, NULL);
@@ -324,7 +324,7 @@ opt_elsif       : /* none */
                 ;
 
 opt_else        : opt_elsif
-                | opt_elsif keyword_else '{' compstmt '}'
+                | opt_elsif keyword_else '{' stmts '}'
                     {
                       if ($1) {
                         node_if* n = (node_if*)$1;
@@ -388,7 +388,7 @@ primary0        : lit_number
                     {
                       $$ = node_array_new();
                     }
-                | keyword_if condition '{' compstmt '}' opt_else
+                | keyword_if condition '{' stmts '}' opt_else
                     {
                       $$ = node_if_new($2, $4, $6);
                     }
@@ -454,11 +454,11 @@ opt_block       : /* none */
                     }
                 ;
 
-block           : '{' bparam compstmt '}'
+block           : '{' bparam stmts '}'
                     {
                       $$ = node_lambda_new($2, $3);
                     }
-                | '{' compstmt '}'
+                | '{' stmts '}'
                     {
                       $$ = node_lambda_new(NULL, $2);
                     }
