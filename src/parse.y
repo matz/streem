@@ -17,7 +17,7 @@
   strm_string* id;
 }
 
-%type <nd> program stmts stmt_list
+%type <nd> program topstmts decls decl_list decl stmts stmt_list
 %type <nd> stmt expr condition block cond primary primary0
 %type <nd> arg args opt_args opt_block f_args bparam
 %type <nd> opt_else opt_elsif
@@ -41,6 +41,12 @@ static void yyerror(parser_state *p, const char *s);
         keyword_emit
         keyword_skip
         keyword_return
+        keyword_namespace
+        keyword_class
+        keyword_import
+        keyword_def
+        keyword_method
+        keyword_new
         keyword_nil
         keyword_true
         keyword_false
@@ -88,35 +94,125 @@ static void yyerror(parser_state *p, const char *s);
 %token op_HIGHEST
 
 %%
-program         : stmts
+program         : topstmts
                     { 
                       p->lval = $1;  
                     }
                 ;
 
-stmts           : stmt_list opt_terms
+/* declarations must come before acrtual statements */
+topstmts        : decls stmts
+                    {
+                      /* should concat STMTS $1 and $2 */
+                      $$ = $2;
+                    }
+                ;
+
+decls           : opt_terms
+                    {
+                      $$ = NULL;
+                    }
+                | decl_list opt_terms
                     {
                       $$ = $1;
                     }
                 ;
 
-stmt_list       :
+decl_list       : decl
+                    {
+                      $$ = node_stmts_new();
+                      if ($1) {
+                        node_stmts_add($$, $1);
+                      }
+                    }
+                | decl_list terms decl
+                    {
+                      if ($3) {
+                        node_stmts_add($$, $3);
+                      }
+                    }
+                ;
+
+decl            : /* namespace statement:
+                    namespace name_of_namespace {
+                      declarations
+                      statements
+                    }
+
+                    define a new namespace. */
+                  keyword_namespace '{' decls '}'
+                    {
+                      $$ = $3;
+                    }
+                | /* class statement:
+                    class name_of_namespace {
+                      declarations
+                      statements
+                    }
+
+                    alias of namespace statement.
+                    namespace work like class when bound with new expression. */
+                  keyword_class '{' decls '}'
+                    {
+                      $$ = $3;
+                    }
+                | /* import statement:
+                     import name_of_namespace
+
+                     copies names to the current namespace. */
+                  keyword_import identifier
                     {
                       $$ = NULL;
                     }
-                | stmt
+                | /* def statement:
+                    def foo(args) {
+                      statements
+                    }
+
+                    define a function named foo. */
+                  keyword_def identifier '(' f_args ')' '{' stmts '}'
+                    {
+                      $$ = NULL;
+                    }
+                | /* method statement:
+                    method foo(args) {
+                      statements
+                    }
+
+                    define a method named foo.
+                    Above method statement works like:
+
+                    def method foo(self, args) {
+                      statements
+                    } */
+                  keyword_method identifier '(' f_args ')' '{' stmts '}'
+                    {
+                      $$ = NULL;
+                    }
+                ;
+
+stmts           : opt_terms
+                    {
+                      $$ = NULL;
+                    }
+                | stmt_list opt_terms
+                    {
+                      $$ = $1;
+                    }
+                ;
+
+stmt_list       : stmt
+                    {
+                      $$ = node_stmts_new();
+                      if ($1) {
+                        node_stmts_add($$, $1);
+                      }
+                    }
                 | stmt_list terms stmt
                     {
-                      if (!$1 || $1->type != NODE_STMTS) {
-                        $$ = node_stmts_new();
-                        if ($1) {
-                          node_stmts_add($$, $1);
-                        }
+                      if ($3) {
+                        node_stmts_add($$, $3);
                       }
-                      else {
-                        $$ = $1;
-                      }
-                      node_stmts_add($$, $3);
                     }
                 ;
 
@@ -410,6 +506,10 @@ cond            : primary0
                     {
                        $$ = $1;
                     }
+                | keyword_new identifier '(' opt_args ')'
+                    {
+                      $$ = NULL;
+                    }
                 | identifier '(' opt_args ')'
                     {
                       $$ = node_call_new(NULL, node_id_str($1), $3, NULL);
@@ -426,6 +526,10 @@ cond            : primary0
 
 primary         : primary0
                 | block
+                | keyword_new identifier '(' opt_args ')' opt_block
+                    {
+                      $$ = NULL;
+                    }
                 | identifier block
                     {
                       $$ = node_call_new(NULL, node_id_str($1), NULL, $2);
