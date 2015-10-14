@@ -52,9 +52,9 @@ if                  LEX_RETURN(keyword_if);
 break{TRAIL}        LEX_RETURN(keyword_break);
 emit                LEX_RETURN(keyword_emit);
 return              LEX_RETURN(keyword_return);
-nil{TRAIL}          LEX_RETURN(keyword_nil);
-true{TRAIL}         LEX_RETURN(keyword_true);
-false{TRAIL}        LEX_RETURN(keyword_false);
+nil                 LEX_RETURN(keyword_nil);
+true                LEX_RETURN(keyword_true);
+false               LEX_RETURN(keyword_false);
 
 [A-Za-z_][A-Za-z0-9_]* {
   lval->id = node_id(yytext, yyleng);
