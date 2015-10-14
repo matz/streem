@@ -510,6 +510,6 @@ yyerror(parser_state *p, const char *s)
     fprintf(stderr, "%s:%d:%s\n", p->fname, p->lineno, s);
   }
   else {
-    fprintf(stderr, "%s\n", s);
+    fprintf(stderr, "%d:%s\n", p->lineno, s);
   }
 }

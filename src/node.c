@@ -388,6 +388,7 @@ node_parse_file(parser_state* p, const char* fname)
     perror("fopen");
     return 0;
   }
+  p->fname = fname;
   r = node_parse_input(p, fp, fname);
   fclose(fp);
   return r;
@@ -413,6 +414,7 @@ node_parse_string(parser_state* p, const char* prog)
   int n;
 
   /* yydebug = 1; */
+  p->fname = "-e";
   yy_scan_string(prog);
   n = yyparse(p);
   if (n == 0 && p->nerr == 0) {
