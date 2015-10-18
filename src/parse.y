@@ -136,7 +136,6 @@ decl_list       : decl
 decl            : /* namespace statement:
                     namespace name_of_namespace {
                       declarations
-                      statements
                     }
 
                     define a new namespace. */
@@ -147,7 +146,6 @@ decl            : /* namespace statement:
                 | /* class statement:
                     class name_of_namespace {
                       declarations
-                      statements
                     }
 
                     alias of namespace statement.
