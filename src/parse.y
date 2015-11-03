@@ -184,7 +184,7 @@ decl            : /* namespace statement:
                     } */
                   keyword_method identifier '(' f_args ')' '{' stmts '}'
                     {
-                      $$ = NULL;
+                      $$ = node_let_new($2, node_method_new($4, $7));
                     }
                 ;
 

@@ -44,6 +44,17 @@ node_values_concat(node_values* v, node_values* v2) {
 }
 
 void
+node_values_prepend(node_values* v, void* data) {
+  if (v->len == v->max) {
+    v->max = v->len + 10;
+    v->data = realloc(v->data, sizeof(void*) * v->max);
+  }
+  memmove(v->data+1, v->data, v->len*sizeof(void*));
+  v->data[0] = data;
+  v->len++;
+}
+
+void
 node_values_free(node* np)
 {
   node_values* v = (node_values*)np;
@@ -171,6 +182,23 @@ node_lambda_new(node* args, node* compstmt)
 {
   node_lambda* lambda = malloc(sizeof(node_lambda));
   lambda->type = NODE_LAMBDA;
+  lambda->args = args;
+  lambda->compstmt = compstmt;
+  return (node*)lambda;
+}
+
+node*
+node_method_new(node* args, node* compstmt)
+{
+  node_lambda* lambda = malloc(sizeof(node_lambda));
+  lambda->type = NODE_LAMBDA;
+  if (args) {
+    node_values_prepend((node_values*)args, strm_str_intern("self", 4));
+  }
+  else {
+    args = node_array_new();
+    node_args_add(args, strm_str_intern("self", 4));
+  }
   lambda->args = args;
   lambda->compstmt = compstmt;
   return (node*)lambda;

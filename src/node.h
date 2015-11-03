@@ -146,6 +146,7 @@ extern void node_args_add(node*, strm_string*);
 extern node* node_let_new(strm_string*, node*);
 extern node* node_op_new(const char*, node*, node*);
 extern node* node_lambda_new(node*, node*);
+extern node* node_method_new(node*, node*);
 extern node* node_call_new(node*, strm_string*, node*, node*);
 extern node* node_int_new(long);
 extern node* node_double_new(double);
