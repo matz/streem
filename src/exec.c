@@ -301,7 +301,12 @@ exec_expr(strm_state* state, node* np, strm_value* val)
         node_raise(state, "no such namespace");
         return STRM_NG;
       }
-      return strm_env_copy(state, s);
+      n = strm_env_copy(state, s);
+      if (n) {
+        node_raise(state, "failed to import");
+        return n;
+      }
+      return STRM_OK;
     }
     break;
 
