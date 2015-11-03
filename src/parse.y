@@ -19,7 +19,7 @@
 
 %type <nd> program topstmts decls decl_list decl stmts stmt_list
 %type <nd> stmt expr condition block cond primary primary0
-%type <nd> arg args opt_args opt_block f_args bparam
+%type <nd> arg args opt_args opt_block f_args opt_f_args bparam
 %type <nd> opt_else opt_elsif
 %type <id> identifier var label
 %type <nd> lit_string lit_number
@@ -167,7 +167,7 @@ decl            : /* namespace statement:
                     }
 
                     define a function named foo. */
-                  keyword_def identifier '(' f_args ')' '{' stmts '}'
+                  keyword_def identifier '(' opt_f_args ')' '{' stmts '}'
                     {
                       $$ = node_let_new($2, node_lambda_new($4, $7));
                     }
@@ -182,7 +182,7 @@ decl            : /* namespace statement:
                     def method foo(self, args) {
                       statements
                     } */
-                  keyword_method identifier '(' f_args ')' '{' stmts '}'
+                  keyword_method identifier '(' opt_f_args ')' '{' stmts '}'
                     {
                       $$ = node_let_new($2, node_method_new($4, $7));
                     }
@@ -573,6 +573,13 @@ bparam          : op_rasgn
                     {
                       $$ = $1;
                     }
+                ;
+
+opt_f_args      : /* no args */
+                    {
+                      $$ = NULL;
+                    }
+                | f_args
                 ;
 
 f_args          : identifier
