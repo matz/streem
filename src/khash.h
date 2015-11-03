@@ -37,7 +37,6 @@ int main() {
 	k = kh_get(32, h, 10);
 	is_missing = (k == kh_end(h));
 	k = kh_get(32, h, 5);
-	kh_del(32, h, k);
 	for (k = kh_begin(h); k != kh_end(h); ++k)
 		if (kh_exist(h, k)) kh_value(h, k) = 1;
 	kh_destroy(32, h);
@@ -198,7 +197,6 @@ static const double khash_ac_HASH_UPPER = 0.77;
 	extern khint_t kh_get_##name(const kh_##name##_t *h, khkey_t key); \
 	extern int kh_resize_##name(kh_##name##_t *h, khint_t new_n_buckets); \
 	extern khint_t kh_put_##name(kh_##name##_t *h, khkey_t key, int *ret); \
-	extern void kh_del_##name(kh_##name##_t *h, khint_t x);
 
 #define KHASH_IMPL(name, SCOPE, khkey_t, khval_t, kh_is_map, __hash_func, __hash_equal) \
 	SCOPE kh_##name##_t *kh_init_##name(void) { \
@@ -338,13 +336,6 @@ static const double khash_ac_HASH_UPPER = 0.77;
 		} else *ret = 0; /* Don't touch h->keys[x] if present and not deleted */  \
 		return x; \
 	} \
-	SCOPE void kh_del_##name(kh_##name##_t *h, khint_t x) \
-	{ \
-		if (x != h->n_buckets && !khash_ac_iseither(h->flags, x)) { \
-			khash_ac_set_isdel_true(h->flags, x); \
-			--h->size; \
-		} \
-	}
 
 #define KHASH_DECLARE(name, khkey_t, khval_t) \
 	KHASH_TYPE(name, khkey_t, khval_t) \
@@ -473,14 +464,6 @@ static kh_inline khint_t khash_ac_Wang_hash(khint_t key)
   @return       Iterator to the found element, or kh_end(h) if the element is absent [khint_t]
  */
 #define kh_get(name, h, k) kh_get_##name(h, k)
-
-/*! @function
-  @abstract     Remove a key from the hash table.
-  @param  name  Name of the hash table [symbol]
-  @param  h     Pointer to the hash table [khash_t(name)*]
-  @param  k     Iterator to the element to be deleted [khint_t]
- */
-#define kh_del(name, h, k) kh_del_##name(h, k)
 
 /*! @function
   @abstract     Test whether a bucket contains data.
