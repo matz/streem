@@ -34,6 +34,16 @@ node_values_add(node_values* v, void* data) {
 }
 
 void
+node_values_concat(node_values* v, node_values* v2) {
+  if (v->len + v2->len > v->max) {
+    v->max = v->len + v2->len + 10;
+    v->data = realloc(v->data, sizeof(void*) * v->max);
+  }
+  memcpy(v->data+v->len, v2->data, v2->len*sizeof(void*));
+  v->len += v2->len;
+}
+
+void
 node_values_free(node* np)
 {
   node_values* v = (node_values*)np;
@@ -71,9 +81,19 @@ node_stmts_new()
 }
 
 void
-node_stmts_add(node* arr, node* np)
+node_stmts_add(node* s, node* np)
 {
-  node_array_add(arr, np);
+  node_array_add(s, np);
+}
+
+node*
+node_stmts_concat(node* s, node* s2)
+{
+  if (!s) return s2;
+  if (s2) {
+    node_values_concat((node_values*)s, (node_values*)s2);
+  }
+  return s;
 }
 
 node*

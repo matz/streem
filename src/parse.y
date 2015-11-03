@@ -103,8 +103,7 @@ program         : topstmts
 /* declarations must come before acrtual statements */
 topstmts        : decls stmts
                     {
-                      /* should concat STMTS $1 and $2 */
-                      $$ = $2;
+                      $$ = node_stmts_concat($1, $2);
                     }
                 ;
 
@@ -170,7 +169,7 @@ decl            : /* namespace statement:
                     define a function named foo. */
                   keyword_def identifier '(' f_args ')' '{' stmts '}'
                     {
-                      $$ = NULL;
+                      $$ = node_let_new($2, node_lambda_new($4, $7));
                     }
                 | /* method statement:
                     method foo(args) {

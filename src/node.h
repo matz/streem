@@ -64,6 +64,7 @@ typedef enum {
   NODE_CALL,
   NODE_ARRAY,
   NODE_STMTS,
+  NODE_NS,
 } node_type;
 
 #define NODE_HEADER node_type type
@@ -126,12 +127,19 @@ typedef struct {
   node* rv;
 } node_return;
 
+typedef struct {
+  NODE_HEADER;
+  strm_string* name;
+  node* body;
+} node_ns;
+
 extern node* node_array_new();
 extern node* node_array_headers(node*);
 extern void node_array_add(node*, node*);
 extern void node_array_free(node*);
 extern node* node_stmts_new();
 extern void node_stmts_add(node*, node*);
+extern node* node_stmts_concat(node*, node*);
 extern node* node_pair_new(strm_string*, node*);
 extern node* node_args_new();
 extern void node_args_add(node*, strm_string*);
