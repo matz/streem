@@ -71,7 +71,6 @@ dump_node(node* np, int indent) {
     break;
   case NODE_CALL:
     printf("CALL:\n");
-    dump_node(((node_call*) np)->recv, indent+2);
     for (i = 0; i < indent+2; i++)
       putchar(' ');
     {
@@ -79,7 +78,6 @@ dump_node(node* np, int indent) {
       printf("%.*s\n", (int)s->len, s->ptr);
     }
     dump_node(((node_call*) np)->args, indent+2);
-    dump_node(((node_call*) np)->blk, indent+2);
     break;
   case NODE_RETURN:
     printf("RETURN:\n");

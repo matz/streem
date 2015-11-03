@@ -509,15 +509,15 @@ cond            : primary0
                     }
                 | identifier '(' opt_args ')'
                     {
-                      $$ = node_call_new(NULL, node_id_str($1), $3, NULL);
+                      $$ = node_call_new(node_id_str($1), NULL, $3, NULL);
                     }
                 | cond '.' identifier '(' opt_args ')'
                     {
-                      $$ = node_call_new(NULL, node_id_str($3), $5, NULL);
+                      $$ = node_call_new(node_id_str($3), NULL, $5, NULL);
                     }
                 | cond '.' identifier
                     {
-                      $$ = node_call_new($1, node_id_str($3), NULL, NULL);
+                      $$ = node_call_new(node_id_str($3), $1, NULL, NULL);
                     }
                 ;
 
@@ -529,19 +529,19 @@ primary         : primary0
                     }
                 | identifier block
                     {
-                      $$ = node_call_new(NULL, node_id_str($1), NULL, $2);
+                      $$ = node_call_new(node_id_str($1), NULL, NULL, $2);
                     }
                 | identifier '(' opt_args ')' opt_block
                     {
-                      $$ = node_call_new(NULL, node_id_str($1), $3, $5);
+                      $$ = node_call_new(node_id_str($1), NULL, $3, $5);
                     }
                 | primary '.' identifier '(' opt_args ')' opt_block
                     {
-                      $$ = node_call_new($1, node_id_str($3), $5, $7);
+                      $$ = node_call_new(node_id_str($3), $1, $5, $7);
                     }
                 | primary '.' identifier opt_block
                     {
-                      $$ = node_call_new($1, node_id_str($3), NULL, $4);
+                      $$ = node_call_new(node_id_str($3), $1, NULL, $4);
                     }
                 ;
 

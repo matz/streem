@@ -224,14 +224,18 @@ node_method_new(node* args, node* compstmt)
 }
 
 node*
-node_call_new(node* recv, strm_string* ident, node* args, node* blk)
+node_call_new(strm_string* ident, node* recv, node* args, node* blk)
 {
   node_call* ncall = malloc(sizeof(node_call));
   ncall->type = NODE_CALL;
-  ncall->recv = recv;
   ncall->ident = ident;
+  if (recv) {
+    node_values_prepend((node_values*)args, recv);
+  }
+  if (blk) {
+    node_array_add(args, blk);
+  }
   ncall->args = args;
-  ncall->blk = blk;
   return (node*)ncall;
 }
 
@@ -521,9 +525,7 @@ node_free(node* np) {
     free(np);
     break;
   case NODE_CALL:
-    node_free(((node_call*) np)->recv);
     node_free(((node_call*) np)->args);
-    node_free(((node_call*) np)->blk);
     free(np);
     break;
   case NODE_RETURN:
