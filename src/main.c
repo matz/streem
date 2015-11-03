@@ -128,6 +128,15 @@ dump_node(node* np, int indent) {
     }
     break;
 
+  case NODE_IMPORT:
+    print_id("IMPORT: ", ((node_import*)np)->name);
+    break;
+
+  case NODE_NS:
+    print_id("NAMESPACE: ", ((node_ns*)np)->name);
+    dump_node(((node_ns*) np)->body, indent+1);
+    break;
+
   case NODE_VALUE:
     switch (np->value.t) {
     case NODE_VALUE_INT:

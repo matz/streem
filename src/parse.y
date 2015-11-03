@@ -138,9 +138,9 @@ decl            : /* namespace statement:
                     }
 
                     define a new namespace. */
-                  keyword_namespace '{' decls '}'
+                  keyword_namespace identifier '{' decls '}'
                     {
-                      $$ = $3;
+                      $$ = node_ns_new($2, $4);
                     }
                 | /* class statement:
                     class name_of_namespace {
@@ -149,9 +149,9 @@ decl            : /* namespace statement:
 
                     alias of namespace statement.
                     namespace work like class when bound with new expression. */
-                  keyword_class '{' decls '}'
+                  keyword_class identifier '{' decls '}'
                     {
-                      $$ = $3;
+                      $$ = node_ns_new($2, $4);
                     }
                 | /* import statement:
                      import name_of_namespace
@@ -159,7 +159,7 @@ decl            : /* namespace statement:
                      copies names to the current namespace. */
                   keyword_import identifier
                     {
-                      $$ = NULL;
+                      $$ = node_import_new($2);
                     }
                 | /* def statement:
                     def foo(args) {

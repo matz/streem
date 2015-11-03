@@ -157,6 +157,25 @@ node_args_add(node* arr, strm_string* s)
 }
 
 node*
+node_ns_new(strm_string* name, node* body)
+{
+  node_ns* nns = malloc(sizeof(node_ns));
+  nns->type = NODE_NS;
+  nns->name = name;
+  nns->body = body;
+  return (node*)nns;
+}
+
+node*
+node_import_new(strm_string* name)
+{
+  node_import* nimp = malloc(sizeof(node_import));
+  nimp->type = NODE_IMPORT;
+  nimp->name = name;
+  return (node*)nimp;
+}
+
+node*
 node_let_new(strm_string* lhs, node* rhs)
 {
   node_let* nlet = malloc(sizeof(node_let));
