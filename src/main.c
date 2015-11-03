@@ -27,8 +27,9 @@ dump_node(node* np, int indent) {
 
       printf("ARGS(%d):\n", args->len);
       for (i = 0; i < args->len; i++) {
+        int j;
         strm_string *s = args->data[i];
-        for (i = 0; i < indent+1; i++)
+        for (j = 0; j < indent+1; j++)
           putchar(' ');
         printf("%.*s\n", (int)s->len, s->ptr);
       }
