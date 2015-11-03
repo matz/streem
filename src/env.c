@@ -77,3 +77,26 @@ strm_var_get(strm_state* state, strm_string* name, strm_value* val)
   if (!globals) return STRM_NG;
   return env_get(globals, name, val);
 }
+
+int
+strm_env_copy(strm_state* s1, strm_state* s2)
+{
+  strm_env *e1 = s1->env;
+  strm_env *e2 = s2->env;
+  khiter_t k, kk;
+  int r;
+
+  if (!e1) {
+    e1 = s1->env = kh_init(env);
+  }
+  if (!e2) {
+    e2 = s1->env = kh_init(env);
+  }
+  for (k = kh_begin(e2); k != kh_end(e2); k++) {
+    kk = kh_put(env, e1, kh_key(e2, k), &r);
+    if (r <= 0) return STRM_NG;   /* r=0  key is present in the hash table */
+                                  /* r=-1 operation failed */
+    kh_value(e1, kk) = kh_value(e2, k);
+  }
+  return STRM_OK;
+}

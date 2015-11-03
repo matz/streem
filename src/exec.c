@@ -281,6 +281,30 @@ exec_expr(strm_state* state, node* np, strm_value* val)
   case NODE_ARGS:
     break;
 */
+  case NODE_NS:
+    {
+      node_ns *ns = (node_ns*)np;
+      strm_state *s = strm_ns_new(state, ns->name);
+
+      if (!s) {
+        node_raise(state, "failed to create namespace");
+        return STRM_NG;
+      }
+      return exec_expr(s, ns->body, val);
+    }
+
+  case NODE_IMPORT:
+    {
+      node_import *ns = (node_import*)np;
+      strm_state* s = strm_ns_get(ns->name);
+      if (!s) {
+        node_raise(state, "no such namespace");
+        return STRM_NG;
+      }
+      return strm_env_copy(state, s);
+    }
+    break;
+
   case NODE_SKIP:
     {
        state->exc = malloc(sizeof(node_error));

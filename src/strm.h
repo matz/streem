@@ -180,6 +180,11 @@ typedef struct strm_state {
 int strm_var_set(strm_state*, strm_string*, strm_value);
 int strm_var_def(const char*, strm_value);
 int strm_var_get(strm_state*, strm_string*, strm_value*);
+int strm_env_copy(strm_state*, strm_state*);
+
+/* ----- Namespaces */
+strm_state* strm_ns_new(strm_state*, strm_string*);
+strm_state* strm_ns_get(strm_string*);
 
 /* ----- I/O */
 #define STRM_IO_READ  1
