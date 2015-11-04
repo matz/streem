@@ -238,7 +238,11 @@ exec_call(strm_state* state, strm_string* name, int argc, strm_value* argv, strm
     case STRM_VALUE_CFUNC:
       return ((exec_cfunc)m.val.p)(state, argc, argv, ret);
     case STRM_VALUE_PTR:
-      {
+      if (!strm_lambda_p(m)) {
+        node_raise(state, "not a function");
+        return STRM_NG;
+      }
+      else {
         strm_lambda* lambda = strm_value_ptr(m);
         node_lambda* nlbd = lambda->body;
         node_values* args = (node_values*)nlbd->args;
