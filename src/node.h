@@ -87,6 +87,7 @@ typedef struct {
   int max;
   void** data;
   strm_array* headers;
+  strm_string* ns;
 } node_values;
 
 typedef struct {
@@ -151,6 +152,7 @@ extern node* node_ns_new(strm_string*, node*);
 extern node* node_import_new(strm_string*);
 extern node* node_let_new(strm_string*, node*);
 extern node* node_op_new(const char*, node*, node*);
+extern node* node_obj_new(node*, strm_string*);
 extern node* node_lambda_new(node*, node*);
 extern node* node_method_new(node*, node*);
 extern node* node_call_new(strm_string*, node*, node*, node*);

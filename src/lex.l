@@ -57,6 +57,7 @@ class               LEX_RETURN(keyword_class);
 import              LEX_RETURN(keyword_import);
 def                 LEX_RETURN(keyword_def);
 method              LEX_RETURN(keyword_method);
+new                 LEX_RETURN(keyword_new);
 nil                 LEX_RETURN(keyword_nil);
 true                LEX_RETURN(keyword_true);
 false               LEX_RETURN(keyword_false);

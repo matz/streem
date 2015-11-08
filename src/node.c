@@ -145,6 +145,14 @@ node_array_headers(node* np)
 }
 
 node*
+node_obj_new(node* np, strm_string* ns)
+{
+  node_values* v = (node_values*)np;
+  v->ns = ns;
+  return np;
+}
+
+node*
 node_args_new()
 {
   return node_values_new(NODE_ARGS);

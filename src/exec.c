@@ -229,10 +229,16 @@ static int exec_expr(strm_state* state, node* np, strm_value* val);
 static int
 exec_call(strm_state* state, strm_string* name, int argc, strm_value* argv, strm_value* ret)
 {
-  int n;
+  int n = 1;
   strm_value m;
 
-  n = strm_var_get(state, name, &m);
+  if (argc > 0 && strm_array_p(argv[0]) && strm_value_ary(argv[0])->ns) {
+    strm_state* ns = strm_ns_get(strm_value_ary(argv[0])->ns);
+    n = strm_var_get(ns, name, &m);
+  }
+  if (n != 0) {
+    n = strm_var_get(state, name, &m);
+  }
   if (n == 0) {
     switch (m.type) {
     case STRM_VALUE_CFUNC:
@@ -361,6 +367,7 @@ exec_expr(strm_state* state, node* np, strm_value* val)
         if (n) return n;
       }
       arr->headers = v0->headers;
+      arr->ns = v0->ns;
       *val = strm_ptr_value(arr);
       return STRM_OK;
     }

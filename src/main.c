@@ -94,11 +94,10 @@ dump_node(node* np, int indent) {
   case NODE_ARRAY:
     printf("ARRAY:\n");
     {
+      int j;
       node_values* ary = (node_values*)np;
 
       if (ary->headers) {
-        int j;
-
         for (i = 0; i < ary->len; i++) {
           strm_value v = ary->headers->ptr[i];
           if (strm_str_p(v)) {
@@ -113,6 +112,12 @@ dump_node(node* np, int indent) {
       else {
         for (i = 0; i < ary->len; i++)
           dump_node(ary->data[i], indent+1);
+      }
+      if (ary->ns) {
+        strm_string *ns = ary->ns;
+        for (j = 0; j < indent+1; j++)
+          putchar(' ');
+        printf("class: \"%.*s\"\n", (int)ns->len, ns->ptr);
       }
     }
     break;

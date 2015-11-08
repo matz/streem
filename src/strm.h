@@ -110,11 +110,12 @@ typedef struct strm_array {
   size_t len;
   const strm_value *ptr;
   struct strm_array *headers;
+  strm_string *ns;
 } strm_array;
 
 strm_array *strm_ary_new(const strm_value*,size_t len);
 #define strm_ary_value(p,len) strm_ptr_value(strm_ary_new(p,len))
-#define strm_value_ary(v) (strm_array*)strm_value_obj(v, STRM_OBJ_ARRAY)
+#define strm_value_ary(v) ((strm_array*)strm_value_obj(v, STRM_OBJ_ARRAY))
 
 int strm_ary_eq(strm_array *a, strm_array *b);
 

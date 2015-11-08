@@ -505,7 +505,7 @@ cond            : primary0
                     }
                 | keyword_new identifier '(' opt_args ')'
                     {
-                      $$ = NULL;
+                      $$ = node_obj_new($4, $2);
                     }
                 | identifier '(' opt_args ')'
                     {
@@ -525,7 +525,7 @@ primary         : primary0
                 | block
                 | keyword_new identifier '(' opt_args ')' opt_block
                     {
-                      $$ = NULL;
+                      $$ = node_obj_new($4, $2);
                     }
                 | identifier block
                     {
