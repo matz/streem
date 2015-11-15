@@ -138,7 +138,7 @@ csv_value(const char* p, size_t len, int ftype)
 }
 
 struct csv_data {
-  strm_array *headers;
+  strm_array headers;
   enum csv_type *types;
   strm_string prev;
   int n;
@@ -154,7 +154,7 @@ csv_type(strm_value v)
 static int
 csv_accept(strm_task* task, strm_value data)
 {
-  strm_array *ary;
+  strm_array ary;
   strm_string line = strm_value_str(data);
   strm_value *bp;
   const char *fbeg;
@@ -258,7 +258,7 @@ csv_accept(strm_task* task, strm_value data)
           cd->headers = NULL;
         }
         else {                  /* intern header strings */
-          strm_array *h = cd->headers;
+          strm_array h = cd->headers;
           strm_value *p = (strm_value*)h->ptr;
           int i;
 

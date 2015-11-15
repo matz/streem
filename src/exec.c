@@ -137,7 +137,7 @@ static int blk_exec(strm_task* strm, strm_value data);
 
 struct array_data {
   int n;
-  strm_array* arr;
+  strm_array arr;
 };
 
 static int arr_exec(strm_task* strm, strm_value data);
@@ -358,7 +358,7 @@ exec_expr(strm_state* state, node* np, strm_value* val)
   case NODE_ARRAY:
     {
       node_values* v0 = (node_values*)np;
-      strm_array *arr = strm_ary_new(NULL, v0->len);
+      strm_array arr = strm_ary_new(NULL, v0->len);
       strm_value *ptr = (strm_value*)arr->ptr;
       int i=0;
 
@@ -456,7 +456,7 @@ exec_expr(strm_state* state, node* np, strm_value* val)
         break;
       default:
         {
-          strm_array* ary = strm_ary_new(NULL, args->len);
+          strm_array ary = strm_ary_new(NULL, args->len);
           size_t i;
 
           for (i=0; i<args->len; i++) {

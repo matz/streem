@@ -340,7 +340,7 @@ strm_inspect(strm_value v)
         {
           char *buf = malloc(32);
           size_t i, bi = 0, capa = 32;
-          strm_array *a = (strm_array*)v.val.p;
+          strm_array a = (strm_array)v.val.p;
 
           for (i=0; i<a->len; i++) {
             strm_string str = strm_inspect(a->ptr[i]);

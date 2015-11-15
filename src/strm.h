@@ -111,13 +111,13 @@ typedef struct strm_array {
   const strm_value *ptr;
   struct strm_array *headers;
   strm_string ns;
-} strm_array;
+} *strm_array;
 
-strm_array *strm_ary_new(const strm_value*,size_t len);
+strm_array strm_ary_new(const strm_value*,size_t len);
 #define strm_ary_value(p,len) strm_ptr_value(strm_ary_new(p,len))
-#define strm_value_ary(v) ((strm_array*)strm_value_obj(v, STRM_OBJ_ARRAY))
+#define strm_value_ary(v) ((strm_array)strm_value_obj(v, STRM_OBJ_ARRAY))
 
-int strm_ary_eq(strm_array *a, strm_array *b);
+int strm_ary_eq(strm_array a, strm_array b);
 
 /* ----- Tasks */
 typedef enum {
@@ -213,5 +213,5 @@ typedef struct strm_lambda {
 } strm_lambda;
 
 #define strm_value_lambda(v) (strm_lambda*)strm_value_obj(v, STRM_OBJ_LAMBDA);
-#define strm_value_array(v) (strm_array*)strm_value_obj(v, STRM_OBJ_ARRAY);
+#define strm_value_array(v) (strm_array)strm_value_obj(v, STRM_OBJ_ARRAY);
 #endif

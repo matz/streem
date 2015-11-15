@@ -246,7 +246,7 @@ main(int argc, const char**argv)
       puts("Syntax OK");
     }
     else {
-      strm_array* av = strm_ary_new(NULL, argc);
+      strm_array av = strm_ary_new(NULL, argc);
       strm_value* buf = (strm_value*)av->ptr;
       int i;
 

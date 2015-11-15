@@ -122,7 +122,7 @@ node_array_headers(node* np)
 {
   int i;
   node_values* v;
-  strm_array *headers = NULL;
+  strm_array headers = NULL;
   strm_value *p = NULL;
 
   if (!np)
