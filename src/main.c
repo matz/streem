@@ -3,26 +3,26 @@
 #include <stdio.h>
 
 static void
-fprint_str(FILE *f, strm_string* str)
+fprint_str(FILE *f, strm_string str)
 {
   fprintf(f, "%.*s\n", (int)str->len, str->ptr);
 }
 
 static void
-print_str(strm_string* name)
+print_str(strm_string name)
 {
   fprint_str(stdout, name);
 }
 
 static void
-print_id(const char* pre, strm_string* name)
+print_id(const char* pre, strm_string name)
 {
   fputs(pre, stdout);
   print_str(name);
 }
 
 static void
-print_quoted_id(const char* pre, strm_string* name)
+print_quoted_id(const char* pre, strm_string name)
 {
   fputs(pre, stdout);
   fputs("\"", stdout);
@@ -49,7 +49,7 @@ dump_node(node* np, int indent) {
       printf("ARGS(%d):\n", args->len);
       for (i = 0; i < args->len; i++) {
         int j;
-        strm_string *s = args->data[i];
+        strm_string s = args->data[i];
         for (j = 0; j < indent+1; j++)
           putchar(' ');
         print_str(s);
@@ -95,7 +95,7 @@ dump_node(node* np, int indent) {
     for (i = 0; i < indent+2; i++)
       putchar(' ');
     {
-      strm_string *s = ((node_call*)np)->ident;
+      strm_string s = ((node_call*)np)->ident;
       print_str(s);
     }
     dump_node(((node_call*) np)->args, indent+2);
@@ -122,7 +122,7 @@ dump_node(node* np, int indent) {
         for (i = 0; i < ary->len; i++) {
           strm_value v = ary->headers->ptr[i];
           if (strm_str_p(v)) {
-            strm_string *key = strm_value_str(v);
+            strm_string key = strm_value_str(v);
             for (j = 0; j < indent+1; j++)
               putchar(' ');
             print_quoted_id("key: ", key);
@@ -135,7 +135,7 @@ dump_node(node* np, int indent) {
           dump_node(ary->data[i], indent+1);
       }
       if (ary->ns) {
-        strm_string *ns = ary->ns;
+        strm_string ns = ary->ns;
         for (j = 0; j < indent+1; j++)
           putchar(' ');
         print_quoted_id("class: ", ns);

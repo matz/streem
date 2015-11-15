@@ -14,7 +14,7 @@
 
 %union {
   node* nd;
-  strm_string* id;
+  strm_string id;
 }
 
 %type <nd> program topstmts decls decl_list decl stmts stmt_list

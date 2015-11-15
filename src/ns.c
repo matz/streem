@@ -5,7 +5,7 @@ KHASH_MAP_INIT_INT64(ns, strm_state*);
 static khash_t(ns) *nstbl;
 
 strm_state*
-strm_ns_get(strm_string* name)
+strm_ns_get(strm_string name)
 {
   khiter_t k;
 
@@ -16,7 +16,7 @@ strm_ns_get(strm_string* name)
 }
 
 strm_state*
-strm_ns_new(strm_state* state, strm_string* name)
+strm_ns_new(strm_state* state, strm_string name)
 {
 
   strm_state *s = strm_ns_get(name);

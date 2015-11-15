@@ -90,27 +90,27 @@ typedef struct strm_string {
   STRM_OBJ_HEADER;
   const char *ptr;
   size_t len;
-} strm_string;
+} *strm_string;
 
 #define STRM_STR_INTERNED 1
 
-strm_string *strm_str_new(const char*,size_t len);
+strm_string strm_str_new(const char*,size_t len);
 #define strm_str_value(p,len) strm_ptr_value(strm_str_new(p,len))
-#define strm_value_str(v) (strm_string*)strm_value_obj(v, STRM_OBJ_STRING)
+#define strm_value_str(v) (strm_string)strm_value_obj(v, STRM_OBJ_STRING)
 
-strm_string *strm_str_intern(const char *p, size_t len);
-strm_string *strm_str_intern_str(strm_string *s);
-int strm_str_eq(strm_string *a, strm_string *b);
+strm_string strm_str_intern(const char *p, size_t len);
+strm_string strm_str_intern_str(strm_string s);
+int strm_str_eq(strm_string a, strm_string b);
 int strm_str_p(strm_value v);
 
-strm_string *strm_to_str(strm_value v);
+strm_string strm_to_str(strm_value v);
 /* ----- Arrays */
 typedef struct strm_array {
   STRM_OBJ_HEADER;
   size_t len;
   const strm_value *ptr;
   struct strm_array *headers;
-  strm_string *ns;
+  strm_string ns;
 } strm_array;
 
 strm_array *strm_ary_new(const strm_value*,size_t len);
@@ -178,14 +178,14 @@ typedef struct strm_state {
   struct strm_state *prev;
   strm_task *task;
 } strm_state;
-int strm_var_set(strm_state*, strm_string*, strm_value);
+int strm_var_set(strm_state*, strm_string, strm_value);
 int strm_var_def(const char*, strm_value);
-int strm_var_get(strm_state*, strm_string*, strm_value*);
+int strm_var_get(strm_state*, strm_string, strm_value*);
 int strm_env_copy(strm_state*, strm_state*);
 
 /* ----- Namespaces */
-strm_state* strm_ns_new(strm_state*, strm_string*);
-strm_state* strm_ns_get(strm_string*);
+strm_state* strm_ns_new(strm_state*, strm_string);
+strm_state* strm_ns_get(strm_string);
 
 /* ----- I/O */
 #define STRM_IO_READ  1

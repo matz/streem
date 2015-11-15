@@ -59,24 +59,24 @@ sym_eq(struct sym_key a, struct sym_key b)
   return FALSE;
 }
 
-KHASH_INIT(sym, struct sym_key, strm_string*, 1, sym_hash, sym_eq);
+KHASH_INIT(sym, struct sym_key, strm_string, 1, sym_hash, sym_eq);
 
 static pthread_mutex_t sym_mutex = PTHREAD_MUTEX_INITIALIZER;
 static khash_t(sym) *sym_table;
 
-static strm_string*
+static strm_string
 str_new(const char* p, size_t len)
 {
-  strm_string *str;
+  strm_string str;
 
   if (readonly_data_p(p)) {
-    str = malloc(sizeof(strm_string));
+    str = malloc(sizeof(struct strm_string));
     str->ptr = p;
   }
   else {
     char *buf;
 
-    str = malloc(sizeof(strm_string)+len+1);
+    str = malloc(sizeof(struct strm_string)+len+1);
     buf = (char*)&str[1];
     if (p) {
       memcpy(buf, p, len);
@@ -93,13 +93,13 @@ str_new(const char* p, size_t len)
   return str;
 }
 
-static strm_string*
+static strm_string
 str_intern(const char *p, size_t len)
 {
   khiter_t k;
   struct sym_key key;
   int ret;
-  strm_string *str;
+  strm_string str;
 
   if (!sym_table) {
     sym_table = kh_init(sym);
@@ -123,7 +123,7 @@ str_intern(const char *p, size_t len)
 #define STRM_STR_INTERN_LIMIT 64
 #endif
 
-strm_string*
+strm_string
 strm_str_new(const char* p, size_t len)
 {
   if (!strm_event_loop_started) {
@@ -135,10 +135,10 @@ strm_str_new(const char* p, size_t len)
   return str_new(p, len);
 }
 
-strm_string*
+strm_string
 strm_str_intern(const char* p, size_t len)
 {
-  strm_string *str;
+  strm_string str;
 
   assert(p!=NULL);
   if (!strm_event_loop_started) {
@@ -151,8 +151,8 @@ strm_str_intern(const char* p, size_t len)
   return str;
 }
 
-strm_string*
-strm_str_intern_str(strm_string* str)
+strm_string
+strm_str_intern_str(strm_string str)
 {
   if (str->flags & STRM_STR_INTERNED) {
     return str;
@@ -168,7 +168,7 @@ strm_str_intern_str(strm_string* str)
 }
 
 int
-strm_str_eq(strm_string* a, strm_string* b)
+strm_str_eq(strm_string a, strm_string b)
 {
   if (a == b) return TRUE;
   if (a->flags & b->flags & STRM_STR_INTERNED) {

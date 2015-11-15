@@ -13,9 +13,9 @@ exec_plus(strm_state* state, int argc, strm_value* args, strm_value* ret)
 {
   assert(argc == 2);
   if (strm_str_p(*args)) {
-    strm_string *str1 = strm_value_str(args[0]);
-    strm_string *str2 = strm_value_str(args[1]);
-    strm_string *str3 = strm_str_new(NULL, str1->len + str2->len);
+    strm_string str1 = strm_value_str(args[0]);
+    strm_string str2 = strm_value_str(args[1]);
+    strm_string str3 = strm_str_new(NULL, str1->len + str2->len);
     char *p;
 
     p = (char*)str3->ptr;
@@ -227,7 +227,7 @@ typedef int (*exec_cfunc)(strm_state*, int, strm_value*, strm_value*);
 static int exec_expr(strm_state* state, node* np, strm_value* val);
 
 static int
-exec_call(strm_state* state, strm_string* name, int argc, strm_value* argv, strm_value* ret)
+exec_call(strm_state* state, strm_string name, int argc, strm_value* argv, strm_value* ret)
 {
   int n = 1;
   strm_value m;
@@ -259,7 +259,7 @@ exec_call(strm_state* state, strm_string* name, int argc, strm_value* argv, strm
         if ((args == NULL && argc != 0) &&
             (args->len != argc)) return STRM_NG;
         for (i=0; i<argc; i++) {
-          n = strm_var_set(&c, (strm_string*)args->data[i], argv[i]);
+          n = strm_var_set(&c, (strm_string)args->data[i], argv[i]);
           if (n) return n;
         }
         n = exec_expr(&c, nlbd->compstmt, ret);
@@ -516,7 +516,7 @@ exec_cputs(strm_state* state, FILE* out, int argc, strm_value* args, strm_value*
   int i;
 
   for (i = 0; i < argc; i++) {
-    strm_string *s;
+    strm_string s;
 
     if (i != 0)
       fputs(", ", out);
@@ -538,7 +538,7 @@ static int
 exec_fread(strm_state* state, int argc, strm_value* args, strm_value* ret)
 {
   int fd;
-  strm_string *path;
+  strm_string path;
 
   assert(argc == 1);
   assert(strm_str_p(args[0]));
@@ -553,7 +553,7 @@ static int
 exec_fwrite(strm_state* state, int argc, strm_value* args, strm_value* ret)
 {
   int fd;
-  strm_string *path;
+  strm_string path;
 
   assert(argc == 1);
   assert(strm_str_p(args[0]));
@@ -636,7 +636,7 @@ blk_exec(strm_task* task, strm_value data)
   c.prev = lambda->state;
   if (args) {
     assert(args->len == 1);
-    strm_var_set(&c, (strm_string*)args->data[0], data);
+    strm_var_set(&c, (strm_string)args->data[0], data);
   }
 
   n = exec_expr(&c, lambda->body->compstmt, &ret);

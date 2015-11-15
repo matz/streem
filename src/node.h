@@ -19,7 +19,7 @@ typedef struct {
     long i;
     double d;
     void* p;
-    strm_string *s;
+    strm_string s;
   } v;
 } node_value;
 
@@ -77,7 +77,7 @@ typedef struct {
 
 typedef struct {
   NODE_HEADER;
-  strm_string* key;
+  strm_string key;
   node* value;
 } node_pair;
 
@@ -87,7 +87,7 @@ typedef struct {
   int max;
   void** data;
   strm_array* headers;
-  strm_string* ns;
+  strm_string ns;
 } node_values;
 
 typedef struct {
@@ -99,13 +99,13 @@ typedef struct {
 
 typedef struct {
   NODE_HEADER;
-  strm_string* lhs;
+  strm_string lhs;
   node* rhs;
 } node_let;
 
 typedef struct {
   NODE_HEADER;
-  strm_string* op;
+  strm_string op;
   node* lhs;
   node* rhs;
 } node_op;
@@ -118,7 +118,7 @@ typedef struct node_lambda {
 
 typedef struct {
   NODE_HEADER;
-  strm_string* ident;
+  strm_string ident;
   node* args;
 } node_call;
 
@@ -129,13 +129,13 @@ typedef struct {
 
 typedef struct {
   NODE_HEADER;
-  strm_string* name;
+  strm_string name;
   node* body;
 } node_ns;
 
 typedef struct {
   NODE_HEADER;
-  strm_string* name;
+  strm_string name;
 } node_import;
 
 extern node* node_array_new();
@@ -145,17 +145,17 @@ extern void node_array_free(node*);
 extern node* node_stmts_new();
 extern void node_stmts_add(node*, node*);
 extern node* node_stmts_concat(node*, node*);
-extern node* node_pair_new(strm_string*, node*);
+extern node* node_pair_new(strm_string, node*);
 extern node* node_args_new();
-extern void node_args_add(node*, strm_string*);
-extern node* node_ns_new(strm_string*, node*);
-extern node* node_import_new(strm_string*);
-extern node* node_let_new(strm_string*, node*);
+extern void node_args_add(node*, strm_string);
+extern node* node_ns_new(strm_string, node*);
+extern node* node_import_new(strm_string);
+extern node* node_let_new(strm_string, node*);
 extern node* node_op_new(const char*, node*, node*);
-extern node* node_obj_new(node*, strm_string*);
+extern node* node_obj_new(node*, strm_string);
 extern node* node_lambda_new(node*, node*);
 extern node* node_method_new(node*, node*);
-extern node* node_call_new(strm_string*, node*, node*, node*);
+extern node* node_call_new(strm_string, node*, node*, node*);
 extern node* node_int_new(long);
 extern node* node_double_new(double);
 extern node* node_string_new(const char*, size_t);
@@ -164,10 +164,10 @@ extern node* node_emit_new(node*);
 extern node* node_skip_new();
 extern node* node_return_new(node*);
 extern node* node_break_new();
-extern node* node_ident_new(strm_string*);
-extern strm_string* node_id(const char*, size_t len);
-extern strm_string* node_id_str(strm_string*);
-extern strm_string* node_id_escaped(const char* s, size_t len);
+extern node* node_ident_new(strm_string);
+extern strm_string node_id(const char*, size_t len);
+extern strm_string node_id_str(strm_string);
+extern strm_string node_id_escaped(const char* s, size_t len);
 extern node* node_nil();
 extern node* node_true();
 extern node* node_false();

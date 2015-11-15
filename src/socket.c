@@ -91,7 +91,7 @@ tcp_server(strm_state* state, int argc, strm_value* args, strm_value* ret)
     service = buf;
   }
   else {
-    volatile strm_string* str = strm_value_str(args[0]);
+    volatile strm_string str = strm_value_str(args[0]);
     service = str->ptr;
   }
 
@@ -151,7 +151,7 @@ tcp_socket(strm_state* state, int argc, strm_value* args, strm_value* ret)
   int sock, s;
   const char *service;
   char buf[12];
-  strm_string* host;
+  strm_string host;
 
 #ifdef _WIN32
   int sockopt = SO_SYNCHRONOUS_NONALERT;
@@ -170,7 +170,7 @@ tcp_socket(strm_state* state, int argc, strm_value* args, strm_value* ret)
     service = buf;
   }
   else {
-    volatile strm_string* str = strm_value_str(args[1]);
+    volatile strm_string str = strm_value_str(args[1]);
     service = str->ptr;
   }
 

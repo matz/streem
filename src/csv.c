@@ -9,7 +9,7 @@
 #include "node.h"
 
 static int
-count_fields(const strm_string* line)
+count_fields(const strm_string line)
 {
   const char *ptr = line->ptr;
   const char *pend = ptr + line->len;
@@ -54,7 +54,7 @@ static strm_value
 csv_string(const char* p, size_t len, int ftype)
 {
   if (ftype == 2) {             /* escaped_string */
-    strm_string *str = strm_str_new(p, len);
+    strm_string str = strm_str_new(p, len);
     const char *pend = p + len;
     char *t = (char*)p;
     int in_quote = 0;
@@ -140,7 +140,7 @@ csv_value(const char* p, size_t len, int ftype)
 struct csv_data {
   strm_array *headers;
   enum csv_type *types;
-  strm_string *prev;
+  strm_string prev;
   int n;
 };
 
@@ -155,7 +155,7 @@ static int
 csv_accept(strm_task* task, strm_value data)
 {
   strm_array *ary;
-  strm_string *line = strm_value_str(data);
+  strm_string line = strm_value_str(data);
   strm_value *bp;
   const char *fbeg;
   const char *ptr;
@@ -166,7 +166,7 @@ csv_accept(strm_task* task, strm_value data)
   struct csv_data *cd = task->data;
 
   if (cd->prev) {
-    strm_string *str = strm_str_new(NULL, cd->prev->len+line->len+1);
+    strm_string str = strm_str_new(NULL, cd->prev->len+line->len+1);
     char *tmp = (char*)str->ptr;
 
     memcpy(tmp, cd->prev->ptr, cd->prev->len);
@@ -263,7 +263,7 @@ csv_accept(strm_task* task, strm_value data)
           int i;
 
           for (i=0; i<h->len; i++) {
-            strm_string *str = strm_value_str(p[i]);
+            strm_string str = strm_value_str(p[i]);
 
             p[i] = strm_ptr_value(strm_str_intern_str(str));
           }

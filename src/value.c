@@ -236,7 +236,7 @@ strm_value_eq(strm_value a, strm_value b)
 }
 
 static int
-str_symbol_p(strm_string *str)
+str_symbol_p(strm_string str)
 {
   const char *p = str->ptr;
   const char *pend = p + str->len;
@@ -250,7 +250,7 @@ str_symbol_p(strm_string *str)
 }
 
 static size_t
-str_dump_len(strm_string *str)
+str_dump_len(strm_string str)
 {
   size_t len = 2;               /* first and last quotes */
   const unsigned char *p = (unsigned char*)str->ptr;
@@ -274,8 +274,8 @@ str_dump_len(strm_string *str)
   return len;
 }
 
-static strm_string*
-str_dump(strm_string *str, size_t len)
+static strm_string
+str_dump(strm_string str, size_t len)
 {
   char *buf = malloc(len);
   char *s = buf;
@@ -325,7 +325,7 @@ str_dump(strm_string *str, size_t len)
   return strm_str_new(buf, len);
 }
 
-strm_string*
+strm_string
 strm_inspect(strm_value v)
 {
   if (v.type == STRM_VALUE_PTR) {
@@ -333,7 +333,7 @@ strm_inspect(strm_value v)
       switch (((struct strm_object*)v.val.p)->type) {
       case STRM_OBJ_STRING:
         {
-          strm_string *str = (strm_string*)v.val.p;
+          strm_string str = (strm_string)v.val.p;
           return str_dump(str, str_dump_len(str));
         }
       case STRM_OBJ_ARRAY:
@@ -343,8 +343,8 @@ strm_inspect(strm_value v)
           strm_array *a = (strm_array*)v.val.p;
 
           for (i=0; i<a->len; i++) {
-            strm_string *str = strm_inspect(a->ptr[i]);
-            strm_string *key = (a->headers && strm_str_p(a->headers->ptr[i])) ?
+            strm_string str = strm_inspect(a->ptr[i]);
+            strm_string key = (a->headers && strm_str_p(a->headers->ptr[i])) ?
               strm_value_ptr(a->headers->ptr[i]) : NULL;
             size_t slen = (key ? (key->len+1) : 0) + str->len + 3;
 
@@ -403,7 +403,7 @@ strm_inspect(strm_value v)
   return strm_to_str(v);
 }
 
-strm_string*
+strm_string
 strm_to_str(strm_value v)
 {
   char buf[32];
@@ -433,7 +433,7 @@ strm_to_str(strm_value v)
       return strm_str_new("nil", 3);
     switch (((struct strm_object*)v.val.p)->type) {
     case STRM_OBJ_STRING:
-      return (strm_string*)v.val.p;
+      return (strm_string)v.val.p;
     case STRM_OBJ_ARRAY:
     default:
       return strm_inspect(v);

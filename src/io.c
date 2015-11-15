@@ -278,7 +278,7 @@ static int
 write_cb(strm_task* task, strm_value data)
 {
   struct write_data *d = (struct write_data*)task->data;
-  strm_string *p = strm_to_str(data);
+  strm_string p = strm_to_str(data);
 
   fwrite(p->ptr, p->len, 1, d->f);
   fputs("\n", d->f);

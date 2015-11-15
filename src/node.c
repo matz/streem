@@ -108,7 +108,7 @@ node_stmts_concat(node* s, node* s2)
 }
 
 node*
-node_pair_new(strm_string* key, node* value)
+node_pair_new(strm_string key, node* value)
 {
   node_pair* npair = malloc(sizeof(node_pair));
   npair->type = NODE_PAIR;
@@ -145,7 +145,7 @@ node_array_headers(node* np)
 }
 
 node*
-node_obj_new(node* np, strm_string* ns)
+node_obj_new(node* np, strm_string ns)
 {
   node_values* v = (node_values*)np;
   v->ns = ns;
@@ -159,13 +159,13 @@ node_args_new()
 }
 
 void
-node_args_add(node* arr, strm_string* s)
+node_args_add(node* arr, strm_string s)
 {
   node_values_add((node_values*)arr, s);
 }
 
 node*
-node_ns_new(strm_string* name, node* body)
+node_ns_new(strm_string name, node* body)
 {
   node_ns* nns = malloc(sizeof(node_ns));
   nns->type = NODE_NS;
@@ -175,7 +175,7 @@ node_ns_new(strm_string* name, node* body)
 }
 
 node*
-node_import_new(strm_string* name)
+node_import_new(strm_string name)
 {
   node_import* nimp = malloc(sizeof(node_import));
   nimp->type = NODE_IMPORT;
@@ -184,7 +184,7 @@ node_import_new(strm_string* name)
 }
 
 node*
-node_let_new(strm_string* lhs, node* rhs)
+node_let_new(strm_string lhs, node* rhs)
 {
   node_let* nlet = malloc(sizeof(node_let));
   nlet->type = NODE_LET;
@@ -232,7 +232,7 @@ node_method_new(node* args, node* compstmt)
 }
 
 node*
-node_call_new(strm_string* ident, node* recv, node* args, node* blk)
+node_call_new(strm_string ident, node* recv, node* args, node* blk)
 {
   node_call* ncall = malloc(sizeof(node_call));
   ncall->type = NODE_CALL;
@@ -346,7 +346,7 @@ node_string_new(const char* s, size_t len)
 }
 
 node*
-node_ident_new(strm_string* name)
+node_ident_new(strm_string name)
 {
   node* np = malloc(sizeof(node));
 
@@ -356,19 +356,19 @@ node_ident_new(strm_string* name)
   return np;
 }
 
-strm_string*
+strm_string
 node_id(const char* s, size_t len)
 {
   extern int strm_event_loop_started;
-  strm_string *str;
+  strm_string str;
 
   assert(!strm_event_loop_started);
   str = strm_str_intern(s, len);
   return str;
 }
 
-strm_string*
-node_id_str(strm_string* s)
+strm_string
+node_id_str(strm_string s)
 {
   if (s->flags & STRM_STR_INTERNED) {
     return s;
@@ -376,7 +376,7 @@ node_id_str(strm_string* s)
   return strm_str_intern(s->ptr, s->len);
 }
 
-strm_string*
+strm_string
 node_id_escaped(const char* s, size_t len)
 {
   len = string_escape((char*)s, len);
