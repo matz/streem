@@ -3,10 +3,31 @@
 #include <stdio.h>
 
 static void
+fprint_str(FILE *f, strm_string* str)
+{
+  fprintf(f, "%.*s\n", (int)str->len, str->ptr);
+}
+
+static void
+print_str(strm_string* name)
+{
+  fprint_str(stdout, name);
+}
+
+static void
 print_id(const char* pre, strm_string* name)
 {
   fputs(pre, stdout);
-  fprintf(stdout, "%.*s\n", (int)name->len, name->ptr);
+  print_str(name);
+}
+
+static void
+print_qid(const char* pre, strm_string* name)
+{
+  fputs(pre, stdout);
+  fputs("\"", stdout);
+  print_str(name);
+  fputs("\"\n", stdout);
 }
 
 static void
@@ -31,7 +52,7 @@ dump_node(node* np, int indent) {
         strm_string *s = args->data[i];
         for (j = 0; j < indent+1; j++)
           putchar(' ');
-        printf("%.*s\n", (int)s->len, s->ptr);
+        print_str(s);
       }
     }
     break;
@@ -75,7 +96,7 @@ dump_node(node* np, int indent) {
       putchar(' ');
     {
       strm_string *s = ((node_call*)np)->ident;
-      printf("%.*s\n", (int)s->len, s->ptr);
+      print_str(s);
     }
     dump_node(((node_call*) np)->args, indent+2);
     break;
@@ -104,7 +125,7 @@ dump_node(node* np, int indent) {
             strm_string *key = strm_value_str(v);
             for (j = 0; j < indent+1; j++)
               putchar(' ');
-            printf("key: \"%.*s\"\n", (int)key->len, key->ptr);
+            print_qid("key: ", key);
           }
           dump_node(ary->data[i], indent+1);
         }
@@ -117,7 +138,7 @@ dump_node(node* np, int indent) {
         strm_string *ns = ary->ns;
         for (j = 0; j < indent+1; j++)
           putchar(' ');
-        printf("class: \"%.*s\"\n", (int)ns->len, ns->ptr);
+        print_qid("class: ", ns);
       }
     }
     break;
@@ -149,7 +170,7 @@ dump_node(node* np, int indent) {
       printf("VALUE(NUMBER): %f\n", np->value.v.d);
       break;
     case NODE_VALUE_STRING:
-      printf("VALUE(STRING): \"%.*s\"\n", (int)np->value.v.s->len, np->value.v.s->ptr);
+      print_qid("VALUE(STRING): ", np->value.v.s);
       break;
     case NODE_VALUE_BOOL:
       printf("VALUE(BOOL): %s\n", np->value.v.i ? "true" : "false");
