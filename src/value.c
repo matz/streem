@@ -376,7 +376,7 @@ strm_inspect(strm_value v)
       case STRM_OBJ_IO:
         {
           char buf[32];
-          strm_io* io = (strm_io*)v.val.p;
+          strm_io io = (strm_io)v.val.p;
           int n;
           char *mode;
 

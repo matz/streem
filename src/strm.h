@@ -198,20 +198,20 @@ typedef struct strm_io {
   int fd;
   int mode;
   strm_task *read_task, *write_task;
-} strm_io;
+} *strm_io;
 
-strm_io* strm_io_new(int fd, int mode);
-strm_task* strm_io_open(strm_io* io, int mode);
+strm_io strm_io_new(int fd, int mode);
+strm_task* strm_io_open(strm_io io, int mode);
 void strm_io_start_read(strm_task* strm, int fd, strm_callback cb);
-#define strm_value_io(v) (strm_io*)strm_value_obj(v, STRM_OBJ_IO)
+#define strm_value_io(v) (strm_io)strm_value_obj(v, STRM_OBJ_IO)
 
 /* ----- lambda */
 typedef struct strm_lambda {
   STRM_OBJ_HEADER;
   struct node_lambda* body;
   struct strm_state* state;
-} strm_lambda;
+} *strm_lambda;
 
-#define strm_value_lambda(v) (strm_lambda*)strm_value_obj(v, STRM_OBJ_LAMBDA);
+#define strm_value_lambda(v) (strm_lambda)strm_value_obj(v, STRM_OBJ_LAMBDA);
 #define strm_value_array(v) (strm_array)strm_value_obj(v, STRM_OBJ_ARRAY);
 #endif

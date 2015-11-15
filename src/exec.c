@@ -159,12 +159,12 @@ exec_bar(strm_state* state, int argc, strm_value* args, strm_value* ret)
   lhs = args[0];
   /* lhs: io */
   if (strm_io_p(lhs)) {
-    strm_io *io = strm_value_io(lhs);
+    strm_io io = strm_value_io(lhs);
     lhs = strm_task_value(strm_io_open(io, STRM_IO_READ));
   }
   /* lhs: lambda */
   else if (strm_lambda_p(lhs)) {
-    strm_lambda *lmbd = strm_value_lambda(lhs)
+    strm_lambda lmbd = strm_value_lambda(lhs)
     lhs = strm_task_value(strm_task_new(strm_task_filt, blk_exec, NULL, (void*)lmbd));
   }
   /* lhs: array */
@@ -179,12 +179,12 @@ exec_bar(strm_state* state, int argc, strm_value* args, strm_value* ret)
   rhs = args[1];
   /* rhs: io */
   if (strm_io_p(rhs)) {
-    strm_io *io = strm_value_io(rhs);
+    strm_io io = strm_value_io(rhs);
     rhs = strm_task_value(strm_io_open(io, STRM_IO_WRITE));
   }
   /* rhs: lambda */
   else if (strm_lambda_p(rhs)) {
-    strm_lambda *lmbd = strm_value_lambda(rhs);
+    strm_lambda lmbd = strm_value_lambda(rhs);
     rhs = strm_task_value(strm_task_new(strm_task_filt, blk_exec, NULL, (void*)lmbd));
   }
   /* rhs: cfunc */
@@ -249,7 +249,7 @@ exec_call(strm_state* state, strm_string name, int argc, strm_value* argv, strm_
         return STRM_NG;
       }
       else {
-        strm_lambda* lambda = strm_value_ptr(m);
+        strm_lambda lambda = strm_value_ptr(m);
         node_lambda* nlbd = lambda->body;
         node_values* args = (node_values*)nlbd->args;
         strm_state c = {0};
@@ -626,7 +626,7 @@ node_run(parser_state* p)
 static int
 blk_exec(strm_task* task, strm_value data)
 {
-  strm_lambda *lambda = task->data;
+  strm_lambda lambda = task->data;
   strm_value ret = strm_nil_value();
   node_values* args = (node_values*)lambda->body->args;
   int n;

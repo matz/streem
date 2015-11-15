@@ -120,7 +120,7 @@ strm_io_emit(strm_task* task, strm_value data, int fd, strm_callback cb)
 struct fd_read_buffer {
   int fd;
   char *beg, *end;
-  strm_io* io;
+  strm_io io;
 #ifdef STRM_IO_MMAP
   char *buf;
   char fixed[BUFSIZ];
@@ -228,7 +228,7 @@ read_close(strm_task* task, strm_value d)
 }
 
 static strm_task*
-strm_readio(strm_io* io)
+strm_readio(strm_io io)
 {
   strm_callback cb = stdio_read;
   unsigned int flags = 0;
@@ -270,7 +270,7 @@ strm_readio(strm_io* io)
 
 struct write_data {
   FILE *f;
-  strm_io* io;
+  strm_io io;
   size_t rc;
 };
 
@@ -308,7 +308,7 @@ write_close(strm_task* task, strm_value data)
 }
 
 static strm_task*
-strm_writeio(strm_io* io)
+strm_writeio(strm_io io)
 {
   struct write_data *d;
 
@@ -327,10 +327,10 @@ strm_writeio(strm_io* io)
   return io->write_task;
 }
 
-strm_io*
+strm_io
 strm_io_new(int fd, int mode)
 {
-  strm_io *io = malloc(sizeof(strm_io));
+  strm_io io = malloc(sizeof(struct strm_io));
 
   io->fd = fd;
   io->mode = mode;
@@ -340,7 +340,7 @@ strm_io_new(int fd, int mode)
 }
 
 strm_task*
-strm_io_open(strm_io* io, int mode)
+strm_io_open(strm_io io, int mode)
 {
   switch (mode) {
   case STRM_IO_READ:
