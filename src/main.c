@@ -22,7 +22,7 @@ print_id(const char* pre, strm_string* name)
 }
 
 static void
-print_qid(const char* pre, strm_string* name)
+print_quoted_id(const char* pre, strm_string* name)
 {
   fputs(pre, stdout);
   fputs("\"", stdout);
@@ -125,7 +125,7 @@ dump_node(node* np, int indent) {
             strm_string *key = strm_value_str(v);
             for (j = 0; j < indent+1; j++)
               putchar(' ');
-            print_qid("key: ", key);
+            print_quoted_id("key: ", key);
           }
           dump_node(ary->data[i], indent+1);
         }
@@ -138,7 +138,7 @@ dump_node(node* np, int indent) {
         strm_string *ns = ary->ns;
         for (j = 0; j < indent+1; j++)
           putchar(' ');
-        print_qid("class: ", ns);
+        print_quoted_id("class: ", ns);
       }
     }
     break;
@@ -170,7 +170,7 @@ dump_node(node* np, int indent) {
       printf("VALUE(NUMBER): %f\n", np->value.v.d);
       break;
     case NODE_VALUE_STRING:
-      print_qid("VALUE(STRING): ", np->value.v.s);
+      print_quoted_id("VALUE(STRING): ", np->value.v.s);
       break;
     case NODE_VALUE_BOOL:
       printf("VALUE(BOOL): %s\n", np->value.v.i ? "true" : "false");
