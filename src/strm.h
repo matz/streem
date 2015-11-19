@@ -81,8 +81,6 @@ struct strm_object {
   STRM_OBJ_HEADER;
 };
 
-int strm_obj_eq(struct strm_object*, struct strm_object *);
-
 void *strm_value_obj(strm_value, enum strm_obj_type);
 
 /* ----- Strings */
