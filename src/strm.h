@@ -41,8 +41,11 @@ typedef struct strm_value {
   } val;
 } strm_value;
 
+struct strm_state;
+typedef int (*strm_cfunc)(struct strm_state*, int, strm_value*, strm_value*);
+
 strm_value strm_ptr_value(void*);
-strm_value strm_cfunc_value(void*);
+strm_value strm_cfunc_value(strm_cfunc);
 strm_value strm_blk_value(void*);
 strm_value strm_task_value(void*);
 strm_value strm_bool_value(int);

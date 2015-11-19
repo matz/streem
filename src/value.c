@@ -13,7 +13,7 @@ strm_ptr_value(void* p)
 }
 
 strm_value
-strm_cfunc_value(void* p)
+strm_cfunc_value(strm_cfunc p)
 {
   strm_value v;
 
