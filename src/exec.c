@@ -223,7 +223,6 @@ exec_mod(strm_state* state, int argc, strm_value* args, strm_value* ret)
   return STRM_NG;
 }
 
-typedef int (*exec_cfunc)(strm_state*, int, strm_value*, strm_value*);
 static int exec_expr(strm_state* state, node* np, strm_value* val);
 
 static int
@@ -242,7 +241,7 @@ exec_call(strm_state* state, strm_string name, int argc, strm_value* argv, strm_
   if (n == 0) {
     switch (m.type) {
     case STRM_VALUE_CFUNC:
-      return ((exec_cfunc)m.val.p)(state, argc, argv, ret);
+      return ((strm_cfunc)m.val.p)(state, argc, argv, ret);
     case STRM_VALUE_PTR:
       if (!strm_lambda_p(m)) {
         node_raise(state, "not a function");
@@ -679,7 +678,7 @@ static int
 cfunc_exec(strm_task* task, strm_value data)
 {
   strm_value ret;
-  exec_cfunc func = task->data;
+  strm_cfunc func = task->data;
   strm_state c = {0};
 
   if ((*func)(&c, 1, &data, &ret) == STRM_OK) {
