@@ -12,17 +12,17 @@ static int
 exec_plus(strm_state* state, int argc, strm_value* args, strm_value* ret)
 {
   assert(argc == 2);
-  if (strm_str_p(*args)) {
+  if (strm_string_p(*args)) {
     strm_string str1 = strm_value_str(args[0]);
     strm_string str2 = strm_value_str(args[1]);
-    strm_string str3 = strm_str_new(NULL, str1->len + str2->len);
+    strm_string str3 = strm_str_new(NULL, strm_str_len(str1) + strm_str_len(str2));
     char *p;
 
-    p = (char*)str3->ptr;
-    memcpy(p, str1->ptr, str1->len);
-    memcpy(p+str1->len, str2->ptr, str2->len);
-    p[str3->len] = '\0';
-    *ret = strm_ptr_value(str3);
+    p = (char*)strm_str_ptr(str3);
+    memcpy(p, strm_str_ptr(str1), strm_str_len(str1));
+    memcpy(p+strm_str_len(str1), strm_str_ptr(str2), strm_str_len(str2));
+    p[strm_str_len(str3)] = '\0';
+    *ret = strm_str_value(str3);
     return STRM_OK;
   }
   if (strm_int_p(args[0]) && strm_int_p(args[1])) {
@@ -164,13 +164,13 @@ exec_bar(strm_state* state, int argc, strm_value* args, strm_value* ret)
   }
   /* lhs: lambda */
   else if (strm_lambda_p(lhs)) {
-    strm_lambda lmbd = strm_value_lambda(lhs)
+    strm_lambda lmbd = strm_value_lambda(lhs);
     lhs = strm_task_value(strm_task_new(strm_task_filt, blk_exec, NULL, (void*)lmbd));
   }
   /* lhs: array */
   else if (strm_array_p(lhs)) {
     struct array_data *arrd = malloc(sizeof(struct array_data));
-    arrd->arr = strm_value_array(lhs);
+    arrd->arr = strm_value_ary(lhs);
     arrd->n = 0;
     lhs = strm_task_value(strm_task_new(strm_task_prod, arr_exec, arr_finish, (void*)arrd));
   }
@@ -189,13 +189,13 @@ exec_bar(strm_state* state, int argc, strm_value* args, strm_value* ret)
   }
   /* rhs: cfunc */
   else if (strm_cfunc_p(rhs)) {
-    void *func = rhs.val.p;
+    strm_cfunc func = strm_value_cfunc(rhs);
     rhs = strm_task_value(strm_task_new(strm_task_filt, cfunc_exec, NULL, func));
   }
 
   /* task x task */
   if (strm_task_p(lhs) && strm_task_p(rhs)) {
-    if (lhs.val.p == NULL || rhs.val.p == NULL) {
+    if (strm_value_task(lhs) == NULL || strm_value_task(rhs) == NULL) {
       node_raise(state, "task error");
       return STRM_NG;
     }
@@ -231,24 +231,24 @@ exec_call(strm_state* state, strm_string name, int argc, strm_value* argv, strm_
   int n = 1;
   strm_value m;
 
-  if (argc > 0 && strm_array_p(argv[0]) && strm_value_ary(argv[0])->ns) {
-    strm_state* ns = strm_ns_get(strm_value_ary(argv[0])->ns);
+  if (argc > 0 && strm_array_p(argv[0]) && strm_ary_ns(argv[0])) {
+    strm_state* ns = strm_ns_get(strm_ary_ns(argv[0]));
     n = strm_var_get(ns, name, &m);
   }
   if (n != 0) {
     n = strm_var_get(state, name, &m);
   }
   if (n == 0) {
-    switch (m.type) {
-    case STRM_VALUE_CFUNC:
-      return ((strm_cfunc)m.val.p)(state, argc, argv, ret);
-    case STRM_VALUE_PTR:
+    switch (strm_value_tag(m)) {
+    case STRM_TAG_CFUNC:
+      return (strm_value_cfunc(m))(state, argc, argv, ret);
+    case STRM_TAG_PTR:
       if (!strm_lambda_p(m)) {
         node_raise(state, "not a function");
         return STRM_NG;
       }
       else {
-        strm_lambda lambda = strm_value_ptr(m);
+        strm_lambda lambda = strm_value_lambda(m);
         node_lambda* nlbd = lambda->body;
         node_values* args = (node_values*)nlbd->args;
         strm_state c = {0};
@@ -337,7 +337,7 @@ exec_expr(strm_state* state, node* np, strm_value* val)
       v0 = (node_values*)np->value.v.p;
 
       for (i = 0; i < v0->len; i++) {
-        n = exec_expr(state, v0->data[i], val);
+        n = exec_expr(state, strm_value_foreign(v0->data[i]), val);
         if (n) return n;
         strm_emit(state->task, *val, NULL);
       }
@@ -358,16 +358,16 @@ exec_expr(strm_state* state, node* np, strm_value* val)
     {
       node_values* v0 = (node_values*)np;
       strm_array arr = strm_ary_new(NULL, v0->len);
-      strm_value *ptr = (strm_value*)arr->ptr;
+      strm_value *ptr = (strm_value*)strm_ary_ptr(arr);
       int i=0;
 
       for (i = 0; i < v0->len; i++, ptr++) {
-        n = exec_expr(state, v0->data[i], ptr);
+        n = exec_expr(state, strm_value_foreign(v0->data[i]), ptr);
         if (n) return n;
       }
-      arr->headers = v0->headers;
-      arr->ns = v0->ns;
-      *val = strm_ptr_value(arr);
+      strm_ary_headers(arr) = v0->headers;
+      strm_ary_ns(arr) = v0->ns;
+      *val = strm_ary_value(arr);
       return STRM_OK;
     }
   case NODE_IDENT:
@@ -382,7 +382,7 @@ exec_expr(strm_state* state, node* np, strm_value* val)
       node_if* nif = (node_if*)np;
       n = exec_expr(state, nif->cond, &v);
       if (n) return n;
-      if (strm_value_bool(v) && v.val.i) {
+      if (strm_bool_p(v) && strm_value_bool(v)) {
         return exec_expr(state, nif->then, val);
       }
       else if (nif->opt_else != NULL) {
@@ -416,7 +416,7 @@ exec_expr(strm_state* state, node* np, strm_value* val)
       struct strm_lambda* lambda = malloc(sizeof(strm_lambda));
 
       if (!lambda) return STRM_NG;
-      lambda->type = STRM_OBJ_LAMBDA;
+      lambda->type = STRM_PTR_LAMBDA;
       lambda->body = (node_lambda*)np;
       lambda->state = state;
       *val = strm_ptr_value(lambda);
@@ -432,7 +432,7 @@ exec_expr(strm_state* state, node* np, strm_value* val)
       strm_value *args = malloc(sizeof(strm_value)*v0->len);
 
       for (i = 0; i < v0->len; i++) {
-        n = exec_expr(state, v0->data[i], &args[i]);
+        n = exec_expr(state, strm_value_foreign(v0->data[i]), &args[i]);
         if (n) return n;
       }
       return exec_call(state, ncall->ident, i, args, val);
@@ -450,7 +450,7 @@ exec_expr(strm_state* state, node* np, strm_value* val)
         state->exc->arg = strm_nil_value();
         break;
       case 1:
-        n = exec_expr(state, args->data[0], &state->exc->arg);
+        n = exec_expr(state, strm_value_foreign(args->data[0]), &state->exc->arg);
         if (n) return n;
         break;
       default:
@@ -459,7 +459,7 @@ exec_expr(strm_state* state, node* np, strm_value* val)
           size_t i;
 
           for (i=0; i<args->len; i++) {
-            n = exec_expr(state, args->data[i], (strm_value*)&ary->ptr[i]);
+            n = exec_expr(state, strm_value_foreign(args->data[i]), (strm_value*)&strm_ary_ptr(ary)[i]);
             if (n) return n;
           }
         }
@@ -473,7 +473,7 @@ exec_expr(strm_state* state, node* np, strm_value* val)
       int i;
       node_values* v = (node_values*)np;
       for (i = 0; i < v->len; i++) {
-        n = exec_expr(state, v->data[i], val);
+        n = exec_expr(state, strm_value_foreign(v->data[i]), val);
         if (state->exc != NULL) return STRM_NG;
         if (n) return n;
       }
@@ -489,7 +489,7 @@ exec_expr(strm_state* state, node* np, strm_value* val)
       return STRM_OK;
     case NODE_VALUE_STRING:
     case NODE_VALUE_IDENT:
-      *val = strm_ptr_value(np->value.v.s);
+      *val = strm_str_value(np->value.v.s);
       return STRM_OK;
     case NODE_VALUE_DOUBLE:
       *val = strm_flt_value(np->value.v.d);
@@ -520,7 +520,7 @@ exec_cputs(strm_state* state, FILE* out, int argc, strm_value* args, strm_value*
     if (i != 0)
       fputs(", ", out);
     s = strm_to_str(args[i]);
-    fwrite(s->ptr, s->len, 1, out);
+    fwrite(strm_str_ptr(s), strm_str_len(s), 1, out);
   }
   fputs("\n", out);
   return STRM_OK;
@@ -538,11 +538,12 @@ exec_fread(strm_state* state, int argc, strm_value* args, strm_value* ret)
 {
   int fd;
   strm_string path;
+  char buf[7];
 
   assert(argc == 1);
-  assert(strm_str_p(args[0]));
+  assert(strm_string_p(args[0]));
   path = strm_value_str(args[0]);
-  fd = open(path->ptr, O_RDONLY);
+  fd = open(strm_str_cstr(path, buf), O_RDONLY);
   if (fd < 0) return STRM_NG;
   *ret = strm_ptr_value(strm_io_new(fd, STRM_IO_READ));
   return STRM_OK;
@@ -553,11 +554,12 @@ exec_fwrite(strm_state* state, int argc, strm_value* args, strm_value* ret)
 {
   int fd;
   strm_string path;
+  char buf[7];
 
   assert(argc == 1);
-  assert(strm_str_p(args[0]));
+  assert(strm_string_p(args[0]));
   path = strm_value_str(args[0]);
-  fd = open(path->ptr, O_WRONLY|O_CREAT, 0644);
+  fd = open(strm_str_cstr(path, buf), O_WRONLY|O_CREAT, 0644);
   if (fd < 0) return STRM_NG;
   *ret = strm_ptr_value(strm_io_new(fd, STRM_IO_WRITE));
   return STRM_OK;
@@ -567,7 +569,7 @@ void
 node_raise(strm_state* state, const char* msg) {
   state->exc = malloc(sizeof(node_error));
   state->exc->type = NODE_ERROR_RUNTIME;
-  state->exc->arg = strm_str_value(msg, strlen(msg));
+  state->exc->arg = strm_str_value(strm_str_new(msg, strlen(msg)));
 }
 
 void strm_seq_init(strm_state* state);
@@ -658,11 +660,11 @@ arr_exec(strm_task* task, strm_value data)
 {
   struct array_data *arrd = task->data;
 
-  if (arrd->n == arrd->arr->len) {
+  if (arrd->n == strm_ary_len(arrd->arr)) {
     strm_task_close(task);
     return STRM_OK;
   }
-  strm_emit(task, arrd->arr->ptr[arrd->n++], arr_exec);
+  strm_emit(task, strm_ary_ptr(arrd->arr)[arrd->n++], arr_exec);
   return STRM_OK;
 }
 

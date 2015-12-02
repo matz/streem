@@ -1,235 +1,233 @@
 #include <ctype.h>
+#include <math.h>
 #include "strm.h"
 #include <assert.h>
 
 strm_value
 strm_ptr_value(void* p)
 {
-  strm_value v;
-
-  v.type = STRM_VALUE_PTR;
-  v.val.p = p;
-  return v;
+  return STRM_TAG_PTR | ((strm_value)p & STRM_VAL_MASK);
 }
 
 strm_value
-strm_cfunc_value(strm_cfunc p)
+strm_cfunc_value(strm_cfunc f)
 {
-  strm_value v;
-
-  v.type = STRM_VALUE_CFUNC;
-  v.val.p = p;
-  return v;
-}
-
-strm_value
-strm_task_value(void* p)
-{
-  strm_value v;
-
-  v.type = STRM_VALUE_TASK;
-  v.val.p = p;
-  return v;
+  return STRM_TAG_CFUNC | ((strm_value)f & STRM_VAL_MASK);
 }
 
 strm_value
 strm_bool_value(int i)
 {
-  strm_value v;
-
-  v.type = STRM_VALUE_BOOL;
-  v.val.i = i ? 1 : 0;
-  return v;
+  return STRM_TAG_BOOL | (!!i);
 }
 
 strm_value
-strm_int_value(long i)
+strm_int_value(int32_t i)
 {
-  strm_value v;
-
-  v.type = STRM_VALUE_INT;
-  v.val.i = i;
-  return v;
+  return STRM_TAG_INT | ((uint64_t)i & STRM_VAL_MASK);
 }
 
 strm_value
 strm_flt_value(double f)
 {
-  strm_value v;
+  union {
+    double f;
+    uint64_t i;
+  } u;
 
-  v.type = STRM_VALUE_FLT;
-  v.val.f = f;
-  return v;
+  if (isnan(f)) {
+    return STRM_TAG_NAN;
+  }
+  u.f = f;
+  return u.i;
 }
 
 strm_value
-strm_blk_value(void* blk)
+strm_foreign_value(void* p)
 {
-  strm_value v;
+  return STRM_TAG_FOREIGN | ((strm_value)p & STRM_VAL_MASK);
+}
 
-  v.type = STRM_VALUE_BLK;
-  v.val.p = blk;
-  return v;
+static void*
+strm_ptr(strm_value v)
+{
+  return (void*)strm_value_val(v);
+}
+
+static enum strm_ptr_type
+strm_ptr_type(void* p)
+{
+  struct object {
+    STRM_PTR_HEADER;
+  } *obj = p;
+
+  return obj->type;
 }
 
 void*
-strm_value_ptr(strm_value v)
+strm_value_ptr(strm_value v, enum strm_ptr_type e)
 {
-  assert(v.type == STRM_VALUE_PTR);
-  return v.val.p;
+  void *p;
+
+  assert(strm_value_tag(v) == STRM_TAG_PTR);
+  p = strm_ptr(v);
+  assert(p && strm_ptr_type(p) == e);
+  return p;
 }
 
 void*
-strm_value_obj(strm_value v, enum strm_obj_type t)
+strm_value_foreign(strm_value v)
 {
-  struct strm_object *p;
-
-  assert(v.type == STRM_VALUE_PTR);
-  p = v.val.p;
-  assert(p->type == t);
-  return v.val.p;
+  assert(strm_value_tag(v) == STRM_TAG_FOREIGN);
+  return strm_ptr(v);
 }
 
 int
 strm_value_bool(strm_value v)
 {
-  if (v.type == STRM_VALUE_BOOL) {
-    return v.val.i ? TRUE : FALSE;
+  uint64_t i = strm_value_val(v);
+
+  if (i == 0) {
+    switch (strm_value_tag(v)) {
+    case STRM_TAG_BOOL:         /* false */
+    case STRM_TAG_PTR:          /* nil */
+      break;
+    default:
+      assert(strm_value_tag(v) == STRM_TAG_BOOL);
+      break;
+    }
+    return FALSE;
   }
-  return TRUE;
+  else {
+    return TRUE;
+  }
 }
 
-long
+int
+strm_int_p(strm_value v)
+{
+  return strm_value_tag(v) == STRM_TAG_INT;
+}
+
+static inline int32_t
+strm_to_int(strm_value v)
+{
+  return (int32_t)(v & ~STRM_TAG_MASK);
+}
+
+int
+strm_flt_p(strm_value v)
+{
+  /* confirm for nan/+inf/-inf */
+  return v == STRM_TAG_NAN || (v & STRM_TAG_NAN) != STRM_TAG_NAN;
+}
+
+static inline double
+strm_to_flt(strm_value v)
+{
+  union {
+    double f;
+    uint64_t i;
+  } u;
+
+  u.i = v;
+  return u.f;
+}
+
+int32_t
 strm_value_int(strm_value v)
 {
-  switch (v.type) {
-  case STRM_VALUE_FLT:
-    return (long)v.val.f;
-  case STRM_VALUE_INT:
-    return v.val.i;
+  switch (strm_value_tag(v)) {
+  case STRM_TAG_INT:
+    return strm_to_int(v);
   default:
-    assert(v.type == STRM_VALUE_INT);
+    if (strm_flt_p(v))
+      return strm_to_flt(v);
+    assert(strm_value_tag(v) == STRM_TAG_INT);
     break;
   }
   /* not reached */
   return 0;
 }
 
+
 double
 strm_value_flt(strm_value v)
 {
-  switch (v.type) {
-  case STRM_VALUE_FLT:
-    return v.val.f;
-  case STRM_VALUE_INT:
-    return (double)v.val.i;
-  default:
-    assert(v.type == STRM_VALUE_FLT);
-    break;
+  if (strm_int_p(v)) {
+    return (double)strm_to_int(v);
+  }
+  else if (strm_flt_p(v)) {
+    return strm_to_flt(v);
+  }
+  else {
+    assert(strm_flt_p(v));
   }
   /* not reached */
   return 0.0;
 }
 
-strm_task*
-strm_value_task(strm_value v)
+strm_cfunc
+strm_value_cfunc(strm_value v)
 {
-  assert(v.type == STRM_VALUE_TASK);
-  return (strm_task*)v.val.p;
+  assert(strm_value_tag(v) == STRM_TAG_CFUNC);
+  return (strm_cfunc)strm_value_val(v);
 }
 
 int
 strm_num_p(strm_value v)
 {
-  switch (v.type) {
-  case STRM_VALUE_FLT:
-  case STRM_VALUE_INT:
+  if (strm_int_p(v) || strm_flt_p(v))
     return TRUE;
-  default:
+  else
     return FALSE;
-  }
+}
+
+int
+strm_bool_p(strm_value v)
+{
+  return  (strm_value_tag(v) == STRM_TAG_BOOL) ? TRUE : FALSE;
 }
 
 int
 strm_nil_p(strm_value v)
 {
-  return v.type == STRM_VALUE_PTR && v.val.p == NULL;
-}
-
-int
-strm_int_p(strm_value v)
-{
-  return v.type == STRM_VALUE_INT;
-}
-
-int
-strm_flt_p(strm_value v)
-{
-  return v.type == STRM_VALUE_FLT;
+  if (strm_value_tag(v) != STRM_TAG_PTR)
+    return FALSE;
+  return strm_value_val(v) == 0;
 }
 
 int
 strm_cfunc_p(strm_value v)
 {
-  return v.type == STRM_VALUE_CFUNC;
+  return strm_value_tag(v) == STRM_TAG_CFUNC;
 }
 
 int
-strm_lambda_p(strm_value v)
+strm_ptr_tag_p(strm_value v, enum strm_ptr_type e)
 {
-  return v.type == STRM_VALUE_PTR && v.val.p &&
-         ((struct strm_object*)v.val.p)->type == STRM_OBJ_LAMBDA;
-}
-
-int
-strm_array_p(strm_value v)
-{
-  return v.type == STRM_VALUE_PTR && v.val.p &&
-         ((struct strm_object*)v.val.p)->type == STRM_OBJ_ARRAY;
-}
-
-int
-strm_task_p(strm_value v)
-{
-  return v.type == STRM_VALUE_TASK;
-}
-
-int
-strm_io_p(strm_value v)
-{
-  return v.type == STRM_VALUE_PTR && v.val.p &&
-         ((struct strm_object*)v.val.p)->type == STRM_OBJ_IO;
-}
-
-int
-strm_ptr_eq(struct strm_object* a, struct strm_object* b)
-{
-  if (a == b) return TRUE;
-  if (a == NULL) return FALSE;
-  if (a->type != b->type) return FALSE;
-  switch (a->type) {
-  case STRM_OBJ_ARRAY:
-    return strm_ary_eq((struct strm_array*)a, (struct strm_array*)b);
-  case STRM_OBJ_STRING:
-    return strm_str_eq((struct strm_string*)a, (struct strm_string*)b);
-  default:
-    return FALSE;
-  }
+  void* p = strm_ptr(v);
+  return strm_ptr_type(p) == e;
 }
 
 int
 strm_value_eq(strm_value a, strm_value b)
 {
-  if (a.type != b.type) return FALSE;
-
-  switch (a.type) {
-  case STRM_VALUE_BOOL:
-  case STRM_VALUE_INT:
-    return a.val.i == b.val.i;
-  case STRM_VALUE_FLT:
-    return a.val.f == b.val.f;
-  case STRM_VALUE_PTR:
-    return strm_ptr_eq(a.val.p, b.val.p);
+  if (a == b) return TRUE;
+  if (strm_value_tag(a) != strm_value_tag(b)) return FALSE;
+  switch (strm_value_tag(a)) {
+  case STRM_TAG_ARRAY:
+  case STRM_TAG_STRUCT:
+    return strm_ary_eq(a, b);
+  case STRM_TAG_STRING_I:
+  case STRM_TAG_STRING_6:
+  case STRM_TAG_STRING_O:
+  case STRM_TAG_STRING_F:
+    return strm_str_eq(a, b);
+  case STRM_TAG_CFUNC:
+    return (strm_cfunc)strm_value_val(a) == (strm_cfunc)strm_value_val(b);
+  case STRM_TAG_PTR:
+    return (void*)strm_value_val(a) == (void*)strm_value_val(b);
   default:
     return FALSE;
   }
@@ -238,23 +236,25 @@ strm_value_eq(strm_value a, strm_value b)
 static int
 str_symbol_p(strm_string str)
 {
-  const char *p = str->ptr;
-  const char *pend = p + str->len;
-
-  if (!isalpha((int)*p)) return 0;
-  p++;
-  while (p<pend) {
-    if (!isalnum((int)*p)) return 0;
+  switch (strm_value_tag(str)) {
+  case STRM_TAG_STRING_I:
+  case STRM_TAG_STRING_6:
+    return TRUE;
+  case STRM_TAG_STRING_O:
+    return FALSE;
+  case STRM_TAG_STRING_F:
+    return TRUE;
+  default:
+    return FALSE;
   }
-  return 1;
 }
 
 static size_t
 str_dump_len(strm_string str)
 {
   size_t len = 2;               /* first and last quotes */
-  const unsigned char *p = (unsigned char*)str->ptr;
-  const unsigned char *pend = p + str->len;
+  const unsigned char *p = (unsigned char*)strm_str_ptr(str);
+  const unsigned char *pend = p + strm_str_len(str);
 
   while (p < pend) {
     switch (*p) {
@@ -279,8 +279,8 @@ str_dump(strm_string str, size_t len)
 {
   char *buf = malloc(len);
   char *s = buf;
-  char *p = (char*)str->ptr;
-  char *pend = p + str->len;
+  char *p = (char*)strm_str_ptr(str);
+  char *pend = p + strm_str_len(str);
 
   *s++ = '"';
   while (p<pend) {
@@ -328,79 +328,50 @@ str_dump(strm_string str, size_t len)
 strm_string
 strm_inspect(strm_value v)
 {
-  if (v.type == STRM_VALUE_PTR) {
-    if (v.val.p) {
-      switch (((struct strm_object*)v.val.p)->type) {
-      case STRM_OBJ_STRING:
-        {
-          strm_string str = (strm_string)v.val.p;
-          return str_dump(str, str_dump_len(str));
-        }
-      case STRM_OBJ_ARRAY:
-        {
-          char *buf = malloc(32);
-          size_t i, bi = 0, capa = 32;
-          strm_array a = (strm_array)v.val.p;
-
-          for (i=0; i<a->len; i++) {
-            strm_string str = strm_inspect(a->ptr[i]);
-            strm_string key = (a->headers && strm_str_p(a->headers->ptr[i])) ?
-              strm_value_ptr(a->headers->ptr[i]) : NULL;
-            size_t slen = (key ? (key->len+1) : 0) + str->len + 3;
-
-            if (bi+slen > capa) {
-              capa *= 2;
-              buf = realloc(buf, capa);
-            }
-            if (bi == 0) {
-              buf[bi++] = '[';
-            }
-            else {
-              buf[bi++] = ',';
-              buf[bi++] = ' ';
-            }
-            if (key) {
-              if (!str_symbol_p(key)) {
-                key = str_dump(key, str_dump_len(key));
-              }
-              memcpy(buf+bi, key->ptr, key->len);
-              bi += key->len;
-              buf[bi++] = ':';
-            }
-            memcpy(buf+bi, str->ptr, str->len);
-            bi += str->len;
-          }
-          buf[bi++] = ']';
-          return strm_str_new(buf, bi);
-        }
-      case STRM_OBJ_IO:
-        {
-          char buf[32];
-          strm_io io = (strm_io)v.val.p;
-          int n;
-          char *mode;
-
-          switch (io->mode & 3) {
-          case STRM_IO_READ:
-            mode = "r"; break;
-          case STRM_IO_WRITE:
-            mode = "w"; break;
-          case STRM_IO_READ|STRM_IO_WRITE:
-            mode = "rw"; break;
-          }
-          n = sprintf(buf, "<io: fd=%d mode=%s>", io->fd, mode);
-          return strm_str_new(buf, n);
-        }
-      default:
-        {
-          char buf[12];
-          int n = sprintf(buf, "<%p>", v.val.p);
-          return strm_str_new(buf, n);
-        }
-      }
-    }
+  if (strm_string_p(v)) {
+    strm_string str = strm_value_str(v);
+    return str_dump(str, str_dump_len(str));
   }
-  return strm_to_str(v);
+  else if (strm_array_p(v)) {
+    char *buf = malloc(32);
+    size_t i, bi = 0, capa = 32;
+    strm_array a = strm_value_ary(v);
+
+    for (i=0; i<strm_ary_len(a); i++) {
+      strm_string str = strm_inspect(strm_ary_ptr(a)[i]);
+      strm_string key = (strm_ary_headers(a) &&
+                         strm_string_p(strm_ary_ptr(strm_ary_headers(a))[i])) ?
+        strm_value_str(strm_ary_ptr(strm_ary_headers(a))[i]) : strm_str_null;
+      size_t slen = (key ? (strm_str_len(key)+1) : 0) + strm_str_len(str) + 3;
+
+      if (bi+slen > capa) {
+        capa *= 2;
+        buf = realloc(buf, capa);
+      }
+      if (bi == 0) {
+        buf[bi++] = '[';
+      }
+      else {
+        buf[bi++] = ',';
+        buf[bi++] = ' ';
+      }
+      if (key) {
+        if (!str_symbol_p(key)) {
+          key = str_dump(key, str_dump_len(key));
+        }
+        memcpy(buf+bi, strm_str_ptr(key), strm_str_len(key));
+        bi += strm_str_len(key);
+        buf[bi++] = ':';
+      }
+      memcpy(buf+bi, strm_str_ptr(str), strm_str_len(str));
+      bi += strm_str_len(str);
+    }
+    buf[bi++] = ']';
+    return strm_str_new(buf, bi);
+  }
+  else {
+    return strm_to_str(v);
+  }
 }
 
 strm_string
@@ -409,39 +380,69 @@ strm_to_str(strm_value v)
   char buf[32];
   int n;
 
-  switch (v.type) {
-  case STRM_VALUE_FLT:
-    n = sprintf(buf, "%g", v.val.f);
+  switch (strm_value_tag(v)) {
+  case STRM_TAG_INT:
+    n = sprintf(buf, "%d", strm_to_int(v));
     return strm_str_new(buf, n);
-  case STRM_VALUE_INT:
-    n = sprintf(buf, "%ld", v.val.i);
+  case STRM_TAG_BOOL:
+    n = sprintf(buf, strm_to_int(v) ? "true" : "false");
     return strm_str_new(buf, n);
-  case STRM_VALUE_BOOL:
-    n = sprintf(buf, v.val.i ? "true" : "false");
+  case STRM_TAG_CFUNC:
+    n = sprintf(buf, "<cfunc:%p>", (void*)strm_value_cfunc(v));
     return strm_str_new(buf, n);
-  case STRM_VALUE_CFUNC:
-    n = sprintf(buf, "<cfunc:%p>", v.val.p);
-    return strm_str_new(buf, n);
-  case STRM_VALUE_BLK:
-    n = sprintf(buf, "<blk:%p>", v.val.p);
-    return strm_str_new(buf, n);
-  case STRM_VALUE_TASK:
-    n = sprintf(buf, "<task:%p>", v.val.p);
-    return strm_str_new(buf, n);
-  case STRM_VALUE_PTR:
-    if (v.val.p == NULL)
+  case STRM_TAG_STRING_I:
+  case STRM_TAG_STRING_6:
+  case STRM_TAG_STRING_O:
+  case STRM_TAG_STRING_F:
+    return strm_value_str(v);
+  case STRM_TAG_ARRAY:
+  case STRM_TAG_STRUCT:
+    return strm_inspect(v);
+  case STRM_TAG_PTR:
+    if (strm_value_val(v) == 0)
       return strm_str_new("nil", 3);
-    switch (((struct strm_object*)v.val.p)->type) {
-    case STRM_OBJ_STRING:
-      return (strm_string)v.val.p;
-    case STRM_OBJ_ARRAY:
-    default:
-      return strm_inspect(v);
+    else {
+      void *p = strm_ptr(v);
+      switch (strm_ptr_type(p)) {
+      case STRM_PTR_TASK:
+        n = sprintf(buf, "<task:%p>", p);
+        break;
+      case STRM_PTR_IO: {
+        strm_io io = (strm_io)p;
+        char *mode;
+
+        switch (io->mode & 3) {
+        case STRM_IO_READ:
+          mode = "r"; break;
+        case STRM_IO_WRITE:
+          mode = "w"; break;
+        case STRM_IO_READ|STRM_IO_WRITE:
+          mode = "rw"; break;
+        }
+        n = sprintf(buf, "<io: fd=%d mode=%s>", io->fd, mode);
+        break;
+      }
+      case STRM_PTR_LAMBDA:
+        n = sprintf(buf, "<lambda:%p>", p);
+        break;
+      }
+      return strm_str_new(buf, n);
+      break;
     }
   default:
-    n = sprintf(buf, "<%p>", v.val.p);
+    if (strm_flt_p(v)) {
+      n = sprintf(buf, "%g", strm_to_flt(v));
+      return strm_str_new(buf, n);
+    }
+    n = sprintf(buf, "<%p>", (void*)strm_value_val(v));
     return strm_str_new(buf, n);
   }
   /* not reached */
-  return NULL;
+  return strm_str_null;
+}
+
+strm_value
+strm_nil_value(void)
+{
+  return STRM_TAG_PTR | 0;
 }

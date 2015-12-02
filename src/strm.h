@@ -22,103 +22,116 @@
 #define STRM_NG 1
 
 /* ----- Values */
-enum strm_value_type {
-  STRM_VALUE_BOOL,
-  STRM_VALUE_INT,
-  STRM_VALUE_FLT,
-  STRM_VALUE_PTR,
-  STRM_VALUE_CFUNC,
-  STRM_VALUE_BLK,
-  STRM_VALUE_TASK,
+#define STRM_MAKE_TAG(n) ((uint64_t)(0xFFF0|(n)) << 48)
+enum strm_value_tag {
+  STRM_TAG_NAN = STRM_MAKE_TAG(0x00),
+  STRM_TAG_BOOL = STRM_MAKE_TAG(0x01),
+  STRM_TAG_INT = STRM_MAKE_TAG(0x02),
+  STRM_TAG_LIST = STRM_MAKE_TAG(0x03),
+  STRM_TAG_ARRAY = STRM_MAKE_TAG(0x04),
+  STRM_TAG_STRUCT = STRM_MAKE_TAG(0x05),
+  STRM_TAG_OBJECT = STRM_MAKE_TAG(0x06),
+  STRM_TAG_STRING_I = STRM_MAKE_TAG(0x07),
+  STRM_TAG_STRING_6 = STRM_MAKE_TAG(0x08),
+  STRM_TAG_STRING_O = STRM_MAKE_TAG(0x09),
+  STRM_TAG_STRING_F = STRM_MAKE_TAG(0x0A),
+  STRM_TAG_CFUNC = STRM_MAKE_TAG(0x0B),
+  STRM_TAG_PTR = STRM_MAKE_TAG(0x0D),
+  STRM_TAG_FOREIGN = STRM_MAKE_TAG(0x0F),
 };
 
-typedef struct strm_value {
-  enum strm_value_type type;
-  union {
-    long i;
-    void *p;
-    double f;
-  } val;
-} strm_value;
+#define STRM_TAG_MASK STRM_MAKE_TAG(0x0F)
+#define STRM_VAL_MASK ~STRM_TAG_MASK
+#define strm_value_tag(v) ((v) & STRM_TAG_MASK)
+#define strm_value_val(v) ((v) & STRM_VAL_MASK)
+
+typedef uint64_t strm_value;
 
 struct strm_state;
 typedef int (*strm_cfunc)(struct strm_state*, int, strm_value*, strm_value*);
 
-strm_value strm_ptr_value(void*);
 strm_value strm_cfunc_value(strm_cfunc);
-strm_value strm_blk_value(void*);
-strm_value strm_task_value(void*);
 strm_value strm_bool_value(int);
-strm_value strm_int_value(long);
+strm_value strm_int_value(int32_t);
 strm_value strm_flt_value(double);
+strm_value strm_nil_value(void);
 
-#define strm_nil_value() strm_ptr_value(NULL)
-
-void *strm_value_ptr(strm_value);
-long strm_value_int(strm_value);
+strm_cfunc strm_value_cfunc(strm_value);
+int32_t strm_value_int(strm_value);
 int strm_value_bool(strm_value);
 double strm_value_flt(strm_value);
 
 int strm_value_eq(strm_value, strm_value);
 int strm_nil_p(strm_value);
+int strm_bool_p(strm_value);
 int strm_num_p(strm_value);
-int strm_io_p(strm_value);
-int strm_task_p(strm_value);
 int strm_cfunc_p(strm_value);
 int strm_lambda_p(strm_value);
 int strm_array_p(strm_value);
+int strm_string_p(strm_value);
 
-enum strm_obj_type {
-  STRM_OBJ_ARRAY,
-  STRM_OBJ_STRING,
-  STRM_OBJ_LAMBDA,
-  STRM_OBJ_IO,
-  STRM_OBJ_USER,
+enum strm_ptr_type {
+  STRM_PTR_LAMBDA,
+  STRM_PTR_IO,
+  STRM_PTR_TASK,
 };
 
-#define STRM_OBJ_HEADER \
-  unsigned int flags; \
-  enum strm_obj_type type
+#define STRM_PTR_HEADER \
+  enum strm_ptr_type type
 
-struct strm_object {
-  STRM_OBJ_HEADER;
-};
+int strm_ptr_tag_p(strm_value, enum strm_ptr_type);
+void* strm_value_ptr(strm_value, enum strm_ptr_type);
+strm_value strm_ptr_value(void*);
 
-void *strm_value_obj(strm_value, enum strm_obj_type);
-
+strm_value strm_foreign_value(void*);
+void* strm_value_foreign(strm_value);
 /* ----- Strings */
-typedef struct strm_string {
-  STRM_OBJ_HEADER;
+struct strm_string {
   const char *ptr;
   size_t len;
-} *strm_string;
+};
 
-#define STRM_STR_INTERNED 1
+typedef uint64_t strm_string;
 
-strm_string strm_str_new(const char*,size_t len);
-#define strm_str_value(p,len) strm_ptr_value(strm_str_new(p,len))
-#define strm_value_str(v) (strm_string)strm_value_obj(v, STRM_OBJ_STRING)
+strm_string strm_str_new(const char*, size_t);
+#define strm_str_value(s) (strm_value)(s)
+#define strm_value_str(v) (strm_string)(v)
+const char* strm_strp_ptr(strm_string*);
+#define strm_str_ptr(s) strm_strp_ptr(&s)
+const char* strm_strp_cstr(strm_string*, char buf[]);
+#define strm_str_cstr(s,buf) strm_strp_cstr(&s, buf)
+size_t strm_str_len(strm_string);
 
 strm_string strm_str_intern(const char *p, size_t len);
 strm_string strm_str_intern_str(strm_string s);
 int strm_str_eq(strm_string a, strm_string b);
-int strm_str_p(strm_value v);
+int strm_str_intern_p(strm_string v);
 
 strm_string strm_to_str(strm_value v);
-/* ----- Arrays */
-typedef struct strm_array {
-  STRM_OBJ_HEADER;
-  size_t len;
-  const strm_value *ptr;
-  struct strm_array *headers;
-  strm_string ns;
-} *strm_array;
+#define strm_str_null 0
 
-strm_array strm_ary_new(const strm_value*,size_t len);
-#define strm_ary_value(p,len) strm_ptr_value(strm_ary_new(p,len))
-#define strm_value_ary(v) ((strm_array)strm_value_obj(v, STRM_OBJ_ARRAY))
+/* ----- Arrays */
+typedef uint64_t strm_array;
+
+struct strm_array {
+  size_t len;
+  strm_value *ptr;
+  strm_array headers;
+  strm_string ns;
+};
+
+
+strm_array strm_ary_new(const strm_value*, size_t);
+#define strm_ary_value(a) (strm_value)(a)
+#define strm_value_ary(v) (strm_array)(v)
+struct strm_array* strm_ary_struct(strm_array);
+#define strm_ary_ptr(a) strm_ary_struct(a)->ptr
+#define strm_ary_len(a) strm_ary_struct(a)->len
+#define strm_ary_headers(a) strm_ary_struct(a)->headers
+#define strm_ary_ns(a) strm_ary_struct(a)->ns
 
 int strm_ary_eq(strm_array a, strm_array b);
+#define strm_ary_null 0
 
 /* ----- Tasks */
 typedef enum {
@@ -131,9 +144,10 @@ typedef struct strm_task strm_task;
 typedef int (*strm_callback)(strm_task*, strm_value);
 
 struct strm_task {
+  STRM_PTR_HEADER;
+  unsigned int flags;
   int tid;
   strm_task_mode mode;
-  unsigned int flags;
   strm_callback start_func;
   strm_callback close_func;
   void *data;
@@ -142,14 +156,16 @@ struct strm_task {
 };
 
 strm_task* strm_task_new(strm_task_mode mode, strm_callback start, strm_callback close, void *data);
+#define strm_task_value(t) strm_ptr_value(t)
 void strm_emit(strm_task* task, strm_value data, strm_callback cb);
 void strm_io_emit(strm_task* task, strm_value data, int fd, strm_callback cb);
 int strm_task_connect(strm_task* src, strm_task* dst);
 int strm_loop();
 void strm_task_close(strm_task* strm);
+#define strm_task_p(v) strm_ptr_tag_p(v, STRM_PTR_TASK)
 
 extern int strm_event_loop_started;
-strm_task* strm_value_task(strm_value);
+#define strm_value_task(t) (strm_task*)strm_value_ptr(t, STRM_PTR_TASK)
 
 /* ----- queue */
 typedef struct strm_queue strm_queue;
@@ -194,7 +210,7 @@ strm_state* strm_ns_get(strm_string);
 #define STRM_IO_READING 8
 
 typedef struct strm_io {
-  STRM_OBJ_HEADER;
+  STRM_PTR_HEADER;
   int fd;
   int mode;
   strm_task *read_task, *write_task;
@@ -203,15 +219,16 @@ typedef struct strm_io {
 strm_io strm_io_new(int fd, int mode);
 strm_task* strm_io_open(strm_io io, int mode);
 void strm_io_start_read(strm_task* strm, int fd, strm_callback cb);
-#define strm_value_io(v) (strm_io)strm_value_obj(v, STRM_OBJ_IO)
+#define strm_value_io(v) (strm_io)strm_value_ptr(v, STRM_PTR_IO)
+#define strm_io_p(v) strm_ptr_tag_p(v, STRM_PTR_IO)
 
 /* ----- lambda */
 typedef struct strm_lambda {
-  STRM_OBJ_HEADER;
+  STRM_PTR_HEADER;
   struct node_lambda* body;
   struct strm_state* state;
 } *strm_lambda;
 
-#define strm_value_lambda(v) (strm_lambda)strm_value_obj(v, STRM_OBJ_LAMBDA);
-#define strm_value_array(v) (strm_array)strm_value_obj(v, STRM_OBJ_ARRAY);
+#define strm_value_lambda(v) (strm_lambda)strm_value_ptr(v, STRM_PTR_LAMBDA)
+#define strm_lambda_p(v) strm_ptr_tag_p(v, STRM_PTR_LAMBDA)
 #endif

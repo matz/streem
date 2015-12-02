@@ -137,7 +137,7 @@ read_str(const char* beg, size_t len)
   char *p = malloc(len);
 
   memcpy(p, beg, len);
-  return strm_str_value(p, len);
+  return strm_str_value(strm_str_new(p, len));
 }
 
 static int
@@ -280,7 +280,7 @@ write_cb(strm_task* task, strm_value data)
   struct write_data *d = (struct write_data*)task->data;
   strm_string p = strm_to_str(data);
 
-  fwrite(p->ptr, p->len, 1, d->f);
+  fwrite(strm_str_ptr(p), strm_str_len(p), 1, d->f);
   fputs("\n", d->f);
   if (d->io->mode & STRM_IO_FLUSH) {
     fflush(d->f);
@@ -334,7 +334,7 @@ strm_io_new(int fd, int mode)
 
   io->fd = fd;
   io->mode = mode;
-  io->type = STRM_OBJ_IO;
+  io->type = STRM_PTR_IO;
   io->read_task = io->write_task = NULL;
   return io;
 }

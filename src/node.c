@@ -18,15 +18,15 @@ node_values_new(node_type type) {
   v->len = 0;
   v->max = 0;
   v->data = NULL;
-  v->headers = NULL;
+  v->headers = strm_ary_null;
   return (node*)v;
 }
 
 void
-node_values_add(node_values* v, void* data) {
+node_values_add(node_values* v, strm_value data) {
   if (v->len == v->max) {
     v->max = v->len + 10;
-    v->data = realloc(v->data, sizeof(void*) * v->max);
+    v->data = realloc(v->data, sizeof(strm_value) * v->max);
   }
   /* TODO: error check */
   v->data[v->len] = data;
@@ -44,7 +44,7 @@ node_values_concat(node_values* v, node_values* v2) {
 }
 
 void
-node_values_prepend(node_values* v, void* data) {
+node_values_prepend(node_values* v, strm_value data) {
   if (v->len == v->max) {
     v->max = v->len + 10;
     v->data = realloc(v->data, sizeof(void*) * v->max);
@@ -58,7 +58,7 @@ void
 node_values_free(node* np)
 {
   node_values* v = (node_values*)np;
-  v->headers = NULL;            /* leave free() upto GC */
+  v->headers = strm_ary_null;   /* leave free() upto GC */
   free(v->data);
   free(np);
 }
@@ -72,7 +72,7 @@ node_array_new()
 void
 node_array_add(node* arr, node* np)
 {
-  node_values_add((node_values*)arr, np);
+  node_values_add((node_values*)arr, strm_foreign_value(np));
 }
 
 void
@@ -81,7 +81,7 @@ node_array_free(node* np)
   int i;
   node_values* v = (node_values*)np;
   for (i = 0; i < v->len; i++)
-    node_free(v->data[i]);
+    node_free(strm_value_foreign(v->data[i]));
   node_values_free(np);
 }
 
@@ -122,21 +122,21 @@ node_array_headers(node* np)
 {
   int i;
   node_values* v;
-  strm_array headers = NULL;
+  strm_array headers = strm_ary_null;
   strm_value *p = NULL;
 
   if (!np)
     np = node_array_new();
   v = (node_values*)np;
   for (i = 0; i < v->len; i++) {
-    node_pair* npair = (node_pair*)v->data[i];
+    node_pair* npair = strm_value_foreign(v->data[i]);
     if (npair->type == NODE_PAIR) {
       if (!headers) {
         headers = strm_ary_new(NULL, v->len);
-        p = (strm_value*)headers->ptr;
+        p = (strm_value*)strm_ary_ptr(headers);
       }
-      p[i] = strm_ptr_value(npair->key);
-      v->data[i] = npair->value;
+      p[i] = strm_str_value(npair->key);
+      v->data[i] = strm_str_value(npair->value);
     }
   }
   v->headers = headers;
@@ -238,7 +238,7 @@ node_call_new(strm_string ident, node* recv, node* args, node* blk)
   ncall->type = NODE_CALL;
   ncall->ident = ident;
   if (recv) {
-    node_values_prepend((node_values*)args, recv);
+    node_values_prepend((node_values*)args, strm_foreign_value(recv));
   }
   if (blk) {
     node_array_add(args, blk);
@@ -370,10 +370,10 @@ node_id(const char* s, size_t len)
 strm_string
 node_id_str(strm_string s)
 {
-  if (s->flags & STRM_STR_INTERNED) {
+  if (strm_str_intern_p(s)) {
     return s;
   }
-  return strm_str_intern(s->ptr, s->len);
+  return strm_str_intern_str(s);
 }
 
 strm_string
@@ -552,7 +552,6 @@ node_free(node* np) {
       free(np);
       break;
     case NODE_VALUE_STRING:
-      free(np->value.v.s);
       free(np);
       break;
     case NODE_VALUE_BOOL:

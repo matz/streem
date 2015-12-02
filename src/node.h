@@ -85,7 +85,7 @@ typedef struct {
   NODE_HEADER;
   int len;
   int max;
-  void** data;
+  strm_value* data;
   strm_array headers;
   strm_string ns;
 } node_values;

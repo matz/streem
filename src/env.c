@@ -13,8 +13,8 @@ env_set(strm_env *env, strm_string name, strm_value val)
   khiter_t k;
 
   assert(env != globals || !strm_event_loop_started);
-  if ((name->flags & STRM_STR_INTERNED) == 0) {
-    name = strm_str_intern(name->ptr, name->len);
+  if (!strm_str_intern_p(name)) {
+    name = strm_str_intern_str(name);
   }
   k = kh_put(env, env, (intptr_t)name, &r);
   if (r <= 0) return STRM_NG;   /* r=0  key is present in the hash table */
@@ -28,8 +28,8 @@ env_get(strm_env* env, strm_string name, strm_value* val)
 {
   khiter_t k;
 
-  if ((name->flags & STRM_STR_INTERNED) == 0) {
-    name = strm_str_intern(name->ptr, name->len);
+  if (!strm_str_intern_p(name)) {
+    name = strm_str_intern_str(name);
   }
   k = kh_get(env, env, (intptr_t)name);
   if (k == kh_end(env)) return STRM_NG;

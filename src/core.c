@@ -196,6 +196,7 @@ strm_task*
 strm_task_new(strm_task_mode mode, strm_callback start_func, strm_callback close_func, void* data)
 {
   strm_task *s = malloc(sizeof(strm_task));
+  s->type = STRM_PTR_TASK;
   s->tid = -1;                  /* -1 means uninitialized */
   s->mode = mode;
   s->start_func = start_func;

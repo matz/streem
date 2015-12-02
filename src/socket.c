@@ -91,8 +91,8 @@ tcp_server(strm_state* state, int argc, strm_value* args, strm_value* ret)
     service = buf;
   }
   else {
-    volatile strm_string str = strm_value_str(args[0]);
-    service = str->ptr;
+    strm_string str = strm_value_str(args[0]);
+    service = strm_str_cstr(str, buf);
   }
 
   memset(&hints, 0, sizeof(struct addrinfo));
@@ -150,7 +150,7 @@ tcp_socket(strm_state* state, int argc, strm_value* args, strm_value* ret)
   struct addrinfo *result, *rp;
   int sock, s;
   const char *service;
-  char buf[12];
+  char sbuf[12], hbuf[7];
   strm_string host;
 
 #ifdef _WIN32
@@ -166,19 +166,19 @@ tcp_socket(strm_state* state, int argc, strm_value* args, strm_value* ret)
   }
   host = strm_value_str(args[0]);
   if (strm_num_p(args[1])) {
-    sprintf(buf, "%d", (int)strm_value_int(args[1]));
-    service = buf;
+    sprintf(sbuf, "%d", (int)strm_value_int(args[1]));
+    service = sbuf;
   }
   else {
-    volatile strm_string str = strm_value_str(args[1]);
-    service = str->ptr;
+    strm_string str = strm_value_str(args[1]);
+    service = strm_str_cstr(str, sbuf);
   }
 
   memset(&hints, 0, sizeof(struct addrinfo));
   hints.ai_family = AF_UNSPEC;    /* Allow IPv4 or IPv6 */
   hints.ai_socktype = SOCK_STREAM;
   hints.ai_protocol = 0;          /* Any protocol */
-  s = getaddrinfo(host->ptr, service, &hints, &result);
+  s = getaddrinfo(strm_str_cstr(host, hbuf), service, &hints, &result);
 
   if (s != 0) {
     node_raise(state, gai_strerror(s));

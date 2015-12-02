@@ -5,7 +5,7 @@
 static void
 fprint_str(FILE *f, strm_string str)
 {
-  fprintf(f, "%.*s\n", (int)str->len, str->ptr);
+  fprintf(f, "%.*s\n", (int)strm_str_len(str), strm_str_ptr(str));
 }
 
 static void
@@ -118,21 +118,21 @@ dump_node(node* np, int indent) {
       int j;
       node_values* ary = (node_values*)np;
 
-      if (ary->headers) {
+      if (strm_array_p(ary->headers)) {
         for (i = 0; i < ary->len; i++) {
-          strm_value v = ary->headers->ptr[i];
-          if (strm_str_p(v)) {
+          strm_value v = strm_ary_ptr(ary->headers)[i];
+          if (strm_string_p(v)) {
             strm_string key = strm_value_str(v);
             for (j = 0; j < indent+1; j++)
               putchar(' ');
             print_quoted_id("key: ", key);
           }
-          dump_node(ary->data[i], indent+1);
+          dump_node(strm_value_foreign(ary->data[i]), indent+1);
         }
       }
       else {
         for (i = 0; i < ary->len; i++)
-          dump_node(ary->data[i], indent+1);
+          dump_node(strm_value_foreign(ary->data[i]), indent+1);
       }
       if (ary->ns) {
         strm_string ns = ary->ns;
@@ -148,7 +148,7 @@ dump_node(node* np, int indent) {
     {
       node_values* ary = (node_values*)np;
       for (i = 0; i < ary->len; i++)
-        dump_node(ary->data[i], indent+1);
+        dump_node(strm_value_foreign(ary->data[i]), indent+1);
     }
     break;
 
@@ -247,13 +247,13 @@ main(int argc, const char**argv)
     }
     else {
       strm_array av = strm_ary_new(NULL, argc);
-      strm_value* buf = (strm_value*)av->ptr;
+      strm_value* buf = strm_ary_ptr(av);
       int i;
 
       for (i=0; i<argc; i++) {
-        buf[i] = strm_str_value(argv[i], strlen(argv[i]));
+        buf[i] = strm_str_value(strm_str_new(argv[i], strlen(argv[i])));
       }
-      strm_var_def("ARGV", strm_ptr_value(av));
+      strm_var_def("ARGV", strm_ary_value(av));
       node_run(&state);
       strm_loop();
     }

@@ -9,10 +9,10 @@
 #include "node.h"
 
 static int
-count_fields(const strm_string line)
+count_fields(strm_string line)
 {
-  const char *ptr = line->ptr;
-  const char *pend = ptr + line->len;
+  const char *ptr = strm_str_ptr(line);
+  const char *pend = ptr + strm_str_len(line);
   int cnt, quoted = 0;
 
   for (cnt = 1; ptr<pend; ptr++) {
@@ -53,13 +53,14 @@ enum csv_type {
 static strm_value
 csv_string(const char* p, size_t len, int ftype)
 {
+  strm_string str;
+
   if (ftype == 2) {             /* escaped_string */
-    strm_string str = strm_str_new(p, len);
     const char *pend = p + len;
-    char *t = (char*)p;
+    char *t, *s;
     int in_quote = 0;
 
-    t = (char*)str->ptr;
+    t = s = malloc(len+1);
     while (p<pend) {
       if (in_quote) {
         if (*p == '\"') {
@@ -84,10 +85,13 @@ csv_string(const char* p, size_t len, int ftype)
       }
       p++;
     }
-    str->len = t - str->ptr;
-    return strm_ptr_value(str);
+    str = strm_str_new(s, t - s);
+    free(s);
   }
-  return strm_str_value(p, len);
+  else {
+    str = strm_str_new(p, len);
+  }
+  return strm_str_value(str);
 }
 
 static strm_value
@@ -119,7 +123,7 @@ csv_value(const char* p, size_t len, int ftype)
         pow = 1;
         break;
       default:
-        return strm_str_value(p, len);
+        return strm_str_value(strm_str_new(p, len));
       }
       s++;
     }
@@ -166,14 +170,15 @@ csv_accept(strm_task* task, strm_value data)
   struct csv_data *cd = task->data;
 
   if (cd->prev) {
-    strm_string str = strm_str_new(NULL, cd->prev->len+line->len+1);
-    char *tmp = (char*)str->ptr;
+    size_t len = strm_str_len(cd->prev)+strm_str_len(line)+1;
+    char* tmp = malloc(len);
 
-    memcpy(tmp, cd->prev->ptr, cd->prev->len);
-    *(tmp+cd->prev->len) = '\n';
-    memcpy(tmp+cd->prev->len+1, line->ptr, line->len);
-    line = str;
-    cd->prev = NULL;
+    memcpy(tmp, strm_str_ptr(cd->prev), strm_str_len(cd->prev));
+    *(tmp+strm_str_len(cd->prev)) = '\n';
+    memcpy(tmp+strm_str_len(cd->prev)+1, strm_str_ptr(line), strm_str_len(line));
+    line = strm_str_new(tmp, len);
+    free(tmp);
+    cd->prev = strm_str_null;
   }
   fieldcnt = count_fields(line);
   if (fieldcnt == -1) {
@@ -183,11 +188,11 @@ csv_accept(strm_task* task, strm_value data)
   if (cd->n > 0 && fieldcnt != cd->n)
     return STRM_NG;
 
-  ptr = line->ptr;
-  pend = ptr + line->len;
+  ptr = strm_str_ptr(line);
+  pend = ptr + strm_str_len(line);
   ary = strm_ary_new(NULL, fieldcnt);
   if (!ary) return STRM_NG;
-  bp = (strm_value*)ary->ptr;
+  bp = (strm_value*)strm_ary_ptr(ary);
 
   for (fbeg=ptr; ptr<pend; ptr++) {
     if (in_quote) {
@@ -215,7 +220,7 @@ csv_accept(strm_task* task, strm_value data)
       continue;
     case ',':
       *bp = csv_value(fbeg, ptr-fbeg, ftype);
-      if (!strm_str_p(*bp)) all_str = 0;
+      if (!strm_string_p(*bp)) all_str = 0;
       bp++;
       fbeg = ptr+1;
       ftype = 0;                /* unspecified */
@@ -234,13 +239,13 @@ csv_accept(strm_task* task, strm_value data)
     ptr--;
   }
   *bp = csv_value(fbeg, ptr-fbeg, ftype);
-  if (!strm_str_p(*bp)) all_str = 0;
+  if (!strm_string_p(*bp)) all_str = 0;
 
   /* check headers */
   if (!cd->headers && !cd->types) {
     if (all_str) {
       cd->headers = ary;
-      ary = NULL;
+      ary = strm_ary_null;
     }
     cd->n = fieldcnt;
   }
@@ -249,23 +254,23 @@ csv_accept(strm_task* task, strm_value data)
 
     /* set headers if any */
     if (cd->headers)
-      ary->headers = cd->headers;
+      strm_ary_headers(ary) = cd->headers;
     if (!cd->types) {
       /* first data line (after optinal header line) */
       if (cd->headers) {
         if (all_str) {          /* data line is all string; emit header line */
-          strm_emit(task, strm_ptr_value(cd->headers), NULL);
-          cd->headers = NULL;
+          strm_emit(task, strm_ary_value(cd->headers), NULL);
+          cd->headers = strm_ary_null;
         }
         else {                  /* intern header strings */
           strm_array h = cd->headers;
-          strm_value *p = (strm_value*)h->ptr;
+          strm_value *p = strm_ary_ptr(h);
           int i;
 
-          for (i=0; i<h->len; i++) {
+          for (i=0; i<strm_ary_len(h); i++) {
             strm_string str = strm_value_str(p[i]);
 
-            p[i] = strm_ptr_value(strm_str_intern_str(str));
+            p[i] = strm_str_value(strm_str_intern_str(str));
           }
         }
       }
@@ -273,16 +278,16 @@ csv_accept(strm_task* task, strm_value data)
       cd->types = malloc(sizeof(enum csv_type)*fieldcnt);
       if (!cd->types) return STRM_NG;
       for (i=0; i<fieldcnt; i++) {
-        cd->types[i] = csv_type(ary->ptr[i]);
+        cd->types[i] = csv_type(strm_ary_ptr(ary)[i]);
       }
     }
     else {
       /* type check */
       for (i=0; i<fieldcnt; i++) {
-        if (cd->types[i] != csv_type(ary->ptr[i])) {
+        if (cd->types[i] != csv_type(strm_ary_ptr(ary)[i])) {
           if (cd->types[i] == STRING_TYPE) {
             /* convert value to string */
-            ((strm_value*)ary->ptr)[i] = strm_ptr_value(strm_to_str(ary->ptr[i]));
+            ((strm_value*)strm_ary_ptr(ary))[i] = strm_str_value(strm_to_str(strm_ary_ptr(ary)[i]));
           }
           else {
             /* type mismatch (error); skip this line */
@@ -291,7 +296,7 @@ csv_accept(strm_task* task, strm_value data)
         }
       }
     }
-    strm_emit(task, strm_ptr_value(ary), NULL);
+    strm_emit(task, strm_str_value(ary), NULL);
   }
   return STRM_OK;
 }
@@ -302,8 +307,8 @@ csv_finish(strm_task* task, strm_value data)
   struct csv_data *cd = task->data;
 
   if (cd->headers && cd->types == NULL) {
-    strm_emit(task, strm_ptr_value(cd->headers), NULL);
-    cd->headers = NULL;
+    strm_emit(task, strm_ary_value(cd->headers), NULL);
+    cd->headers = strm_ary_null;
   }
   return STRM_OK;
 }
@@ -315,9 +320,9 @@ csv(strm_state* state, int argc, strm_value* args, strm_value* ret)
   struct csv_data *cd = malloc(sizeof(struct csv_data));
 
   if (!cd) return STRM_NG;
-  cd->headers = NULL;
+  cd->headers = strm_ary_null;
   cd->types = NULL;
-  cd->prev = NULL;
+  cd->prev = strm_str_null;
   cd->n = 0;
 
   task = strm_task_new(strm_task_filt, csv_accept, csv_finish, (void*)cd);
