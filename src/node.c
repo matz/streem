@@ -18,12 +18,12 @@ node_values_new(node_type type) {
   v->len = 0;
   v->max = 0;
   v->data = NULL;
-  v->headers = strm_ary_null;
+  v->headers = NULL;
   return (node*)v;
 }
 
 void
-node_values_add(node_values* v, strm_value data) {
+node_values_add(node_values* v, void* data) {
   if (v->len == v->max) {
     v->max = v->len + 10;
     v->data = realloc(v->data, sizeof(strm_value) * v->max);
@@ -44,7 +44,7 @@ node_values_concat(node_values* v, node_values* v2) {
 }
 
 void
-node_values_prepend(node_values* v, strm_value data) {
+node_values_prepend(node_values* v, void* data) {
   if (v->len == v->max) {
     v->max = v->len + 10;
     v->data = realloc(v->data, sizeof(void*) * v->max);
@@ -58,7 +58,14 @@ void
 node_values_free(node* np)
 {
   node_values* v = (node_values*)np;
-  v->headers = strm_ary_null;   /* leave free() upto GC */
+  if (v->headers) {
+    size_t i;
+
+    for (i=0; i<v->len; i++) {
+      free(v->headers[i]);
+    }
+    free(v->headers);
+  }
   free(v->data);
   free(np);
 }
@@ -72,7 +79,7 @@ node_array_new()
 void
 node_array_add(node* arr, node* np)
 {
-  node_values_add((node_values*)arr, strm_foreign_value(np));
+  node_values_add((node_values*)arr, np);
 }
 
 void
@@ -81,7 +88,7 @@ node_array_free(node* np)
   int i;
   node_values* v = (node_values*)np;
   for (i = 0; i < v->len; i++)
-    node_free(strm_value_foreign(v->data[i]));
+    node_free(v->data[i]);
   node_values_free(np);
 }
 
@@ -108,7 +115,7 @@ node_stmts_concat(node* s, node* s2)
 }
 
 node*
-node_pair_new(strm_string key, node* value)
+node_pair_new(node_string key, node* value)
 {
   node_pair* npair = malloc(sizeof(node_pair));
   npair->type = NODE_PAIR;
@@ -122,22 +129,21 @@ node_array_headers(node* np)
 {
   int i;
   node_values* v;
-  strm_array headers = strm_ary_null;
-  strm_value *p = NULL;
+  node_string* headers = NULL;
 
   if (!np)
     np = node_array_new();
   v = (node_values*)np;
   for (i = 0; i < v->len; i++) {
-    node_pair* npair = strm_value_foreign(v->data[i]);
+    node_pair* npair = v->data[i];
     if (npair->type == NODE_PAIR) {
       if (!headers) {
-        headers = strm_ary_new(NULL, v->len);
-        p = (strm_value*)strm_ary_ptr(headers);
+        headers = malloc(sizeof(node_string)*v->len);
       }
-      p[i] = strm_str_value(npair->key);
-      v->data[i] = strm_str_value(npair->value);
+      headers[i] = npair->key;
+      v->data[i] = npair->value;
     }
+    free(npair);
   }
   v->headers = headers;
 
@@ -145,7 +151,7 @@ node_array_headers(node* np)
 }
 
 node*
-node_obj_new(node* np, strm_string ns)
+node_obj_new(node* np, node_string ns)
 {
   node_values* v = (node_values*)np;
   v->ns = ns;
@@ -159,13 +165,13 @@ node_args_new()
 }
 
 void
-node_args_add(node* arr, strm_string s)
+node_args_add(node* arr, node_string s)
 {
   node_values_add((node_values*)arr, s);
 }
 
 node*
-node_ns_new(strm_string name, node* body)
+node_ns_new(node_string name, node* body)
 {
   node_ns* nns = malloc(sizeof(node_ns));
   nns->type = NODE_NS;
@@ -175,7 +181,7 @@ node_ns_new(strm_string name, node* body)
 }
 
 node*
-node_import_new(strm_string name)
+node_import_new(node_string name)
 {
   node_import* nimp = malloc(sizeof(node_import));
   nimp->type = NODE_IMPORT;
@@ -184,7 +190,7 @@ node_import_new(strm_string name)
 }
 
 node*
-node_let_new(strm_string lhs, node* rhs)
+node_let_new(node_string lhs, node* rhs)
 {
   node_let* nlet = malloc(sizeof(node_let));
   nlet->type = NODE_LET;
@@ -199,7 +205,7 @@ node_op_new(const char* op, node* lhs, node* rhs)
   node_op* nop = malloc(sizeof(node_op));
   nop->type = NODE_OP;
   nop->lhs = lhs;
-  nop->op = node_id(op, strlen(op));
+  nop->op = node_str(op, strlen(op));
   nop->rhs = rhs;
   return (node*)nop;
 }
@@ -220,11 +226,11 @@ node_method_new(node* args, node* compstmt)
   node_lambda* lambda = malloc(sizeof(node_lambda));
   lambda->type = NODE_LAMBDA;
   if (args) {
-    node_values_prepend((node_values*)args, strm_str_intern("self", 4));
+    node_values_prepend((node_values*)args, node_str("self", 4));
   }
   else {
     args = node_array_new();
-    node_args_add(args, strm_str_intern("self", 4));
+    node_args_add(args, node_str("self", 4));
   }
   lambda->args = args;
   lambda->compstmt = compstmt;
@@ -232,13 +238,13 @@ node_method_new(node* args, node* compstmt)
 }
 
 node*
-node_call_new(strm_string ident, node* recv, node* args, node* blk)
+node_call_new(node_string ident, node* recv, node* args, node* blk)
 {
   node_call* ncall = malloc(sizeof(node_call));
   ncall->type = NODE_CALL;
   ncall->ident = ident;
   if (recv) {
-    node_values_prepend((node_values*)args, strm_foreign_value(recv));
+    node_values_prepend((node_values*)args, recv);
   }
   if (blk) {
     node_array_add(args, blk);
@@ -341,12 +347,12 @@ node_string_new(const char* s, size_t len)
   np->type = NODE_VALUE;
   np->value.t = NODE_VALUE_STRING;
   len = string_escape((char*)s, len);
-  np->value.v.s = strm_str_new(s, len);
+  np->value.v.s = node_str(s, len);
   return np;
 }
 
 node*
-node_ident_new(strm_string name)
+node_ident_new(node_string name)
 {
   node* np = malloc(sizeof(node));
 
@@ -356,31 +362,22 @@ node_ident_new(strm_string name)
   return np;
 }
 
-strm_string
-node_id(const char* s, size_t len)
+node_string
+node_str(const char* s, size_t len)
 {
-  extern int strm_event_loop_started;
-  strm_string str;
+  node_string str;
 
-  assert(!strm_event_loop_started);
-  str = strm_str_intern(s, len);
+  str = malloc(sizeof(struct node_string)+len);
+  str->len = len;
+  memcpy(str->buf, s, len);
   return str;
 }
 
-strm_string
-node_id_str(strm_string s)
-{
-  if (strm_str_intern_p(s)) {
-    return s;
-  }
-  return strm_str_intern_str(s);
-}
-
-strm_string
-node_id_escaped(const char* s, size_t len)
+node_string
+node_str_escaped(const char* s, size_t len)
 {
   len = string_escape((char*)s, len);
-  return strm_str_intern(s, len);
+  return node_str(s, len);
 }
 
 node*

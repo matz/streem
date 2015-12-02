@@ -8,6 +8,12 @@ int strm_flt_p(strm_value);
 #define NODE_ERROR_RETURN 1
 #define NODE_ERROR_SKIP 2
 
+static strm_string
+node_sym(node_string s)
+{
+  return strm_str_intern(s->buf, s->len);
+}
+
 static int
 exec_plus(strm_state* state, int argc, strm_value* args, strm_value* ret)
 {
@@ -276,6 +282,19 @@ exec_call(strm_state* state, strm_string name, int argc, strm_value* argv, strm_
   return STRM_NG;
 }
 
+static strm_array
+ary_headers(node_string* headers, size_t len)
+{
+  strm_array ary = strm_ary_new(NULL, len);
+  strm_value* p = strm_ary_ptr(ary);
+  size_t i;
+
+  for (i=0; i<len; i++) {
+    p[i] = node_sym(headers[i]);
+  }
+  return ary;
+}
+
 static int
 exec_expr(strm_state* state, node* np, strm_value* val)
 {
@@ -293,7 +312,7 @@ exec_expr(strm_state* state, node* np, strm_value* val)
   case NODE_NS:
     {
       node_ns *ns = (node_ns*)np;
-      strm_state *s = strm_ns_new(state, ns->name);
+      strm_state *s = strm_ns_new(state, node_sym(ns->name));
 
       if (!s) {
         node_raise(state, "failed to create namespace");
@@ -305,7 +324,7 @@ exec_expr(strm_state* state, node* np, strm_value* val)
   case NODE_IMPORT:
     {
       node_import *ns = (node_import*)np;
-      strm_state* s = strm_ns_get(ns->name);
+      strm_state* s = strm_ns_get(node_sym(ns->name));
       if (!s) {
         node_raise(state, "no such namespace");
         return STRM_NG;
@@ -337,7 +356,7 @@ exec_expr(strm_state* state, node* np, strm_value* val)
       v0 = (node_values*)np->value.v.p;
 
       for (i = 0; i < v0->len; i++) {
-        n = exec_expr(state, strm_value_foreign(v0->data[i]), val);
+        n = exec_expr(state, v0->data[i], val);
         if (n) return n;
         strm_emit(state->task, *val, NULL);
       }
@@ -352,7 +371,7 @@ exec_expr(strm_state* state, node* np, strm_value* val)
         node_raise(state, "failed to assign");
         return n;
       }
-      return strm_var_set(state, nlet->lhs, *val);
+      return strm_var_set(state, node_sym(nlet->lhs), *val);
     }
   case NODE_ARRAY:
     {
@@ -362,16 +381,21 @@ exec_expr(strm_state* state, node* np, strm_value* val)
       int i=0;
 
       for (i = 0; i < v0->len; i++, ptr++) {
-        n = exec_expr(state, strm_value_foreign(v0->data[i]), ptr);
+        n = exec_expr(state, v0->data[i], ptr);
         if (n) return n;
       }
-      strm_ary_headers(arr) = v0->headers;
-      strm_ary_ns(arr) = v0->ns;
+      strm_ary_headers(arr) = ary_headers(v0->headers, v0->len);
+      if (v0->ns) {
+        strm_ary_ns(arr) = node_sym(v0->ns);
+      }
+      else {
+        strm_ary_ns(arr) = strm_str_null;
+      }
       *val = strm_ary_value(arr);
       return STRM_OK;
     }
   case NODE_IDENT:
-    n = strm_var_get(state, np->value.v.s, val);
+    n = strm_var_get(state, node_sym(np->value.v.s), val);
     if (n) {
       node_raise(state, "failed to reference variable");
     }
@@ -408,7 +432,7 @@ exec_expr(strm_state* state, node* np, strm_value* val)
         n = exec_expr(state, nop->rhs, &args[i++]);
         if (n) return n;
       }
-      return exec_call(state, nop->op, i, args, val);
+      return exec_call(state, node_sym(nop->op), i, args, val);
     }
     break;
   case NODE_LAMBDA:
@@ -432,10 +456,10 @@ exec_expr(strm_state* state, node* np, strm_value* val)
       strm_value *args = malloc(sizeof(strm_value)*v0->len);
 
       for (i = 0; i < v0->len; i++) {
-        n = exec_expr(state, strm_value_foreign(v0->data[i]), &args[i]);
+        n = exec_expr(state, v0->data[i], &args[i]);
         if (n) return n;
       }
-      return exec_call(state, ncall->ident, i, args, val);
+      return exec_call(state, node_sym(ncall->ident), i, args, val);
     }
     break;
   case NODE_RETURN:
@@ -450,7 +474,7 @@ exec_expr(strm_state* state, node* np, strm_value* val)
         state->exc->arg = strm_nil_value();
         break;
       case 1:
-        n = exec_expr(state, strm_value_foreign(args->data[0]), &state->exc->arg);
+        n = exec_expr(state, args->data[0], &state->exc->arg);
         if (n) return n;
         break;
       default:
@@ -459,7 +483,7 @@ exec_expr(strm_state* state, node* np, strm_value* val)
           size_t i;
 
           for (i=0; i<args->len; i++) {
-            n = exec_expr(state, strm_value_foreign(args->data[i]), (strm_value*)&strm_ary_ptr(ary)[i]);
+            n = exec_expr(state, args->data[i], (strm_value*)&strm_ary_ptr(ary)[i]);
             if (n) return n;
           }
         }
@@ -473,7 +497,7 @@ exec_expr(strm_state* state, node* np, strm_value* val)
       int i;
       node_values* v = (node_values*)np;
       for (i = 0; i < v->len; i++) {
-        n = exec_expr(state, strm_value_foreign(v->data[i]), val);
+        n = exec_expr(state, v->data[i], val);
         if (state->exc != NULL) return STRM_NG;
         if (n) return n;
       }

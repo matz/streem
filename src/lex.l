@@ -63,13 +63,13 @@ true                LEX_RETURN(keyword_true);
 false               LEX_RETURN(keyword_false);
 
 [A-Za-z_][A-Za-z0-9_]* {
-  lval->id = node_id(yytext, yyleng);
+  lval->id = node_str(yytext, yyleng);
   LEX_RETURN(identifier);
 };
 
 [A-Za-z_][A-Za-z0-9_]*: {
   yytext[yyleng-1]='\0';
-  lval->id = node_id(yytext, yyleng-1);
+  lval->id = node_str(yytext, yyleng-1);
   LEX_RETURN(label);
 };
 
@@ -102,7 +102,7 @@ false               LEX_RETURN(keyword_false);
 };
 
 \"([^\\\"]|\\.)*\": {
-  lval->id = node_id_escaped(yytext+1, yyleng-3);
+  lval->id = node_str_escaped(yytext+1, yyleng-3);
   LEX_RETURN(label);
 };
 

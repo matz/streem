@@ -14,7 +14,7 @@
 
 %union {
   node* nd;
-  strm_string id;
+  node_string id;
 }
 
 %type <nd> program topstmts decls decl_list decl stmts stmt_list
@@ -509,15 +509,15 @@ cond            : primary0
                     }
                 | identifier '(' opt_args ')'
                     {
-                      $$ = node_call_new(node_id_str($1), NULL, $3, NULL);
+                      $$ = node_call_new($1, NULL, $3, NULL);
                     }
                 | cond '.' identifier '(' opt_args ')'
                     {
-                      $$ = node_call_new(node_id_str($3), NULL, $5, NULL);
+                      $$ = node_call_new($3, NULL, $5, NULL);
                     }
                 | cond '.' identifier
                     {
-                      $$ = node_call_new(node_id_str($3), $1, NULL, NULL);
+                      $$ = node_call_new($3, $1, NULL, NULL);
                     }
                 ;
 
@@ -529,19 +529,19 @@ primary         : primary0
                     }
                 | identifier block
                     {
-                      $$ = node_call_new(node_id_str($1), NULL, NULL, $2);
+                      $$ = node_call_new($1, NULL, NULL, $2);
                     }
                 | identifier '(' opt_args ')' opt_block
                     {
-                      $$ = node_call_new(node_id_str($1), NULL, $3, $5);
+                      $$ = node_call_new($1, NULL, $3, $5);
                     }
                 | primary '.' identifier '(' opt_args ')' opt_block
                     {
-                      $$ = node_call_new(node_id_str($3), $1, $5, $7);
+                      $$ = node_call_new($3, $1, $5, $7);
                     }
                 | primary '.' identifier opt_block
                     {
-                      $$ = node_call_new(node_id_str($3), $1, NULL, $4);
+                      $$ = node_call_new($3, $1, NULL, $4);
                     }
                 ;
 
@@ -585,12 +585,12 @@ opt_f_args      : /* no args */
 f_args          : identifier
                     {
                       $$ = node_args_new();
-                      node_args_add($$, node_id_str($1));
+                      node_args_add($$, $1);
                     }
                 | f_args ',' identifier
                     {
                       $$ = $1;
-                      node_args_add($$, node_id_str($3));
+                      node_args_add($$, $3);
                     }
                 ;
 
