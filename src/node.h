@@ -1,32 +1,10 @@
 #ifndef STRM_NODE_H
 #define STRM_NODE_H
 
-typedef enum {
-  NODE_VALUE_BOOL,
-  NODE_VALUE_STRING,
-  NODE_VALUE_DOUBLE,
-  NODE_VALUE_INT,
-  NODE_VALUE_IDENT,
-  NODE_VALUE_NIL,
-  NODE_VALUE_USER,
-  NODE_VALUE_ERROR,
-} node_value_type;
-
 typedef struct node_string {
   size_t len;
   char buf[0];
 } *node_string;
-
-typedef struct {
-  node_value_type t;
-  union {
-    int b;
-    long i;
-    double d;
-    void* p;
-    node_string s;
-  } v;
-} node_value;
 
 typedef struct node_error {
   int type;
@@ -51,9 +29,13 @@ int node_run(parser_state*);
 void node_raise(strm_state*, const char*);
 
 typedef enum {
+  NODE_INT,
+  NODE_FLOAT,
+  NODE_STR,
+  NODE_NIL,
+  NODE_BOOL,
   NODE_ARGS,
   NODE_PAIR,
-  NODE_VALUE,
   NODE_CFUNC,
   NODE_LAMBDA,
   NODE_IDENT,
@@ -77,8 +59,27 @@ typedef enum {
 
 typedef struct {
   NODE_HEADER;
-  node_value value;
 } node;
+
+typedef struct {
+  NODE_HEADER;
+  int32_t value;
+} node_int;
+
+typedef struct {
+  NODE_HEADER;
+  double value;
+} node_float;
+
+typedef struct {
+  NODE_HEADER;
+  node_string value;
+} node_str;
+
+typedef struct {
+  NODE_HEADER;
+  int value;
+} node_bool;
 
 typedef struct {
   NODE_HEADER;
@@ -104,9 +105,19 @@ typedef struct {
 
 typedef struct {
   NODE_HEADER;
+  node* emit;
+} node_emit;
+
+typedef struct {
+  NODE_HEADER;
   node_string lhs;
   node* rhs;
 } node_let;
+
+typedef struct {
+  NODE_HEADER;
+  node_string name;
+} node_ident;
 
 typedef struct {
   NODE_HEADER;
@@ -162,7 +173,7 @@ extern node* node_lambda_new(node*, node*);
 extern node* node_method_new(node*, node*);
 extern node* node_call_new(node_string, node*, node*, node*);
 extern node* node_int_new(long);
-extern node* node_double_new(double);
+extern node* node_float_new(double);
 extern node* node_string_new(const char*, size_t);
 extern node* node_if_new(node*, node*, node*);
 extern node* node_emit_new(node*);
@@ -170,7 +181,7 @@ extern node* node_skip_new();
 extern node* node_return_new(node*);
 extern node* node_break_new();
 extern node* node_ident_new(node_string);
-extern node_string node_str(const char*, size_t len);
+extern node_string node_str_new(const char*, size_t len);
 extern node_string node_str_escaped(const char* s, size_t len);
 extern node* node_nil();
 extern node* node_true();

@@ -205,7 +205,7 @@ node_op_new(const char* op, node* lhs, node* rhs)
   node_op* nop = malloc(sizeof(node_op));
   nop->type = NODE_OP;
   nop->lhs = lhs;
-  nop->op = node_str(op, strlen(op));
+  nop->op = node_str_new(op, strlen(op));
   nop->rhs = rhs;
   return (node*)nop;
 }
@@ -226,11 +226,11 @@ node_method_new(node* args, node* compstmt)
   node_lambda* lambda = malloc(sizeof(node_lambda));
   lambda->type = NODE_LAMBDA;
   if (args) {
-    node_values_prepend((node_values*)args, node_str("self", 4));
+    node_values_prepend((node_values*)args, node_str_new("self", 4));
   }
   else {
     args = node_array_new();
-    node_args_add(args, node_str("self", 4));
+    node_args_add(args, node_str_new("self", 4));
   }
   lambda->args = args;
   lambda->compstmt = compstmt;
@@ -256,23 +256,21 @@ node_call_new(node_string ident, node* recv, node* args, node* blk)
 node*
 node_int_new(long i)
 {
-  node* np = malloc(sizeof(node));
+  node_int* ni = malloc(sizeof(node_int));
 
-  np->type = NODE_VALUE;
-  np->value.t = NODE_VALUE_INT;
-  np->value.v.i = i;
-  return np;
+  ni->type = NODE_INT;
+  ni->value = i;
+  return (node*)ni;
 }
 
 node*
-node_double_new(double d)
+node_float_new(double d)
 {
-  node* np = malloc(sizeof(node));
+  node_float* nf = malloc(sizeof(node_float));
 
-  np->type = NODE_VALUE;
-  np->value.t = NODE_VALUE_DOUBLE;
-  np->value.v.d = d;
-  return np;
+  nf->type = NODE_FLOAT;
+  nf->value = d;
+  return (node*)nf;
 }
 
 static size_t
@@ -342,28 +340,26 @@ string_escape(char* s, size_t len)
 node*
 node_string_new(const char* s, size_t len)
 {
-  node* np = malloc(sizeof(node));
+  node_str* ns = malloc(sizeof(node_str));
 
-  np->type = NODE_VALUE;
-  np->value.t = NODE_VALUE_STRING;
+  ns->type = NODE_STR;
   len = string_escape((char*)s, len);
-  np->value.v.s = node_str(s, len);
-  return np;
+  ns->value = node_str_new(s, len);
+  return (node*)ns;
 }
 
 node*
 node_ident_new(node_string name)
 {
-  node* np = malloc(sizeof(node));
+  node_ident* ni = malloc(sizeof(node_ident));
 
-  np->type = NODE_IDENT;
-  np->value.t = NODE_VALUE_IDENT;
-  np->value.v.s = name;
-  return np;
+  ni->type = NODE_IDENT;
+  ni->name = name;
+  return (node*)ni;
 }
 
 node_string
-node_str(const char* s, size_t len)
+node_str_new(const char* s, size_t len)
 {
   node_string str;
 
@@ -377,28 +373,28 @@ node_string
 node_str_escaped(const char* s, size_t len)
 {
   len = string_escape((char*)s, len);
-  return node_str(s, len);
+  return node_str_new(s, len);
 }
 
 node*
 node_nil()
 {
-  static node nd = { NODE_VALUE, { NODE_VALUE_NIL, {0} } };
+  static node nd = { NODE_NIL };
   return &nd;
 }
 
 node*
 node_true()
 {
-  static node nd = { NODE_VALUE, { NODE_VALUE_BOOL, {1} } };
-  return &nd;
+  static node_bool nd = { NODE_BOOL, 1 };
+  return (node*)&nd;
 }
 
 node*
 node_false()
 {
-  static node nd = { NODE_VALUE, { NODE_VALUE_BOOL, {0} } };
-  return &nd;
+  static node_bool nd = { NODE_BOOL, 0 };
+  return (node*)&nd;
 }
 
 node*
@@ -415,11 +411,10 @@ node_if_new(node* cond, node* then, node* opt_else)
 node*
 node_emit_new(node* value)
 {
-  node* np = malloc(sizeof(node));
-  np->type = NODE_EMIT;
-  np->value.t = NODE_VALUE_USER;
-  np->value.v.p = value;
-  return np;
+  node_emit* ne = malloc(sizeof(node_emit));
+  ne->type = NODE_EMIT;
+  ne->emit = value;
+  return (node*)ne;
 }
 
 node*
@@ -516,48 +511,43 @@ node_free(node* np) {
     free(np);
     break;
   case NODE_EMIT:
-    node_free((node*) np->value.v.p);
+    node_free(((node_emit*)np)->emit);
     free(np);
     break;
   case NODE_OP:
-    node_free(((node_op*) np)->lhs);
-    node_free(((node_op*) np)->rhs);
+    node_free(((node_op*)np)->lhs);
+    node_free(((node_op*)np)->rhs);
     free(np);
     break;
   case NODE_LAMBDA:
-    node_free(((node_lambda*) np)->args);
-    node_free(((node_lambda*) np)->compstmt);
+    node_free(((node_lambda*)np)->args);
+    node_free(((node_lambda*)np)->compstmt);
     free(np);
     break;
   case NODE_CALL:
-    node_free(((node_call*) np)->args);
+    node_free(((node_call*)np)->args);
     free(np);
     break;
   case NODE_RETURN:
-    node_free((node*) np);
+    node_free((node*)np);
     free(np);
     break;
   case NODE_IDENT:
+    free(((node_ident*)np)->name);
     free(np);
     break;
   case NODE_ARRAY:
     node_array_free(np);
     break;
-  case NODE_VALUE:
-    switch (np->value.t) {
-    case NODE_VALUE_DOUBLE:
-      free(np);
-      break;
-    case NODE_VALUE_STRING:
-      free(np);
-      break;
-    case NODE_VALUE_BOOL:
-      break;
-    case NODE_VALUE_NIL:
-      break;
-    default:
-      break;
-    }
+  case NODE_INT:
+  case NODE_FLOAT:
+    free(np);
+    break;
+  case NODE_BOOL:
+    return;
+  case NODE_STR:
+    free(((node_str*)np)->value);
+    free(np);
     break;
   default:
     break;

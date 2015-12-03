@@ -63,13 +63,13 @@ true                LEX_RETURN(keyword_true);
 false               LEX_RETURN(keyword_false);
 
 [A-Za-z_][A-Za-z0-9_]* {
-  lval->id = node_str(yytext, yyleng);
+  lval->id = node_str_new(yytext, yyleng);
   LEX_RETURN(identifier);
 };
 
 [A-Za-z_][A-Za-z0-9_]*: {
   yytext[yyleng-1]='\0';
-  lval->id = node_str(yytext, yyleng-1);
+  lval->id = node_str_new(yytext, yyleng-1);
   LEX_RETURN(label);
 };
 
@@ -87,7 +87,7 @@ false               LEX_RETURN(keyword_false);
 (([1-9][0-9]*)|0)(\.[0-9][0-9]*)? {
   double temp;
   sscanf(yytext, "%lf", &temp);
-  lval->nd = node_double_new(temp);
+  lval->nd = node_float_new(temp);
   LEX_RETURN(lit_number);
 };
 

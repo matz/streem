@@ -353,7 +353,7 @@ exec_expr(strm_state* state, node* np, strm_value* val)
       if (!state->task) {
         node_raise(state, "failed to emit");
       }
-      v0 = (node_values*)np->value.v.p;
+      v0 = (node_values*)((node_emit*)np)->emit;
 
       for (i = 0; i < v0->len; i++) {
         n = exec_expr(state, v0->data[i], val);
@@ -395,11 +395,14 @@ exec_expr(strm_state* state, node* np, strm_value* val)
       return STRM_OK;
     }
   case NODE_IDENT:
-    n = strm_var_get(state, node_sym(np->value.v.s), val);
-    if (n) {
-      node_raise(state, "failed to reference variable");
+    {
+      node_ident* ni = (node_ident*)np;
+      n = strm_var_get(state, node_sym(ni->name), val);
+      if (n) {
+        node_raise(state, "failed to reference variable");
+      }
+      return n;
     }
-    return n;
   case NODE_IF:
     {
       strm_value v;
@@ -503,30 +506,21 @@ exec_expr(strm_state* state, node* np, strm_value* val)
       }
     }
     return STRM_OK;
-  case NODE_VALUE:
-    switch (np->value.t) {
-    case NODE_VALUE_BOOL:
-      *val = strm_bool_value(np->value.v.b);
-      return STRM_OK;
-    case NODE_VALUE_NIL:
-      *val = strm_nil_value();
-      return STRM_OK;
-    case NODE_VALUE_STRING:
-    case NODE_VALUE_IDENT:
-      *val = strm_str_value(np->value.v.s);
-      return STRM_OK;
-    case NODE_VALUE_DOUBLE:
-      *val = strm_flt_value(np->value.v.d);
-      return STRM_OK;
-    case NODE_VALUE_INT:
-      *val = strm_int_value(np->value.v.i);
-      return STRM_OK;
-      /* following type should not be evaluated */
-    case NODE_VALUE_ERROR:
-    case NODE_VALUE_USER:
-    default:
-      return STRM_NG;
-    }
+  case NODE_INT:
+    *val = strm_int_value(((node_int*)np)->value);
+    return STRM_OK;
+  case NODE_FLOAT:
+    *val = strm_int_value(((node_float*)np)->value);
+    return STRM_OK;
+  case NODE_BOOL:
+    *val = strm_bool_value(((node_bool*)np)->value);
+    return STRM_OK;
+  case NODE_NIL:
+    *val = strm_nil_value();
+    return STRM_OK;
+  case NODE_STR:
+    *val = strm_str_value(((node_str*)np)->value);
+    return STRM_OK;
   default:
     break;
   }

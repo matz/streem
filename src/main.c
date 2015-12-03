@@ -75,7 +75,7 @@ dump_node(node* np, int indent) {
     break;
   case NODE_EMIT:
     printf("EMIT:\n");
-    dump_node((node*) np->value.v.p, indent+1);
+    dump_node(((node_emit*)np)->emit, indent+1);
     break;
   case NODE_OP:
     printf("OP:\n");
@@ -109,7 +109,7 @@ dump_node(node* np, int indent) {
     dump_node(((node_let*) np)->rhs, indent+1);
     break;
   case NODE_IDENT:
-    print_id("IDENT: ", np->value.v.s);
+    print_id("IDENT: ", ((node_ident*)np)->name);
     break;
 
   case NODE_ARRAY:
@@ -159,27 +159,20 @@ dump_node(node* np, int indent) {
     dump_node(((node_ns*) np)->body, indent+1);
     break;
 
-  case NODE_VALUE:
-    switch (np->value.t) {
-    case NODE_VALUE_INT:
-      printf("VALUE(NUMBER): %ld\n", np->value.v.i);
-      break;
-    case NODE_VALUE_DOUBLE:
-      printf("VALUE(NUMBER): %f\n", np->value.v.d);
-      break;
-    case NODE_VALUE_STRING:
-      print_quoted_id("VALUE(STRING): ", np->value.v.s);
-      break;
-    case NODE_VALUE_BOOL:
-      printf("VALUE(BOOL): %s\n", np->value.v.i ? "true" : "false");
-      break;
-    case NODE_VALUE_NIL:
-      printf("VALUE(NIL): nil\n");
-      break;
-    default:
-      printf("VALUE(UNKNOWN): %p\n", np->value.v.p);
-      break;
-    }
+  case NODE_INT:
+    printf("VALUE(NUMBER): %d\n", ((node_int*)np)->value);
+    break;
+  case NODE_FLOAT:
+    printf("VALUE(NUMBER): %f\n", ((node_float*)np)->value);
+    break;
+  case NODE_BOOL:
+    printf("VALUE(BOOL): %s\n", ((node_bool*)np)->value ? "true" : "false");
+    break;
+  case NODE_STR:
+    print_quoted_id("VALUE(STRING): ", ((node_str*)np)->value);
+    break;
+  case NODE_NIL:
+    printf("VALUE(NIL): nil\n");
     break;
   default:
     printf("UNKNWON(%d)\n", np->type);
