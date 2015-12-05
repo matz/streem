@@ -142,8 +142,8 @@ node_array_headers(node* np)
       }
       headers[i] = npair->key;
       v->data[i] = npair->value;
+      free(npair);
     }
-    free(npair);
   }
   v->headers = headers;
 
