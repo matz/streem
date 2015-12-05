@@ -50,7 +50,7 @@ typedef enum {
   NODE_OP,
   NODE_CALL,
   NODE_ARRAY,
-  NODE_STMTS,
+  NODE_NODES,
   NODE_NS,
   NODE_IMPORT,
 } node_type;
@@ -91,10 +91,24 @@ typedef struct {
   NODE_HEADER;
   int len;
   int max;
-  void** data;
+  node_string* data;
+} node_args;
+
+typedef struct {
+  NODE_HEADER;
+  int len;
+  int max;
+  node** data;
+} node_nodes;
+
+typedef struct {
+  NODE_HEADER;
+  int len;
+  int max;
+  node** data;
   node_string* headers;
   node_string ns;
-} node_values;
+} node_array;
 
 typedef struct {
   NODE_HEADER;
@@ -157,10 +171,10 @@ typedef struct {
 extern node* node_array_new();
 extern node* node_array_headers(node*);
 extern void node_array_add(node*, node*);
-extern void node_array_free(node*);
-extern node* node_stmts_new();
-extern void node_stmts_add(node*, node*);
-extern node* node_stmts_concat(node*, node*);
+extern void node_array_free(node_array*);
+extern node* node_nodes_new();
+extern void node_nodes_add(node*, node*);
+extern node* node_nodes_concat(node*, node*);
 extern node* node_pair_new(node_string, node*);
 extern node* node_args_new();
 extern void node_args_add(node*, node_string);

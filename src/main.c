@@ -44,7 +44,7 @@ dump_node(node* np, int indent) {
   switch (np->type) {
   case NODE_ARGS:
     {
-      node_values* args = (node_values*)np;
+      node_args* args = (node_args*)np;
 
       printf("ARGS(%d):\n", args->len);
       for (i = 0; i < args->len; i++) {
@@ -82,13 +82,13 @@ dump_node(node* np, int indent) {
     for (i = 0; i < indent+1; i++)
       putchar(' ');
     print_id("op: ", ((node_op*) np)->op);
-    dump_node(((node_op*) np)->lhs, indent+1);
-    dump_node(((node_op*) np)->rhs, indent+1);
+    dump_node(((node_op*)np)->lhs, indent+1);
+    dump_node(((node_op*)np)->rhs, indent+1);
     break;
   case NODE_LAMBDA:
     printf("LAMBDA:\n");
-    dump_node(((node_lambda*) np)->args, indent+1);
-    dump_node(((node_lambda*) np)->compstmt, indent+1);
+    dump_node(((node_lambda*)np)->args, indent+1);
+    dump_node(((node_lambda*)np)->compstmt, indent+1);
     break;
   case NODE_CALL:
     printf("CALL:\n");
@@ -98,11 +98,11 @@ dump_node(node* np, int indent) {
       node_string s = ((node_call*)np)->ident;
       print_str(s);
     }
-    dump_node(((node_call*) np)->args, indent+2);
+    dump_node(((node_call*)np)->args, indent+2);
     break;
   case NODE_RETURN:
     printf("RETURN:\n");
-    dump_node(((node_return*) np)->rv, indent+1);
+    dump_node(((node_return*)np)->rv, indent+1);
     break;
   case NODE_LET:
     print_id("LET: ", ((node_let*) np)->lhs);
@@ -116,7 +116,7 @@ dump_node(node* np, int indent) {
     printf("ARRAY:\n");
     {
       int j;
-      node_values* ary = (node_values*)np;
+      node_array* ary = (node_array*)np;
 
       if (ary->headers) {
         node_string* h = ary->headers;
@@ -141,10 +141,10 @@ dump_node(node* np, int indent) {
     }
     break;
 
-  case NODE_STMTS:
-    printf("STMTS:\n");
+  case NODE_NODES:
+    printf("NODES:\n");
     {
-      node_values* ary = (node_values*)np;
+      node_nodes* ary = (node_nodes*)np;
       for (i = 0; i < ary->len; i++)
         dump_node(ary->data[i], indent+1);
     }

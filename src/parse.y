@@ -103,7 +103,7 @@ program         : topstmts
 /* declarations must come before acrtual statements */
 topstmts        : decls stmts
                     {
-                      $$ = node_stmts_concat($1, $2);
+                      $$ = node_nodes_concat($1, $2);
                     }
                 ;
 
@@ -119,15 +119,15 @@ decls           : opt_terms
 
 decl_list       : decl
                     {
-                      $$ = node_stmts_new();
+                      $$ = node_nodes_new();
                       if ($1) {
-                        node_stmts_add($$, $1);
+                        node_nodes_add($$, $1);
                       }
                     }
                 | decl_list terms decl
                     {
                       if ($3) {
-                        node_stmts_add($$, $3);
+                        node_nodes_add($$, $3);
                       }
                     }
                 ;
@@ -200,15 +200,15 @@ stmts           : opt_terms
 
 stmt_list       : stmt
                     {
-                      $$ = node_stmts_new();
+                      $$ = node_nodes_new();
                       if ($1) {
-                        node_stmts_add($$, $1);
+                        node_nodes_add($$, $1);
                       }
                     }
                 | stmt_list terms stmt
                     {
                       if ($3) {
-                        node_stmts_add($$, $3);
+                        node_nodes_add($$, $3);
                       }
                     }
                 ;
