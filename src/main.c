@@ -163,7 +163,7 @@ dump_node(node* np, int indent) {
     }
     break;
   default:
-    printf("UNKNWON(%d)\n", np->type);
+    printf("UNKNOWN(%d)\n", np->type);
     break;
   }
 }
