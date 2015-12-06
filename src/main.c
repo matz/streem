@@ -175,7 +175,7 @@ dump_node(node* np, int indent) {
     printf("VALUE(NIL): nil\n");
     break;
   default:
-    printf("UNKNWON(%d)\n", np->type);
+    printf("UNKNOWN(%d)\n", np->type);
     break;
   }
 }
