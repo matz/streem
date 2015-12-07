@@ -206,8 +206,11 @@ strm_cfunc_p(strm_value v)
 int
 strm_ptr_tag_p(strm_value v, enum strm_ptr_type e)
 {
-  void* p = strm_ptr(v);
-  return strm_ptr_type(p) == e;
+  if (strm_value_tag(v) == STRM_TAG_PTR) {
+    void *p = strm_ptr(v);
+    return strm_ptr_type(p) == e;
+  }
+  return FALSE;
 }
 
 int
