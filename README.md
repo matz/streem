@@ -50,7 +50,6 @@ it will be invoked for each element in the stream.
 * bison
 * flex
 * gcc / clang
-* libgc (libgc-dev on Debian/Ubuntu, bdw-gc on OSX homebrew)
 
 ### Run make
 ```
