@@ -384,7 +384,9 @@ exec_expr(strm_state* state, node* np, strm_value* val)
         n = exec_expr(state, v0->data[i], ptr);
         if (n) return n;
       }
-      strm_ary_headers(arr) = ary_headers(v0->headers, v0->len);
+      if (v0->headers) {
+        strm_ary_headers(arr) = ary_headers(v0->headers, v0->len);
+      }
       if (v0->ns) {
         strm_ary_ns(arr) = node_sym(v0->ns);
       }
