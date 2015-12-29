@@ -100,7 +100,7 @@ program         : topstmts
                     }
                 ;
 
-/* declarations must come before acrtual statements */
+/* declarations must come before actual statements */
 topstmts        : decls stmts
                     {
                       $$ = node_nodes_concat($1, $2);
