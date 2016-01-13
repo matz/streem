@@ -434,7 +434,7 @@ opt_else        : opt_elsif
 
 opt_args        : /* none */
                     {
-                      $$ = node_array_new();
+                      $$ = NULL;
                     }
                 | args
                     {

@@ -360,11 +360,15 @@ exec_expr(strm_state* state, node* np, strm_value* val)
         node_raise(state, "failed to emit");
       }
       v0 = (node_array*)((node_emit*)np)->emit;
-
-      for (i = 0; i < v0->len; i++) {
-        n = exec_expr(state, v0->data[i], val);
-        if (n) return n;
-        strm_emit(state->task, *val, NULL);
+      if (!v0) {
+        strm_emit(state->task, strm_nil_value(), NULL);
+      }
+      else {
+        for (i = 0; i < v0->len; i++) {
+          n = exec_expr(state, v0->data[i], val);
+          if (n) return n;
+          strm_emit(state->task, *val, NULL);
+        }
       }
       return STRM_OK;
     }
@@ -480,6 +484,10 @@ exec_expr(strm_state* state, node* np, strm_value* val)
 
       state->exc = malloc(sizeof(node_error));
       state->exc->type = NODE_ERROR_RETURN;
+      if (!args) {
+        state->exc->arg = strm_nil_value();
+        return STRM_OK;
+      }
       switch (args->len) {
       case 0:
         state->exc->arg = strm_nil_value();
