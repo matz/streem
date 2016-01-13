@@ -156,7 +156,10 @@ node_nodes_free(node_nodes* v)
 node*
 node_obj_new(node* np, node_string ns)
 {
-  node_array* v = (node_array*)np;
+  node_array* v;
+
+  if (!np) v = (node_array*)node_array_new();
+  else v = (node_array*)np;
   v->ns = ns;
   return np;
 }
@@ -264,6 +267,7 @@ node_call_new(node_string ident, node* recv, node* args, node* blk)
   node_call* ncall = malloc(sizeof(node_call));
   ncall->type = NODE_CALL;
   ncall->ident = ident;
+  if (!args) args = node_array_new();
   if (recv) {
     node_nodes_prepend(args, recv);
   }
