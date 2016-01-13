@@ -109,7 +109,7 @@ false               LEX_RETURN(keyword_false);
 [ \t] ; 
 
 . { 
-    fprintf(stderr, "lexical error ('%s').\n", yytext); 
+    fprintf(stderr, "%d:lexical error ('%s').\n", yylineno, yytext); 
     exit(1); 
 };
 %% 
