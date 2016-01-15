@@ -428,6 +428,9 @@ strm_to_str(strm_value v)
       case STRM_PTR_LAMBDA:
         n = sprintf(buf, "<lambda:%p>", p);
         break;
+      case STRM_PTR_MISC:
+        n = sprintf(buf, "<obj:%p>", p);
+        break;
       }
       return strm_str_new(buf, n);
       break;
@@ -448,4 +451,23 @@ strm_value
 strm_nil_value(void)
 {
   return STRM_TAG_PTR | 0;
+}
+
+struct strm_misc {
+  STRM_MISC_HEADER;
+};
+
+strm_state*
+strm_value_ns(strm_value val)
+{
+  if (strm_array_p(val))
+    return strm_ary_ns(val);
+  if (strm_value_tag(val) == STRM_TAG_PTR) {
+    struct strm_misc* p = strm_ptr(val);
+
+    if (strm_ptr_type(p) == STRM_PTR_MISC) {
+      return p->ns;
+    }
+  }
+  return NULL;
 }
