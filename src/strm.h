@@ -120,7 +120,6 @@ struct strm_array {
   strm_string ns;
 };
 
-
 strm_array strm_ary_new(const strm_value*, size_t);
 #define strm_ary_value(a) (strm_value)(a)
 #define strm_value_ary(v) (strm_array)(v)
@@ -194,6 +193,8 @@ typedef struct strm_state {
   struct strm_state *prev;
   strm_task *task;
 } strm_state;
+
+int strm_funcall(strm_state*, strm_value, int, strm_value*, strm_value*);
 int strm_var_set(strm_state*, strm_string, strm_value);
 int strm_var_def(strm_state*, const char*, strm_value);
 int strm_var_get(strm_state*, strm_string, strm_value*);

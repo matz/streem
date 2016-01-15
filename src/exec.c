@@ -237,6 +237,44 @@ exec_mod(strm_state* state, int argc, strm_value* args, strm_value* ret)
 
 static int exec_expr(strm_state* state, node* np, strm_value* val);
 
+int
+strm_funcall(strm_state* state, strm_value func, int argc, strm_value* argv, strm_value* ret)
+{
+  switch (strm_value_tag(func)) {
+  case STRM_TAG_CFUNC:
+    return (strm_value_cfunc(func))(state, argc, argv, ret);
+  case STRM_TAG_PTR:
+    if (!strm_lambda_p(func)) {
+      node_raise(state, "not a function");
+      return STRM_NG;
+    }
+    else {
+      strm_lambda lambda = strm_value_lambda(func);
+      node_lambda* nlbd = lambda->body;
+      node_args* args = (node_args*)nlbd->args;
+      strm_state c = {0};
+      int i, n;
+
+      c.prev = lambda->state;
+      if ((args == NULL && argc != 0) &&
+          (args->len != argc)) return STRM_NG;
+      for (i=0; i<argc; i++) {
+        n = strm_var_set(&c, node_to_sym(args->data[i]), argv[i]);
+        if (n) return n;
+      }
+      n = exec_expr(&c, nlbd->compstmt, ret);
+      if (c.exc && c.exc->type == NODE_ERROR_RETURN) {
+        *ret = c.exc->arg;
+        return STRM_OK;
+      }
+      return n;
+    }
+  default:
+    break;
+  }
+  return STRM_NG;
+}
+
 static int
 exec_call(strm_state* state, strm_string name, int argc, strm_value* argv, strm_value* ret)
 {
@@ -251,38 +289,7 @@ exec_call(strm_state* state, strm_string name, int argc, strm_value* argv, strm_
     n = strm_var_get(state, name, &m);
   }
   if (n == 0) {
-    switch (strm_value_tag(m)) {
-    case STRM_TAG_CFUNC:
-      return (strm_value_cfunc(m))(state, argc, argv, ret);
-    case STRM_TAG_PTR:
-      if (!strm_lambda_p(m)) {
-        node_raise(state, "not a function");
-        return STRM_NG;
-      }
-      else {
-        strm_lambda lambda = strm_value_lambda(m);
-        node_lambda* nlbd = lambda->body;
-        node_args* args = (node_args*)nlbd->args;
-        strm_state c = {0};
-        int i;
-
-        c.prev = lambda->state;
-        if ((args == NULL && argc != 0) &&
-            (args->len != argc)) return STRM_NG;
-        for (i=0; i<argc; i++) {
-          n = strm_var_set(&c, node_to_sym(args->data[i]), argv[i]);
-          if (n) return n;
-        }
-        n = exec_expr(&c, nlbd->compstmt, ret);
-        if (c.exc && c.exc->type == NODE_ERROR_RETURN) {
-          *ret = c.exc->arg;
-          return STRM_OK;
-        }
-        return n;
-      }
-    default:
-      break;
-    }
+    return strm_funcall(state, m, argc, argv, ret);
   }
   node_raise(state, "function not found");
   return STRM_NG;
