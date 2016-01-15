@@ -244,7 +244,7 @@ main(int argc, const char**argv)
       for (i=0; i<argc; i++) {
         buf[i] = strm_str_value(strm_str_new(argv[i], strlen(argv[i])));
       }
-      strm_var_def("ARGV", strm_ary_value(av));
+      strm_var_def(NULL, "ARGV", strm_ary_value(av));
       node_run(&state);
       strm_loop();
     }

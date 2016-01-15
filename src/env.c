@@ -59,9 +59,9 @@ strm_var_set(strm_state* state, strm_string name, strm_value val)
 }
 
 int
-strm_var_def(const char* name, strm_value val)
+strm_var_def(strm_state* state, const char* name, strm_value val)
 {
-  return strm_var_set(NULL, strm_str_intern(name, strlen(name)), val);
+  return strm_var_set(state, strm_str_intern(name, strlen(name)), val);
 }
 
 int

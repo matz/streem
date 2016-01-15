@@ -333,5 +333,5 @@ csv(strm_state* state, int argc, strm_value* args, strm_value* ret)
 void
 strm_csv_init(strm_state* state)
 {
-  strm_var_def("csv", strm_cfunc_value(csv));
+  strm_var_def(state, "csv", strm_cfunc_value(csv));
 }

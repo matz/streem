@@ -613,24 +613,24 @@ void strm_csv_init(strm_state* state);
 static void
 node_init(strm_state* state)
 {
-  strm_var_def("stdin", strm_ptr_value(strm_io_new(0, STRM_IO_READ)));
-  strm_var_def("stdout", strm_ptr_value(strm_io_new(1, STRM_IO_WRITE)));
-  strm_var_def("stderr", strm_ptr_value(strm_io_new(2, STRM_IO_WRITE)));
-  strm_var_def("puts", strm_cfunc_value(exec_puts));
-  strm_var_def("+", strm_cfunc_value(exec_plus));
-  strm_var_def("-", strm_cfunc_value(exec_minus));
-  strm_var_def("*", strm_cfunc_value(exec_mult));
-  strm_var_def("/", strm_cfunc_value(exec_div));
-  strm_var_def("<", strm_cfunc_value(exec_lt));
-  strm_var_def("<=", strm_cfunc_value(exec_le));
-  strm_var_def(">", strm_cfunc_value(exec_gt));
-  strm_var_def(">=", strm_cfunc_value(exec_ge));
-  strm_var_def("==", strm_cfunc_value(exec_eq));
-  strm_var_def("!=", strm_cfunc_value(exec_neq));
-  strm_var_def("|", strm_cfunc_value(exec_bar));
-  strm_var_def("%", strm_cfunc_value(exec_mod));
-  strm_var_def("fread", strm_cfunc_value(exec_fread));
-  strm_var_def("fwrite", strm_cfunc_value(exec_fwrite));
+  strm_var_def(state, "stdin", strm_ptr_value(strm_io_new(0, STRM_IO_READ)));
+  strm_var_def(state, "stdout", strm_ptr_value(strm_io_new(1, STRM_IO_WRITE)));
+  strm_var_def(state, "stderr", strm_ptr_value(strm_io_new(2, STRM_IO_WRITE)));
+  strm_var_def(state, "puts", strm_cfunc_value(exec_puts));
+  strm_var_def(state, "+", strm_cfunc_value(exec_plus));
+  strm_var_def(state, "-", strm_cfunc_value(exec_minus));
+  strm_var_def(state, "*", strm_cfunc_value(exec_mult));
+  strm_var_def(state, "/", strm_cfunc_value(exec_div));
+  strm_var_def(state, "<", strm_cfunc_value(exec_lt));
+  strm_var_def(state, "<=", strm_cfunc_value(exec_le));
+  strm_var_def(state, ">", strm_cfunc_value(exec_gt));
+  strm_var_def(state, ">=", strm_cfunc_value(exec_ge));
+  strm_var_def(state, "==", strm_cfunc_value(exec_eq));
+  strm_var_def(state, "!=", strm_cfunc_value(exec_neq));
+  strm_var_def(state, "|", strm_cfunc_value(exec_bar));
+  strm_var_def(state, "%", strm_cfunc_value(exec_mod));
+  strm_var_def(state, "fread", strm_cfunc_value(exec_fread));
+  strm_var_def(state, "fwrite", strm_cfunc_value(exec_fwrite));
 
   strm_seq_init(state);
   strm_socket_init(state);
