@@ -461,7 +461,7 @@ exec_expr(strm_state* state, node* np, strm_value* val)
     break;
   case NODE_LAMBDA:
     {
-      struct strm_lambda* lambda = malloc(sizeof(strm_lambda));
+      strm_lambda lambda = malloc(sizeof(struct strm_lambda));
 
       if (!lambda) return STRM_NG;
       lambda->type = STRM_PTR_LAMBDA;
