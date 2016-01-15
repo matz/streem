@@ -195,7 +195,7 @@ typedef struct strm_state {
   strm_task *task;
 } strm_state;
 int strm_var_set(strm_state*, strm_string, strm_value);
-int strm_var_def(const char*, strm_value);
+int strm_var_def(strm_state*, const char*, strm_value);
 int strm_var_get(strm_state*, strm_string, strm_value*);
 int strm_env_copy(strm_state*, strm_state*);
 

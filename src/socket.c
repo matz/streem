@@ -209,6 +209,6 @@ tcp_socket(strm_state* state, int argc, strm_value* args, strm_value* ret)
 void
 strm_socket_init(strm_state* state)
 {
-  strm_var_def("tcp_server", strm_cfunc_value(tcp_server));
-  strm_var_def("tcp_socket", strm_cfunc_value(tcp_socket));
+  strm_var_def(state, "tcp_server", strm_cfunc_value(tcp_server));
+  strm_var_def(state, "tcp_socket", strm_cfunc_value(tcp_socket));
 }
