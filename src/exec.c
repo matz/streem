@@ -278,17 +278,19 @@ strm_funcall(strm_state* state, strm_value func, int argc, strm_value* argv, str
 static int
 exec_call(strm_state* state, strm_string name, int argc, strm_value* argv, strm_value* ret)
 {
-  int n = 1;
+  int n = STRM_NG;
   strm_value m;
 
-  if (argc > 0 && strm_array_p(argv[0]) && strm_ary_ns(argv[0])) {
-    strm_state* ns = strm_ns_get(strm_ary_ns(argv[0]));
-    n = strm_var_get(ns, name, &m);
+  if (argc > 0) {
+    strm_state* ns = strm_value_ns(argv[0]);
+    if (ns) {
+      n = strm_var_get(ns, name, &m);
+    }
   }
-  if (n != 0) {
+  if (n == STRM_NG) {
     n = strm_var_get(state, name, &m);
   }
-  if (n == 0) {
+  if (n == STRM_OK) {
     return strm_funcall(state, m, argc, argv, ret);
   }
   node_raise(state, "function not found");
@@ -405,7 +407,7 @@ exec_expr(strm_state* state, node* np, strm_value* val)
         strm_ary_headers(arr) = ary_headers(v0->headers, v0->len);
       }
       if (v0->ns) {
-        strm_ary_ns(arr) = node_to_sym(v0->ns);
+        strm_ary_ns(arr) = strm_ns_find(NULL, node_to_sym(v0->ns));
       }
       else {
         strm_ary_ns(arr) = strm_str_null;

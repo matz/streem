@@ -74,10 +74,15 @@ enum strm_ptr_type {
   STRM_PTR_LAMBDA,
   STRM_PTR_IO,
   STRM_PTR_TASK,
+  STRM_PTR_MISC,
 };
 
 #define STRM_PTR_HEADER \
   enum strm_ptr_type type
+
+#define STRM_MISC_HEADER \
+  STRM_PTR_HEADER;\
+  struct strm_state* ns
 
 int strm_ptr_tag_p(strm_value, enum strm_ptr_type);
 void* strm_value_ptr(strm_value, enum strm_ptr_type);
@@ -117,7 +122,7 @@ struct strm_array {
   size_t len;
   strm_value *ptr;
   strm_array headers;
-  strm_string ns;
+  struct strm_state* ns;
 };
 
 strm_array strm_ary_new(const strm_value*, size_t);
@@ -204,6 +209,7 @@ int strm_env_copy(strm_state*, strm_state*);
 strm_state* strm_ns_new(strm_state*);
 strm_state* strm_ns_find(strm_state*, strm_string);
 strm_state* strm_ns_get(strm_string);
+strm_state* strm_value_ns(strm_value);
 
 /* ----- I/O */
 #define STRM_IO_READ  1
