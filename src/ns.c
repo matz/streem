@@ -16,9 +16,18 @@ strm_ns_get(strm_string name)
 }
 
 strm_state*
-strm_ns_new(strm_state* state, strm_string name)
+strm_ns_new(strm_state* state)
 {
+  strm_state* s = malloc(sizeof(strm_state));
+  if (!s) return NULL;
+  memset(s, 0, sizeof(strm_state));
+  s->prev = state;
+  return s;
+}
 
+strm_state*
+strm_ns_find(strm_state* state, strm_string name)
+{
   strm_state *s = strm_ns_get(name);
 
   if (!s) {
@@ -41,3 +50,5 @@ strm_ns_new(strm_state* state, strm_string name)
   }
   return s;
 }
+
+

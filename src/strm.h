@@ -201,7 +201,8 @@ int strm_var_get(strm_state*, strm_string, strm_value*);
 int strm_env_copy(strm_state*, strm_state*);
 
 /* ----- Namespaces */
-strm_state* strm_ns_new(strm_state*, strm_string);
+strm_state* strm_ns_new(strm_state*);
+strm_state* strm_ns_find(strm_state*, strm_string);
 strm_state* strm_ns_get(strm_string);
 
 /* ----- I/O */

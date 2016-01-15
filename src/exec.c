@@ -325,7 +325,7 @@ exec_expr(strm_state* state, node* np, strm_value* val)
   case NODE_NS:
     {
       node_ns *ns = (node_ns*)np;
-      strm_state *s = strm_ns_new(state, node_to_sym(ns->name));
+      strm_state *s = strm_ns_find(state, node_to_sym(ns->name));
 
       if (!s) {
         node_raise(state, "failed to create namespace");
