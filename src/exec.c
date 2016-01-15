@@ -407,7 +407,7 @@ exec_expr(strm_state* state, node* np, strm_value* val)
         strm_ary_headers(arr) = ary_headers(v0->headers, v0->len);
       }
       if (v0->ns) {
-        strm_ary_ns(arr) = strm_ns_find(NULL, node_to_sym(v0->ns));
+        strm_ary_ns(arr) = strm_ns_get(node_to_sym(v0->ns));
       }
       else {
         strm_ary_ns(arr) = strm_str_null;
