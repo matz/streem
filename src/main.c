@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 static void
-fprint_str(FILE *f, node_string str)
+fprint_str(node_string str, FILE *f)
 {
   fprintf(f, "%.*s\n", (int)str->len, str->buf);
 }
@@ -11,7 +11,7 @@ fprint_str(FILE *f, node_string str)
 static void
 print_str(node_string name)
 {
-  fprint_str(stdout, name);
+  fprint_str(name, stdout);
 }
 
 static void
@@ -26,7 +26,7 @@ print_quoted_id(const char* pre, node_string name)
 {
   fputs(pre, stdout);
   fputs("\"", stdout);
-  print_str(name);
+  fprint_str(name, stdout);
   fputs("\"\n", stdout);
 }
 
