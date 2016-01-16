@@ -224,11 +224,14 @@ pipeline_finish(strm_task* task, strm_value data)
 void
 strm_task_close(strm_task* task)
 {
+  strm_task *d;
+
   if (task->close_func) {
     (*task->close_func)(task, strm_nil_value());
+    free(task->data);
   }
-  strm_task *d = task->dst;
 
+  d = task->dst;
   while (d) {
     strm_task_push(strm_queue_task(d, (strm_callback)strm_task_close, strm_nil_value()));
     d = d->nextd;
