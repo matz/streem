@@ -310,6 +310,11 @@ csv_finish(strm_task* task, strm_value data)
     strm_emit(task, strm_ary_value(cd->headers), NULL);
     cd->headers = strm_ary_null;
   }
+  /* memory deallocation */
+  if (cd->types) {
+    free(cd->types);
+    cd->types = NULL;
+  }
   return STRM_OK;
 }
 
