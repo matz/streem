@@ -5,13 +5,14 @@
 static void
 fprint_str(node_string str, FILE *f)
 {
-  fprintf(f, "%.*s\n", (int)str->len, str->buf);
+  fprintf(f, "%.*s", (int)str->len, str->buf);
 }
 
 static void
 print_str(node_string name)
 {
   fprint_str(name, stdout);
+  fputs("\n", stdout);
 }
 
 static void
