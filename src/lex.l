@@ -25,6 +25,9 @@ lex_return(parser_state *p, int c)
 %option yylineno
 
 TRAIL  ([\t \n]|"#"[^\n]*"\n")*
+CHAR   [a-zA-Z_]|[\302-\337][\200-\277]|[\340-\357][\200-\277][\200-\277]|[\360-\367][\200-\277][\200-\277]|[\370-\373][\200-\277][\200-\277][\200-\277][\200-\277]|[\374-\375][\200-\277][\200-\277][\200-\277][\200-\277][\200-\277]
+CHNUM  ({CHAR}|[0-9])
+WORD   {CHAR}{CHNUM}*
 %%
 "+"{TRAIL}  LEX_RETURN(op_plus);
 "-"{TRAIL}  LEX_RETURN(op_minus);
@@ -61,12 +64,12 @@ nil                 LEX_RETURN(keyword_nil);
 true                LEX_RETURN(keyword_true);
 false               LEX_RETURN(keyword_false);
 
-[A-Za-z_][A-Za-z0-9_]* {
+{WORD} {
   lval->id = node_str_new(yytext, yyleng);
   LEX_RETURN(identifier);
 };
 
-[A-Za-z_][A-Za-z0-9_]*: {
+{WORD}: {
   yytext[yyleng-1]='\0';
   lval->id = node_str_new(yytext, yyleng-1);
   LEX_RETURN(label);
@@ -95,7 +98,7 @@ false               LEX_RETURN(keyword_false);
   LEX_RETURN(lit_string);
 };
 
-:[0-9a-zA-Z_][0-9a-zA-Z_]* {
+:{WORD} {
   lval->nd = node_string_new(yytext+1, yyleng-1);
   LEX_RETURN(lit_string);
 };
