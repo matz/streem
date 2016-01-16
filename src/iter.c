@@ -101,6 +101,31 @@ exec_map(strm_state* state, int argc, strm_value* args, strm_value* ret)
   return STRM_OK;
 }
 
+static int
+filter(strm_task* task, strm_value data)
+{
+  struct map_data *m = task->data;
+  strm_value val;
+
+  if (strm_funcall(NULL, m->func, 1, &data, &val) == STRM_NG) {
+    return STRM_NG;
+  }
+  if (strm_value_bool(val)) {
+    strm_emit(task, data, NULL);
+  }
+  return STRM_OK;
+}
+
+static int
+exec_filter(strm_state* state, int argc, strm_value* args, strm_value* ret)
+{
+  struct map_data* m = malloc(sizeof(struct map_data));
+
+  m->func = args[0];
+  *ret = strm_task_value(strm_task_new(strm_task_filt, filter, NULL, (void*)m));
+  return STRM_OK;
+}
+
 struct count_data {
   long count;
 };
@@ -138,5 +163,6 @@ strm_iter_init(strm_state* state)
   strm_var_def(state, "seq", strm_cfunc_value(exec_seq));
   strm_var_def(state, "each", strm_cfunc_value(exec_each));
   strm_var_def(state, "map", strm_cfunc_value(exec_map));
+  strm_var_def(state, "filter", strm_cfunc_value(exec_filter));
   strm_var_def(state, "count", strm_cfunc_value(exec_count));
 }
