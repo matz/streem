@@ -324,6 +324,11 @@ exec_call(strm_state* state, strm_string name, int argc, strm_value* argv, strm_
     if (ns) {
       n = strm_var_get(ns, name, &m);
     }
+    else if (argc == 1 && strm_array_p(argv[0])) {
+      m = strm_str_value(name);
+      n = ary_get(state, argv[0], 1, &m, ret);
+      if (n == STRM_OK) return STRM_OK;
+    }
   }
   if (n == STRM_NG) {
     n = strm_var_get(state, name, &m);
