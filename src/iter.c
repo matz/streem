@@ -53,8 +53,40 @@ exec_seq(strm_state* state, int argc, strm_value* args, strm_value* ret)
   return STRM_OK;
 }
 
+struct count_data {
+  long count;
+};
+
+static int
+count(strm_task* task, strm_value data)
+{
+  struct count_data *s = task->data;
+
+  s->count++;
+  return STRM_OK;
+}
+
+static int
+count_finish(strm_task* task, strm_value data)
+{
+  struct count_data *s = task->data;
+
+  strm_emit(task, strm_int_value(s->count), NULL);
+  return STRM_OK;
+}
+
+static int
+exec_count(strm_state* state, int argc, strm_value* args, strm_value* ret)
+{
+  struct count_data* c = malloc(sizeof(struct count_data));
+  c->count = 0;
+  *ret = strm_task_value(strm_task_new(strm_task_filt, count, count_finish, (void*)c));
+  return STRM_OK;
+}
+
 void
 strm_iter_init(strm_state* state)
 {
   strm_var_def(state, "seq", strm_cfunc_value(exec_seq));
+  strm_var_def(state, "count", strm_cfunc_value(exec_count));
 }
