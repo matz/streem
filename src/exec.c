@@ -236,12 +236,51 @@ exec_mod(strm_state* state, int argc, strm_value* args, strm_value* ret)
 
 static int exec_expr(strm_state* state, node* np, strm_value* val);
 
+static int
+ary_get(strm_state* state, strm_value ary, int argc, strm_value* argv, strm_value* ret)
+{
+  struct strm_array* a;
+  strm_value idx;
+
+  if (argc != 1) {
+    strm_raise(state, "wrong number of arguments");
+    return STRM_NG;
+  }
+
+  a = strm_ary_struct(ary);
+  idx = argv[0];
+  if (strm_num_p(idx)) {
+    size_t i = strm_value_int(idx);
+
+    if (i>=a->len)
+      return STRM_NG;
+    *ret = a->ptr[i];
+    return STRM_OK;
+  }
+  if (strm_string_p(idx)) {
+    if (a->headers) {
+      size_t i, len = a->len;
+
+      for (i=0; i<len; i++) {
+        if (strm_str_eq(strm_value_str(idx),
+                        strm_value_str(strm_ary_ptr(a->headers)[i]))) {
+          *ret = a->ptr[i];
+          return STRM_OK;
+        }
+      }
+    }
+  }
+  return STRM_NG;
+}
+
 int
 strm_funcall(strm_state* state, strm_value func, int argc, strm_value* argv, strm_value* ret)
 {
   switch (strm_value_tag(func)) {
   case STRM_TAG_CFUNC:
     return (strm_value_cfunc(func))(state, argc, argv, ret);
+  case STRM_TAG_ARRAY:
+    return ary_get(state, func, argc, argv, ret);
   case STRM_TAG_PTR:
     if (!strm_lambda_p(func)) {
       strm_raise(state, "not a function");
