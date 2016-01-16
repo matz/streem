@@ -1,5 +1,4 @@
 #include "strm.h"
-#include "node.h"
 
 struct seq_seeder {
   long n;
@@ -42,7 +41,7 @@ exec_seq(strm_state* state, int argc, strm_value* args, strm_value* ret)
     end = strm_value_int(args[2]);
     break;
   default:
-    node_raise(state, "wrong number of arguments");
+    strm_raise(state, "wrong number of arguments");
     return STRM_NG;
   }
   s = malloc(sizeof(struct seq_seeder));

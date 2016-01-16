@@ -13,7 +13,6 @@
 #endif
 
 #include "strm.h"
-#include "node.h"
 
 struct socket_data {
   int sock;
@@ -34,7 +33,7 @@ accept_cb(strm_task* task, strm_value data)
     closesocket(sock);
     if (sd->state->task)
       strm_task_close(sd->state->task);
-    node_raise(sd->state, "socket error: listen");
+    strm_raise(sd->state, "socket error: listen");
     return STRM_NG;
   }
 
@@ -83,7 +82,7 @@ tcp_server(strm_state* state, int argc, strm_value* args, strm_value* ret)
 #endif
 
   if (argc != 1) {
-    node_raise(state, "tcp_server: wrong number of arguments");
+    strm_raise(state, "tcp_server: wrong number of arguments");
     return STRM_NG;
   }
   if (strm_num_p(args[0])) {
@@ -105,7 +104,7 @@ tcp_server(strm_state* state, int argc, strm_value* args, strm_value* ret)
     s = getaddrinfo(NULL, service, &hints, &result);
     if (s != 0) {
       if (s == EAI_AGAIN) continue;
-      node_raise(state, gai_strerror(s));
+      strm_raise(state, gai_strerror(s));
       return STRM_NG;
     }
     break;
@@ -122,13 +121,13 @@ tcp_server(strm_state* state, int argc, strm_value* args, strm_value* ret)
 
   freeaddrinfo(result);
   if (rp == NULL) {
-    node_raise(state, "socket error: bind");
+    strm_raise(state, "socket error: bind");
     return STRM_NG;
   }
 
   if (listen(sock, 5) < 0) {
     closesocket(sock);
-    node_raise(state, "socket error: listen");
+    strm_raise(state, "socket error: listen");
     return STRM_NG;
   }
 
@@ -161,7 +160,7 @@ tcp_socket(strm_state* state, int argc, strm_value* args, strm_value* ret)
 #endif
 
   if (argc != 2) {
-    node_raise(state, "tcp_socket: wrong number of arguments");
+    strm_raise(state, "tcp_socket: wrong number of arguments");
     return STRM_NG;
   }
   host = strm_value_str(args[0]);
@@ -181,7 +180,7 @@ tcp_socket(strm_state* state, int argc, strm_value* args, strm_value* ret)
   s = getaddrinfo(strm_str_cstr(host, hbuf), service, &hints, &result);
 
   if (s != 0) {
-    node_raise(state, gai_strerror(s));
+    strm_raise(state, gai_strerror(s));
     return STRM_NG;
   }
 
@@ -196,7 +195,7 @@ tcp_socket(strm_state* state, int argc, strm_value* args, strm_value* ret)
 
   freeaddrinfo(result);
   if (rp == NULL) {
-    node_raise(state, "socket error: connect");
+    strm_raise(state, "socket error: connect");
     return STRM_NG;
   }
 #ifdef _WIN32

@@ -26,7 +26,6 @@ int node_parse_file(parser_state*, const char*);
 int node_parse_input(parser_state*, FILE* in, const char*);
 int node_parse_string(parser_state*, const char*);
 int node_run(parser_state*);
-void node_raise(strm_state*, const char*);
 
 typedef enum {
   NODE_INT,
