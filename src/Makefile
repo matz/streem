@@ -4,7 +4,7 @@ CC = gcc
 TOP = ..
 TARGET = $(TOP)/bin/streem
 CDEFS =
-CFLAGS = -g -Wall $(CDEFS)
+CFLAGS = -g -ggdb -Wall $(CDEFS)
 LIBS = -lpthread
 
 ifeq (Windows_NT,$(OS))
