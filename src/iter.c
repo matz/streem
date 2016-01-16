@@ -52,6 +52,33 @@ exec_seq(strm_state* state, int argc, strm_value* args, strm_value* ret)
   return STRM_OK;
 }
 
+struct map_data {
+  strm_value func;
+};
+
+static int
+map(strm_task* task, strm_value data)
+{
+  struct map_data *m = task->data;
+  strm_value val;
+
+  if (strm_funcall(NULL, m->func, 1, &data, &val) == STRM_NG) {
+    return STRM_NG;
+  }
+  strm_emit(task, val, NULL);
+  return STRM_OK;
+}
+
+static int
+exec_map(strm_state* state, int argc, strm_value* args, strm_value* ret)
+{
+  struct map_data* m = malloc(sizeof(struct map_data));
+
+  m->func = args[0];
+  *ret = strm_task_value(strm_task_new(strm_task_filt, map, NULL, (void*)m));
+  return STRM_OK;
+}
+
 struct count_data {
   long count;
 };
@@ -87,5 +114,6 @@ void
 strm_iter_init(strm_state* state)
 {
   strm_var_def(state, "seq", strm_cfunc_value(exec_seq));
+  strm_var_def(state, "map", strm_cfunc_value(exec_map));
   strm_var_def(state, "count", strm_cfunc_value(exec_count));
 }
