@@ -54,7 +54,7 @@ exec_seq(strm_state* state, int argc, strm_value* args, strm_value* ret)
 }
 
 void
-strm_seq_init(strm_state* state)
+strm_iter_init(strm_state* state)
 {
   strm_var_def(state, "seq", strm_cfunc_value(exec_seq));
 }
