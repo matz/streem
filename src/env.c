@@ -1,5 +1,4 @@
 #include "strm.h"
-#include "node.h"
 #include "khash.h"
 
 KHASH_MAP_INIT_INT64(env, strm_value);

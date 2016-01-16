@@ -6,7 +6,6 @@
 #include <ctype.h>
 #include <math.h>
 #include "strm.h"
-#include "node.h"
 
 static int
 count_fields(strm_string line)
