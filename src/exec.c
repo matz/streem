@@ -153,7 +153,6 @@ struct array_data {
 };
 
 static int arr_exec(strm_task* strm, strm_value data);
-static int arr_finish(strm_task* strm, strm_value data);
 static int cfunc_exec(strm_task* strm, strm_value data);
 
 static int
@@ -184,7 +183,7 @@ exec_bar(strm_state* state, int argc, strm_value* args, strm_value* ret)
     struct array_data *arrd = malloc(sizeof(struct array_data));
     arrd->arr = strm_value_ary(lhs);
     arrd->n = 0;
-    lhs = strm_task_value(strm_task_new(strm_task_prod, arr_exec, arr_finish, (void*)arrd));
+    lhs = strm_task_value(strm_task_new(strm_task_prod, arr_exec, NULL, (void*)arrd));
   }
   /* lhs: should be task */
 
@@ -708,14 +707,6 @@ arr_exec(strm_task* task, strm_value data)
     return STRM_OK;
   }
   strm_emit(task, strm_ary_ptr(arrd->arr)[arrd->n++], arr_exec);
-  return STRM_OK;
-}
-
-static int
-arr_finish(strm_task* task, strm_value data)
-{
-  struct array_data *d = task->data;
-  free(d);
   return STRM_OK;
 }
 
