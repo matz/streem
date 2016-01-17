@@ -6,6 +6,7 @@
 
 %{
 #include <string.h>
+#include <ctype.h>
 #include "strm.h"
 
 #define YY_DECL    int yylex(YYSTYPE *lval, parser_state *p)
@@ -110,8 +111,19 @@ false               LEX_RETURN(keyword_false);
 
 [ \t] ; 
 
-. { 
-    fprintf(stderr, "%d:lexical error ('%s').\n", yylineno, yytext); 
+. {
+    char c = yytext[0];
+
+    fprintf(stderr, "%s:%d:lexical error", p->fname, yylineno);
+    if ((c & 0x80) || !isprint(c)) {
+      fprintf(stderr, "('\\%03o').\n", c);
+    }
+    else if (c == '\\') {
+      fprintf(stderr, "('\\\\').\n");
+    }
+    else {
+      fprintf(stderr, "('%c').\n", c);
+    }
     exit(1); 
 };
 %% 
