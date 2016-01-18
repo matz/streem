@@ -1,9 +1,9 @@
 #include "strm.h"
 
 struct seq_data {
-  long n;
-  long end;
-  long inc;
+  strm_int n;
+  strm_int end;
+  strm_int inc;
 };
 
 static int
@@ -23,7 +23,7 @@ gen_seq(strm_task* task, strm_value data)
 static int
 exec_seq(strm_state* state, int argc, strm_value* args, strm_value* ret)
 {
-  long start, end, inc=1;
+  strm_int start, end, inc=1;
   struct seq_data *s;
 
   switch (argc) {
