@@ -252,10 +252,10 @@ str_symbol_p(strm_string str)
   }
 }
 
-static size_t
+static strm_int
 str_dump_len(strm_string str)
 {
-  size_t len = 2;               /* first and last quotes */
+  strm_int len = 2;             /* first and last quotes */
   const unsigned char *p = (unsigned char*)strm_str_ptr(str);
   const unsigned char *pend = p + strm_str_len(str);
 
@@ -278,7 +278,7 @@ str_dump_len(strm_string str)
 }
 
 static strm_string
-str_dump(strm_string str, size_t len)
+str_dump(strm_string str, strm_int len)
 {
   char *buf = malloc(len);
   char *s = buf;
@@ -337,7 +337,7 @@ strm_inspect(strm_value v)
   }
   else if (strm_array_p(v)) {
     char *buf = malloc(32);
-    size_t i, bi = 0, capa = 32;
+    strm_int i, bi = 0, capa = 32;
     strm_array a = strm_value_ary(v);
 
     for (i=0; i<strm_ary_len(a); i++) {
@@ -345,7 +345,7 @@ strm_inspect(strm_value v)
       strm_string key = (strm_ary_headers(a) &&
                          strm_string_p(strm_ary_ptr(strm_ary_headers(a))[i])) ?
         strm_value_str(strm_ary_ptr(strm_ary_headers(a))[i]) : strm_str_null;
-      size_t slen = (key ? (strm_str_len(key)+1) : 0) + strm_str_len(str) + 3;
+      strm_int slen = (key ? (strm_str_len(key)+1) : 0) + strm_str_len(str) + 3;
 
       if (bi+slen > capa) {
         capa *= 2;

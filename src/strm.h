@@ -49,14 +49,15 @@ typedef uint64_t strm_value;
 struct strm_state;
 typedef int (*strm_cfunc)(struct strm_state*, int, strm_value*, strm_value*);
 
+typedef int32_t strm_int;
 strm_value strm_cfunc_value(strm_cfunc);
 strm_value strm_bool_value(int);
-strm_value strm_int_value(int32_t);
+strm_value strm_int_value(strm_int);
 strm_value strm_flt_value(double);
 strm_value strm_nil_value(void);
 
 strm_cfunc strm_value_cfunc(strm_value);
-int32_t strm_value_int(strm_value);
+strm_int strm_value_int(strm_value);
 int strm_value_bool(strm_value);
 double strm_value_flt(strm_value);
 
@@ -92,21 +93,21 @@ void* strm_value_foreign(strm_value);
 /* ----- Strings */
 struct strm_string {
   const char *ptr;
-  size_t len;
+  strm_int len;
 };
 
 typedef uint64_t strm_string;
 
-strm_string strm_str_new(const char*, size_t);
+strm_string strm_str_new(const char*, strm_int);
 #define strm_str_value(s) (strm_value)(s)
 #define strm_value_str(v) (strm_string)(v)
 const char* strm_strp_ptr(strm_string*);
 #define strm_str_ptr(s) strm_strp_ptr(&s)
 const char* strm_strp_cstr(strm_string*, char buf[]);
 #define strm_str_cstr(s,buf) strm_strp_cstr(&s, buf)
-size_t strm_str_len(strm_string);
+strm_int strm_str_len(strm_string);
 
-strm_string strm_str_intern(const char *p, size_t len);
+strm_string strm_str_intern(const char *p, strm_int len);
 strm_string strm_str_intern_str(strm_string s);
 int strm_str_eq(strm_string a, strm_string b);
 int strm_str_intern_p(strm_string v);
@@ -118,13 +119,13 @@ strm_string strm_to_str(strm_value v);
 typedef uint64_t strm_array;
 
 struct strm_array {
-  size_t len;
+  strm_int len;
   strm_value *ptr;
   strm_array headers;
   struct strm_state* ns;
 };
 
-strm_array strm_ary_new(const strm_value*, size_t);
+strm_array strm_ary_new(const strm_value*, strm_int);
 #define strm_ary_value(a) (strm_value)(a)
 #define strm_value_ary(v) (strm_array)(v)
 struct strm_array* strm_ary_struct(strm_array);

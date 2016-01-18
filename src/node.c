@@ -90,7 +90,7 @@ node_array_add(node* a, node* data) {
 void
 node_array_free(node_array* v)
 {
-  size_t i;
+  strm_int i;
 
   for (i = 0; i < v->len; i++)
     node_free(v->data[i]);
@@ -145,7 +145,7 @@ node_nodes_concat(node* s, node* s2)
 void
 node_nodes_free(node_nodes* v)
 {
-  size_t i;
+  strm_int i;
 
   for (i = 0; i < v->len; i++)
     node_free(v->data[i]);
@@ -184,7 +184,7 @@ node_args_prepend(node* a, node_string data) {
 void
 node_args_free(node* a)
 {
-  size_t i;
+  strm_int i;
   node_args* v = (node_args*)a;
 
   assert(a->type == NODE_ARGS);
@@ -298,8 +298,8 @@ node_float_new(double d)
   return (node*)nf;
 }
 
-static size_t
-string_escape(char* s, size_t len)
+static strm_int
+string_escape(char* s, strm_int len)
 {
   char* t = s;
   char* tend = t + len;
@@ -359,11 +359,11 @@ string_escape(char* s, size_t len)
       break;
     }
   }
-  return (size_t)(p - s);
+  return (strm_int)(p - s);
 }
 
 node*
-node_string_new(const char* s, size_t len)
+node_string_new(const char* s, strm_int len)
 {
   node_str* ns = malloc(sizeof(node_str));
 
@@ -384,7 +384,7 @@ node_ident_new(node_string name)
 }
 
 node_string
-node_str_new(const char* s, size_t len)
+node_str_new(const char* s, strm_int len)
 {
   node_string str;
 
@@ -395,7 +395,7 @@ node_str_new(const char* s, size_t len)
 }
 
 node_string
-node_str_escaped(const char* s, size_t len)
+node_str_escaped(const char* s, strm_int len)
 {
   len = string_escape((char*)s, len);
   return node_str_new(s, len);

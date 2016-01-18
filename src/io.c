@@ -132,7 +132,7 @@ struct fd_read_buffer {
 static int readline_cb(strm_task* task, strm_value data);
 
 static strm_value
-read_str(const char* beg, size_t len)
+read_str(const char* beg, strm_int len)
 {
   char *p = malloc(len);
 
@@ -144,8 +144,8 @@ static int
 read_cb(strm_task* task, strm_value data)
 {
   struct fd_read_buffer *b = task->data;
-  size_t count;
-  ssize_t n;
+  strm_int count;
+  strm_int n;
 
   count = BUFSIZ-(b->end-b->buf);
   n = read(b->fd, b->end, count);
@@ -171,7 +171,7 @@ readline_cb(strm_task* task, strm_value data)
   struct fd_read_buffer *b = task->data;
   strm_value s;
   char *p;
-  ssize_t len = b->end-b->beg;
+  strm_int len = b->end-b->beg;
 
   p = memchr(b->beg, '\n', len);
   if (p) {
@@ -271,7 +271,7 @@ strm_readio(strm_io io)
 struct write_data {
   FILE *f;
   strm_io io;
-  size_t rc;
+  strm_int rc;
 };
 
 static int
