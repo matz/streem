@@ -66,12 +66,12 @@ xorshift64star(void)
 }
 
 static int
-rand_iter(strm_task* task, strm_value data)
+gen_rand(strm_task* task, strm_value data)
 {
   strm_int n = (strm_int)(intptr_t)task->data;
   uint64_t r = xorshift64star();
   
-  strm_emit(task, strm_int_value(r % n), rand_iter);
+  strm_emit(task, strm_int_value(r % n), gen_rand);
   return STRM_OK;
 }
 
@@ -90,7 +90,7 @@ exec_rand(strm_state* state, int argc, strm_value* args, strm_value* ret)
   x ^= (uint32_t)tv.tv_usec;
   x ^= x >> 11; x ^= x << 17; x ^= x >> 4;
   x *= 2685821657736338717LL;
-  *ret = strm_task_value(strm_task_new(strm_task_prod, rand_iter, NULL,
+  *ret = strm_task_value(strm_task_new(strm_task_prod, gen_rand, NULL,
                                        (void*)(intptr_t)n));
   return STRM_OK;
 }
