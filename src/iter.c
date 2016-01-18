@@ -52,6 +52,49 @@ exec_seq(strm_state* state, int argc, strm_value* args, strm_value* ret)
   return STRM_OK;
 }
 
+#include <sys/time.h>
+
+static uint64_t x; /* the state must be seeded with a nonzero value. */
+
+static uint64_t
+xorshift64star(void)
+{
+  x ^= x >> 12; /* a */
+  x ^= x << 25; /* b */
+  x ^= x >> 27; /* c */
+  return x * UINT64_C(2685821657736338717);
+}
+
+static int
+rand_iter(strm_task* task, strm_value data)
+{
+  strm_int n = (strm_int)(intptr_t)task->data;
+  uint64_t r = xorshift64star();
+  
+  strm_emit(task, strm_int_value(r % n), rand_iter);
+  return STRM_OK;
+}
+
+static int
+exec_rand(strm_state* state, int argc, strm_value* args, strm_value* ret)
+{
+  struct timeval tv;
+  strm_int n;
+
+  if (argc != 1) {
+    strm_raise(state, "wrong number of arguments");
+    return STRM_NG;
+  }
+  n = strm_value_int(args[0]);
+  gettimeofday(&tv, NULL);
+  x ^= (uint32_t)tv.tv_usec;
+  x ^= x >> 11; x ^= x << 17; x ^= x >> 4;
+  x *= 2685821657736338717LL;
+  *ret = strm_task_value(strm_task_new(strm_task_prod, rand_iter, NULL,
+                                       (void*)(intptr_t)n));
+  return STRM_OK;
+}
+
 struct map_data {
   strm_value func;
 };
@@ -161,6 +204,7 @@ void
 strm_iter_init(strm_state* state)
 {
   strm_var_def(state, "seq", strm_cfunc_value(exec_seq));
+  strm_var_def(state, "rand", strm_cfunc_value(exec_rand));
   strm_var_def(state, "each", strm_cfunc_value(exec_each));
   strm_var_def(state, "map", strm_cfunc_value(exec_map));
   strm_var_def(state, "filter", strm_cfunc_value(exec_filter));
