@@ -100,7 +100,7 @@ struct map_data {
 };
 
 static int
-each(strm_task* task, strm_value data)
+iter_each(strm_task* task, strm_value data)
 {
   struct map_data *m = task->data;
   strm_value val;
@@ -117,12 +117,12 @@ exec_each(strm_state* state, int argc, strm_value* args, strm_value* ret)
   struct map_data* m = malloc(sizeof(struct map_data));
 
   m->func = args[0];
-  *ret = strm_task_value(strm_task_new(strm_task_cons, each, NULL, (void*)m));
+  *ret = strm_task_value(strm_task_new(strm_task_cons, iter_each, NULL, (void*)m));
   return STRM_OK;
 }
 
 static int
-map(strm_task* task, strm_value data)
+iter_map(strm_task* task, strm_value data)
 {
   struct map_data *m = task->data;
   strm_value val;
@@ -140,12 +140,12 @@ exec_map(strm_state* state, int argc, strm_value* args, strm_value* ret)
   struct map_data* m = malloc(sizeof(struct map_data));
 
   m->func = args[0];
-  *ret = strm_task_value(strm_task_new(strm_task_filt, map, NULL, (void*)m));
+  *ret = strm_task_value(strm_task_new(strm_task_filt, iter_map, NULL, (void*)m));
   return STRM_OK;
 }
 
 static int
-filter(strm_task* task, strm_value data)
+iter_filter(strm_task* task, strm_value data)
 {
   struct map_data *m = task->data;
   strm_value val;
@@ -165,7 +165,7 @@ exec_filter(strm_state* state, int argc, strm_value* args, strm_value* ret)
   struct map_data* m = malloc(sizeof(struct map_data));
 
   m->func = args[0];
-  *ret = strm_task_value(strm_task_new(strm_task_filt, filter, NULL, (void*)m));
+  *ret = strm_task_value(strm_task_new(strm_task_filt, iter_filter, NULL, (void*)m));
   return STRM_OK;
 }
 
@@ -174,7 +174,7 @@ struct count_data {
 };
 
 static int
-count(strm_task* task, strm_value data)
+iter_count(strm_task* task, strm_value data)
 {
   struct count_data *s = task->data;
 
@@ -196,7 +196,7 @@ exec_count(strm_state* state, int argc, strm_value* args, strm_value* ret)
 {
   struct count_data* c = malloc(sizeof(struct count_data));
   c->count = 0;
-  *ret = strm_task_value(strm_task_new(strm_task_filt, count, count_finish, (void*)c));
+  *ret = strm_task_value(strm_task_new(strm_task_filt, iter_count, count_finish, (void*)c));
   return STRM_OK;
 }
 
