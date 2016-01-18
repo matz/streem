@@ -170,7 +170,7 @@ exec_filter(strm_state* state, int argc, strm_value* args, strm_value* ret)
 }
 
 struct count_data {
-  long count;
+  strm_int count;
 };
 
 static int
