@@ -1,6 +1,6 @@
 #include "strm.h"
 
-struct seq_seeder {
+struct seq_data {
   long n;
   long end;
   long inc;
@@ -9,7 +9,7 @@ struct seq_seeder {
 static int
 seq_seed(strm_task* task, strm_value data)
 {
-  struct seq_seeder *s = task->data;
+  struct seq_data *s = task->data;
 
   if (s->n > s->end) {
     strm_task_close(task);
@@ -24,7 +24,7 @@ static int
 exec_seq(strm_state* state, int argc, strm_value* args, strm_value* ret)
 {
   long start, end, inc=1;
-  struct seq_seeder *s;
+  struct seq_data *s;
 
   switch (argc) {
   case 1:
@@ -44,7 +44,7 @@ exec_seq(strm_state* state, int argc, strm_value* args, strm_value* ret)
     strm_raise(state, "wrong number of arguments");
     return STRM_NG;
   }
-  s = malloc(sizeof(struct seq_seeder));
+  s = malloc(sizeof(struct seq_data));
   s->n = start;
   s->inc = inc;
   s->end = end;
