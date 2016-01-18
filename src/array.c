@@ -13,7 +13,7 @@ strm_array_p(strm_value v)
 }
 
 strm_array
-strm_ary_new(const strm_value* p, size_t len)
+strm_ary_new(const strm_value* p, strm_int len)
 {
   struct strm_array* ary;
   strm_value *buf;
@@ -35,7 +35,7 @@ strm_ary_new(const strm_value* p, size_t len)
 int
 strm_ary_eq(strm_array a, strm_array b)
 {
-  size_t i, len;
+  strm_int i, len;
 
   if (a == b) return TRUE;
   if (strm_ary_len(a) != strm_ary_len(b)) return FALSE;

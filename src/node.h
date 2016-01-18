@@ -2,7 +2,7 @@
 #define STRM_NODE_H
 
 typedef struct node_string {
-  size_t len;
+  strm_int len;
   char buf[0];
 } *node_string;
 
@@ -187,15 +187,15 @@ extern node* node_method_new(node*, node*);
 extern node* node_call_new(node_string, node*, node*, node*);
 extern node* node_int_new(long);
 extern node* node_float_new(double);
-extern node* node_string_new(const char*, size_t);
+extern node* node_string_new(const char*, strm_int);
 extern node* node_if_new(node*, node*, node*);
 extern node* node_emit_new(node*);
 extern node* node_skip_new();
 extern node* node_return_new(node*);
 extern node* node_break_new();
 extern node* node_ident_new(node_string);
-extern node_string node_str_new(const char*, size_t len);
-extern node_string node_str_escaped(const char* s, size_t len);
+extern node_string node_str_new(const char*, strm_int len);
+extern node_string node_str_escaped(const char* s, strm_int len);
 extern node* node_nil();
 extern node* node_true();
 extern node* node_false();

@@ -34,7 +34,7 @@ readonly_data_p(const char* p)
 
 struct sym_key {
   const char *ptr;
-  size_t len;
+  strm_int len;
 };
 
 static khint_t
@@ -42,7 +42,7 @@ sym_hash(struct sym_key key)
 {
   const char *s = key.ptr;
   khint_t h;
-  size_t len = key.len;
+  strm_int len = key.len;
 
   h = *s++;
   while (len--) {
@@ -74,7 +74,7 @@ static khash_t(sym) *sym_table;
 #define VAL_PTR(v) VALP_PTR(&v)
 
 static strm_string
-str_new(const char* p, size_t len, int foreign)
+str_new(const char* p, strm_int len, int foreign)
 {
   strm_value tag;
   strm_value val;
@@ -125,7 +125,7 @@ str_new(const char* p, size_t len, int foreign)
 }
 
 static strm_string
-str_intern(const char *p, size_t len)
+str_intern(const char *p, strm_int len)
 {
   khiter_t k;
   struct sym_key key;
@@ -157,7 +157,7 @@ str_intern(const char *p, size_t len)
 #endif
 
 strm_string
-strm_str_new(const char* p, size_t len)
+strm_str_new(const char* p, strm_int len)
 {
   if (!strm_event_loop_started) {
     /* single thread mode */
@@ -169,7 +169,7 @@ strm_str_new(const char* p, size_t len)
 }
 
 strm_string
-strm_str_intern(const char* p, size_t len)
+strm_str_intern(const char* p, strm_int len)
 {
   strm_string str;
 
@@ -265,7 +265,7 @@ strm_strp_ptr(strm_string* s)
 const char*
 strm_strp_cstr(strm_string* s, char buf[])
 {
-  size_t len;
+  strm_int len;
 
   switch (strm_value_tag(*s)) {
   case STRM_TAG_STRING_I:
@@ -289,12 +289,12 @@ strm_strp_cstr(strm_string* s, char buf[])
   }
 }
 
-size_t
+strm_int
 strm_str_len(strm_string s)
 {
   switch (strm_value_tag(s)) {
   case STRM_TAG_STRING_I:
-    return (size_t)VAL_PTR(s)[0];
+    return (strm_int)VAL_PTR(s)[0];
   case STRM_TAG_STRING_6:
     return 6;
   case STRM_TAG_STRING_O:

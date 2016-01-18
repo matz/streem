@@ -50,7 +50,7 @@ enum csv_type {
 };
 
 static strm_value
-csv_string(const char* p, size_t len, int ftype)
+csv_string(const char* p, strm_int len, int ftype)
 {
   strm_string str;
 
@@ -94,7 +94,7 @@ csv_string(const char* p, size_t len, int ftype)
 }
 
 static strm_value
-csv_value(const char* p, size_t len, int ftype)
+csv_value(const char* p, strm_int len, int ftype)
 {
   const char *s = p;
   const char *send = s+len;
@@ -169,7 +169,7 @@ csv_accept(strm_task* task, strm_value data)
   struct csv_data *cd = task->data;
 
   if (cd->prev) {
-    size_t len = strm_str_len(cd->prev)+strm_str_len(line)+1;
+    strm_int len = strm_str_len(cd->prev)+strm_str_len(line)+1;
     char* tmp = malloc(len);
 
     memcpy(tmp, strm_str_ptr(cd->prev), strm_str_len(cd->prev));

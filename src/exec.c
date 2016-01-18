@@ -250,7 +250,7 @@ ary_get(strm_state* state, strm_value ary, int argc, strm_value* argv, strm_valu
   a = strm_ary_struct(ary);
   idx = argv[0];
   if (strm_num_p(idx)) {
-    size_t i = strm_value_int(idx);
+    strm_int i = strm_value_int(idx);
 
     if (i>=a->len)
       return STRM_NG;
@@ -259,7 +259,7 @@ ary_get(strm_state* state, strm_value ary, int argc, strm_value* argv, strm_valu
   }
   if (strm_string_p(idx)) {
     if (a->headers) {
-      size_t i, len = a->len;
+      strm_int i, len = a->len;
 
       for (i=0; i<len; i++) {
         if (strm_str_eq(strm_value_str(idx),
@@ -341,11 +341,11 @@ exec_call(strm_state* state, strm_string name, int argc, strm_value* argv, strm_
 }
 
 static strm_array
-ary_headers(node_string* headers, size_t len)
+ary_headers(node_string* headers, strm_int len)
 {
   strm_array ary = strm_ary_new(NULL, len);
   strm_value* p = strm_ary_ptr(ary);
-  size_t i;
+  strm_int i;
 
   for (i=0; i<len; i++) {
     p[i] = node_to_sym(headers[i]);
@@ -551,7 +551,7 @@ exec_expr(strm_state* state, node* np, strm_value* val)
       default:
         {
           strm_array ary = strm_ary_new(NULL, args->len);
-          size_t i;
+          strm_int i;
 
           for (i=0; i<args->len; i++) {
             n = exec_expr(state, args->data[i], (strm_value*)&strm_ary_ptr(ary)[i]);
