@@ -7,7 +7,7 @@ struct seq_data {
 };
 
 static int
-seq_seed(strm_task* task, strm_value data)
+gen_seq(strm_task* task, strm_value data)
 {
   struct seq_data *s = task->data;
 
@@ -15,7 +15,7 @@ seq_seed(strm_task* task, strm_value data)
     strm_task_close(task);
     return STRM_OK;
   }
-  strm_emit(task, strm_int_value(s->n), seq_seed);
+  strm_emit(task, strm_int_value(s->n), gen_seq);
   s->n += s->inc;
   return STRM_OK;
 }
@@ -48,7 +48,7 @@ exec_seq(strm_state* state, int argc, strm_value* args, strm_value* ret)
   s->n = start;
   s->inc = inc;
   s->end = end;
-  *ret = strm_task_value(strm_task_new(strm_task_prod, seq_seed, NULL, (void*)s));
+  *ret = strm_task_value(strm_task_new(strm_task_prod, gen_seq, NULL, (void*)s));
   return STRM_OK;
 }
 
