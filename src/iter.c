@@ -200,6 +200,55 @@ exec_count(strm_state* state, int argc, strm_value* args, strm_value* ret)
   return STRM_OK;
 }
 
+struct sum_data {
+  strm_int sum;
+  strm_value func;
+};
+
+static int
+iter_sum(strm_task* task, strm_value data)
+{
+  struct sum_data *s = task->data;
+
+  if (!strm_nil_p(s->func)) {
+    if (strm_funcall(NULL, s->func, 1, &data, &data) == STRM_NG) {
+      return STRM_NG;
+    }
+  }
+  s->sum += strm_value_int(data);
+  return STRM_OK;
+}
+
+static int
+sum_finish(strm_task* task, strm_value data)
+{
+  struct sum_data *s = task->data;
+
+  strm_emit(task, strm_int_value(s->sum), NULL);
+  return STRM_OK;
+}
+
+static int
+exec_sum(strm_state* state, int argc, strm_value* args, strm_value* ret)
+{
+  struct sum_data* s = malloc(sizeof(struct sum_data));
+
+  s->sum = 0;
+  switch (argc) {
+  case 0:
+    s->func = strm_nil_value();
+    break;
+  case 1:
+    s->func = args[0];
+    break;
+  default:
+    strm_raise(state, "wrong number of arguments");
+    return STRM_NG;
+  }
+  *ret = strm_task_value(strm_task_new(strm_task_filt, iter_sum, sum_finish, (void*)s));
+  return STRM_OK;
+}
+
 void
 strm_iter_init(strm_state* state)
 {
@@ -209,4 +258,5 @@ strm_iter_init(strm_state* state)
   strm_var_def(state, "map", strm_cfunc_value(exec_map));
   strm_var_def(state, "filter", strm_cfunc_value(exec_filter));
   strm_var_def(state, "count", strm_cfunc_value(exec_count));
+  strm_var_def(state, "sum", strm_cfunc_value(exec_sum));
 }
