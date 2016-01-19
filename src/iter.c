@@ -76,6 +76,13 @@ gen_rand(strm_task* task, strm_value data)
 }
 
 static int
+fin_rand(strm_task* task, strm_value data)
+{
+  task->data = NULL;
+  return STRM_OK;
+}
+
+static int
 exec_rand(strm_state* state, int argc, strm_value* args, strm_value* ret)
 {
   struct timeval tv;
@@ -90,7 +97,7 @@ exec_rand(strm_state* state, int argc, strm_value* args, strm_value* ret)
   x ^= (uint32_t)tv.tv_usec;
   x ^= x >> 11; x ^= x << 17; x ^= x >> 4;
   x *= 2685821657736338717LL;
-  *ret = strm_task_value(strm_task_new(strm_task_prod, gen_rand, NULL,
+  *ret = strm_task_value(strm_task_new(strm_task_prod, gen_rand, fin_rand,
                                        (void*)(intptr_t)n));
   return STRM_OK;
 }
