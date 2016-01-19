@@ -303,7 +303,6 @@ write_close(strm_task* task, strm_value data)
   if ((d->io->mode & STRM_IO_READING) == 0) {
     fclose(d->f);
   }
-  free(d);
   return STRM_OK;
 }
 
