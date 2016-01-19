@@ -428,7 +428,7 @@ strm_to_str(strm_value v)
       case STRM_PTR_LAMBDA:
         n = sprintf(buf, "<lambda:%p>", p);
         break;
-      case STRM_PTR_MISC:
+      case STRM_PTR_AUX:
         n = sprintf(buf, "<obj:%p>", p);
         break;
       }
@@ -465,7 +465,7 @@ strm_value_ns(strm_value val)
   if (strm_value_tag(val) == STRM_TAG_PTR) {
     struct strm_misc* p = strm_ptr(val);
 
-    if (strm_ptr_type(p) == STRM_PTR_MISC) {
+    if (strm_ptr_type(p) == STRM_PTR_AUX) {
       return p->ns;
     }
   }

@@ -74,7 +74,7 @@ enum strm_ptr_type {
   STRM_PTR_LAMBDA,
   STRM_PTR_IO,
   STRM_PTR_TASK,
-  STRM_PTR_MISC,
+  STRM_PTR_AUX,
 };
 
 #define STRM_PTR_HEADER \
