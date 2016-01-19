@@ -77,7 +77,7 @@ strm_queue_push(strm_queue* q, struct strm_queue_task* t)
 {
   if (!q) return;
 
-  if (t->strm->mode == strm_task_prod)
+  if (t->task->mode == strm_task_prod)
     push_low_task(q, t);
   else
     push_high_task(q, t);
@@ -89,7 +89,7 @@ strm_queue_task(strm_task* task, strm_callback func, strm_value data)
   struct strm_queue_task *t;
 
   t = malloc(sizeof(struct strm_queue_task));
-  t->strm = task;
+  t->task = task;
   t->func = func;
   t->data = data;
   t->next = NULL;
@@ -101,7 +101,7 @@ int
 strm_queue_exec(strm_queue* q)
 {
   struct strm_queue_task *t;
-  strm_task *strm;
+  strm_task* task;
   strm_callback func;
   strm_value data;
 
@@ -119,12 +119,12 @@ strm_queue_exec(strm_queue* q)
   }
   pthread_mutex_unlock(&q->mutex);
 
-  strm = t->strm;
+  task = t->task;
   func = t->func;
   data = t->data;
   free(t);
 
-  (*func)(strm, data);
+  (*func)(task, data);
   return STRM_OK;
 }
 

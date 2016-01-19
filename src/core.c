@@ -53,7 +53,7 @@ task_tid(strm_task* s, int tid)
 static void
 task_push(int tid, struct strm_queue_task* t)
 {
-  strm_task *s = t->strm;
+  strm_task *s = t->task;
 
   assert(threads != NULL);
   task_tid(s, tid);

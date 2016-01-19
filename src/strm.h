@@ -174,7 +174,7 @@ extern int strm_event_loop_started;
 /* ----- queue */
 typedef struct strm_queue strm_queue;
 struct strm_queue_task {
-  strm_task *strm;
+  strm_task* task;
   strm_callback func;
   strm_value data;
   struct strm_queue_task *next;
