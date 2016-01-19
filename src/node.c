@@ -411,14 +411,14 @@ node_nil()
 node*
 node_true()
 {
-  static node_bool nd = { NODE_BOOL, 1 };
+  static node_bool nd = { NODE_BOOL, 0, 0, 1 };
   return (node*)&nd;
 }
 
 node*
 node_false()
 {
-  static node_bool nd = { NODE_BOOL, 0 };
+  static node_bool nd = { NODE_BOOL, 0, 0, 0 };
   return (node*)&nd;
 }
 

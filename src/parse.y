@@ -10,6 +10,15 @@
 
 #include "strm.h"
 #include "node.h"
+
+static void
+node_lineinfo(parser_state* p, node* node)
+{
+  if (!node) return;
+  node->fname = p->fname;
+  node->lineno = p->lineno;
+}
+
 %}
 
 %union {
@@ -122,12 +131,14 @@ decl_list       : decl
                       $$ = node_nodes_new();
                       if ($1) {
                         node_nodes_add($$, $1);
+                        node_lineinfo(p, $1);
                       }
                     }
                 | decl_list terms decl
                     {
                       if ($3) {
                         node_nodes_add($$, $3);
+                        node_lineinfo(p, $3);
                       }
                     }
                 ;
@@ -203,12 +214,14 @@ stmt_list       : stmt
                       $$ = node_nodes_new();
                       if ($1) {
                         node_nodes_add($$, $1);
+                        node_lineinfo(p, $1);
                       }
                     }
                 | stmt_list terms stmt
                     {
                       if ($3) {
                         node_nodes_add($$, $3);
+                        node_lineinfo(p, $3);
                       }
                     }
                 ;

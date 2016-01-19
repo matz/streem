@@ -569,7 +569,13 @@ exec_expr(strm_state* state, node* np, strm_value* val)
       node_nodes* v = (node_nodes*)np;
       for (i = 0; i < v->len; i++) {
         n = exec_expr(state, v->data[i], val);
-        if (state->exc != NULL) return STRM_NG;
+        if (state->exc != NULL) {
+          node* n = v->data[i];
+
+          state->fname = n->fname;
+          state->lineno = n->lineno;
+          return STRM_NG;
+        }
         if (n) return n;
       }
     }
@@ -702,6 +708,9 @@ node_run(parser_state* p)
   if (state->exc != NULL) {
     if (state->exc->type != NODE_ERROR_RETURN) {
       strm_value v;
+      if (state->fname) {
+        fprintf(stderr, "%s:%d:", state->fname, state->lineno);
+      }
       exec_cputs(state, stderr, 1, &state->exc->arg, &v);
       /* TODO: garbage correct previous exception value */
       state->exc = NULL;

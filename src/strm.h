@@ -194,6 +194,8 @@ void strm_task_push(struct strm_queue_task* t);
 struct node_error;
 typedef struct strm_state {
   struct node_error* exc;
+  const char* fname;
+  int lineno;
   void *env;
   struct strm_state *prev;
   strm_task *task;

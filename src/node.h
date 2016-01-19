@@ -54,9 +54,9 @@ typedef enum {
   NODE_IMPORT,
 } node_type;
 
-#define NODE_HEADER node_type type
+#define NODE_HEADER node_type type; const char* fname; int lineno
 
-typedef struct {
+typedef struct node {
   NODE_HEADER;
 } node;
 
