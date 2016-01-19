@@ -29,6 +29,7 @@ strm_ary_new(const strm_value* p, strm_int len)
   }
   ary->ptr = buf;
   ary->len = len;
+  ary->ns = NULL;
   return STRM_TAG_ARRAY | ((strm_value)ary & STRM_VAL_MASK);
 }
 
