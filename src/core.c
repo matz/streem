@@ -69,14 +69,22 @@ strm_task_push(struct strm_queue_task* t)
 void
 strm_emit(strm_task* task, strm_value data, strm_callback func)
 {
-  strm_task *d = task->dst;
   int tid = task->tid;
+  strm_task **d = task->dst;
+  strm_task **t = d;
+  strm_task **e = d + task->dlen;
 
   if (!strm_nil_p(data)) {
-    while (d) {
-      task_push(tid, strm_queue_task(d, d->start_func, data));
-      d = d->nextd;
-      tid++;
+    while (t < e) {
+      if ((*d)->mode == strm_task_killed) {
+        task->dlen--;
+        t++;
+      }
+      else {
+        task_push(tid, strm_queue_task(*d, (*d)->start_func, data));
+        *d++ = *t++;
+        tid++;
+      }
     }
   }
   if (func) {
@@ -87,19 +95,18 @@ strm_emit(strm_task* task, strm_value data, strm_callback func)
 int
 strm_task_connect(strm_task* src, strm_task* dst)
 {
-  strm_task* s;
+  strm_task** d;
 
   assert(dst->mode != strm_task_prod);
-  s = src->dst;
-  if (s) {
-    while (s->nextd) {
-      s = s->nextd;
-    }
-    s->nextd = dst;
+  d = src->dst;
+  if (!d) {
+    d = malloc(sizeof(strm_task*));
   }
   else {
-    src->dst = dst;
+    d = realloc(d, sizeof(strm_task*)*(src->dlen+1));
   }
+  d[src->dlen++] = dst;
+  src->dst = d;
 
   if (src->mode == strm_task_prod) {
     task_init();
@@ -203,7 +210,7 @@ strm_task_new(strm_task_mode mode, strm_callback start_func, strm_callback close
   s->close_func = close_func;
   s->data = data;
   s->dst = NULL;
-  s->nextd = NULL;
+  s->dlen = 0;
   s->flags = 0;
 
   return s;
@@ -224,7 +231,8 @@ pipeline_finish(strm_task* task, strm_value data)
 void
 strm_task_close(strm_task* task)
 {
-  strm_task *d;
+  strm_task** d;
+  size_t dlen = task->dlen;
 
   if (task->close_func) {
     (*task->close_func)(task, strm_nil_value());
@@ -232,11 +240,15 @@ strm_task_close(strm_task* task)
   }
 
   d = task->dst;
-  while (d) {
-    strm_task_push(strm_queue_task(d, (strm_callback)strm_task_close, strm_nil_value()));
-    d = d->nextd;
+  while (dlen--) {
+    if ((*d)->mode != strm_task_killed) {
+      strm_task_push(strm_queue_task(*d, (strm_callback)strm_task_close, strm_nil_value()));
+    }
+    d++;
   }
+  free(task->dst);
   if (task->mode == strm_task_prod) {
     strm_task_push(strm_queue_task(task, pipeline_finish, strm_nil_value()));
   }
+  task->mode = strm_task_killed;
 }

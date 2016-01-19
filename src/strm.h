@@ -141,6 +141,7 @@ typedef enum {
   strm_task_prod,               /* Producer */
   strm_task_filt,               /* Filter */
   strm_task_cons,               /* Consumer */
+  strm_task_killed,             /* Terminated */
 } strm_task_mode;
 
 typedef struct strm_task strm_task;
@@ -154,8 +155,8 @@ struct strm_task {
   strm_callback start_func;
   strm_callback close_func;
   void *data;
-  strm_task *dst;
-  strm_task *nextd;
+  strm_task **dst;
+  size_t dlen;
 };
 
 strm_task* strm_task_new(strm_task_mode mode, strm_callback start, strm_callback close, void *data);
