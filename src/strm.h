@@ -103,8 +103,7 @@ strm_string strm_str_new(const char*, strm_int);
 #define strm_value_str(v) (strm_string)(v)
 const char* strm_strp_ptr(strm_string*);
 #define strm_str_ptr(s) strm_strp_ptr(&s)
-const char* strm_strp_cstr(strm_string*, char buf[]);
-#define strm_str_cstr(s,buf) strm_strp_cstr(&s, buf)
+const char* strm_str_cstr(strm_string, char buf[]);
 strm_int strm_str_len(strm_string);
 
 strm_string strm_str_intern(const char *p, strm_int len);

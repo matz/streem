@@ -388,9 +388,10 @@ node_str_new(const char* s, strm_int len)
 {
   node_string str;
 
-  str = malloc(sizeof(struct node_string)+len);
+  str = malloc(sizeof(struct node_string)+len+1);
   str->len = len;
   memcpy(str->buf, s, len);
+  str->buf[len] = '\0';
   return str;
 }
 

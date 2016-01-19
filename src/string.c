@@ -263,25 +263,24 @@ strm_strp_ptr(strm_string* s)
 }
 
 const char*
-strm_strp_cstr(strm_string* s, char buf[])
+strm_str_cstr(strm_string s, char buf[])
 {
   strm_int len;
 
-  switch (strm_value_tag(*s)) {
+  switch (strm_value_tag(s)) {
   case STRM_TAG_STRING_I:
-    len = VALP_PTR(s)[0];
-    if (len == 5) {
-      memcpy(buf, VALP_PTR(s), len);
-      return buf;
-    }
-    return VALP_PTR(s)+1;
+    len = VAL_PTR(s)[0];
+    memcpy(buf, VAL_PTR(s), len);
+    buf[len] = '\0';
+    return buf;
   case STRM_TAG_STRING_6:
-    memcpy(buf, VALP_PTR(s), 6);
+    memcpy(buf, VAL_PTR(s), 6);
+    buf[6] = '\0';
     return buf;
   case STRM_TAG_STRING_O:
   case STRM_TAG_STRING_F:
     {
-      struct strm_string* str = (struct strm_string*)strm_value_val(*s);
+      struct strm_string* str = (struct strm_string*)strm_value_val(s);
       return str->ptr;
     }
   default:
