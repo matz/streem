@@ -15,7 +15,7 @@ env_set(strm_env *env, strm_string name, strm_value val)
   if (!strm_str_intern_p(name)) {
     name = strm_str_intern_str(name);
   }
-  k = kh_put(env, env, (intptr_t)name, &r);
+  k = kh_put(env, env, name, &r);
   if (r <= 0) return STRM_NG;   /* r=0  key is present in the hash table */
                                 /* r=-1 operation failed */
   kh_value(env, k) = val;
@@ -30,7 +30,7 @@ env_get(strm_env* env, strm_string name, strm_value* val)
   if (!strm_str_intern_p(name)) {
     name = strm_str_intern_str(name);
   }
-  k = kh_get(env, env, (intptr_t)name);
+  k = kh_get(env, env, name);
   if (k == kh_end(env)) return STRM_NG;
   *val = kh_value(env, k);
   return STRM_OK;

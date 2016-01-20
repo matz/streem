@@ -212,6 +212,7 @@ strm_task_new(strm_task_mode mode, strm_callback start_func, strm_callback close
   s->dst = NULL;
   s->dlen = 0;
   s->flags = 0;
+  s->exc = NULL;
 
   return s;
 }
