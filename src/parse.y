@@ -129,6 +129,7 @@ decls           : opt_terms
 decl_list       : decl
                     {
                       $$ = node_nodes_new();
+                      node_lineinfo(p, $$);
                       if ($1) {
                         node_nodes_add($$, $1);
                         node_lineinfo(p, $1);
@@ -212,6 +213,7 @@ stmts           : opt_terms
 stmt_list       : stmt
                     {
                       $$ = node_nodes_new();
+                      node_lineinfo(p, $$);
                       if ($1) {
                         node_nodes_add($$, $1);
                         node_lineinfo(p, $1);

@@ -124,7 +124,12 @@ strm_queue_exec(strm_queue* q)
   data = t->data;
   free(t);
 
-  (*func)(task, data);
+  if ((*func)(task, data) == STRM_NG) {
+    if (strm_option_verbose) {
+      strm_eprint(task);
+    }
+    return STRM_NG;
+  }
   return STRM_OK;
 }
 

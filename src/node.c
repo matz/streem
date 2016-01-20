@@ -241,6 +241,8 @@ node_lambda_new(node* args, node* compstmt)
   lambda->type = NODE_LAMBDA;
   lambda->args = args;
   lambda->compstmt = compstmt;
+  lambda->fname = compstmt ? compstmt->fname : NULL;
+  lambda->lineno = compstmt ? compstmt->lineno : 0;
   return (node*)lambda;
 }
 

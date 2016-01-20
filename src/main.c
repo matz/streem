@@ -181,6 +181,8 @@ dump_node(node* np, int indent) {
   }
 }
 
+int strm_option_verbose = FALSE;
+
 int
 main(int argc, const char**argv)
 {
@@ -195,6 +197,9 @@ main(int argc, const char**argv)
       switch (*s) {
       case 'v':
         verbose = TRUE;
+        /* fall through */
+      case 'w':
+        strm_option_verbose = TRUE;
         break;
       case 'c':
         check = TRUE;

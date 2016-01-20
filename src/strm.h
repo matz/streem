@@ -21,6 +21,8 @@
 #define STRM_OK 0
 #define STRM_NG 1
 
+extern int strm_option_verbose;
+
 /* ----- Values */
 #define STRM_MAKE_TAG(n) ((uint64_t)(0xFFF0|(n)) << 48)
 enum strm_value_tag {
@@ -173,6 +175,10 @@ void strm_task_close(strm_task* strm);
 extern int strm_event_loop_started;
 #define strm_value_task(t) (strm_task*)strm_value_ptr(t, STRM_PTR_TASK)
 
+void strm_raise(strm_task*, const char*);
+int strm_funcall(strm_task*, strm_value, int, strm_value*, strm_value*);
+void strm_eprint(strm_task*);
+
 /* ----- queue */
 typedef struct strm_queue strm_queue;
 struct strm_queue_task {
@@ -197,11 +203,8 @@ struct node_error;
 typedef struct strm_state {
   void *env;
   struct strm_state *prev;
-  strm_task *task;
 } strm_state;
 
-void strm_raise(strm_task*, const char*);
-int strm_funcall(struct strm_task*, strm_value, int, strm_value*, strm_value*);
 int strm_var_set(strm_state*, strm_string, strm_value);
 int strm_var_def(strm_state*, const char*, strm_value);
 int strm_var_get(strm_state*, strm_string, strm_value*);

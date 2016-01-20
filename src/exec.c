@@ -23,8 +23,10 @@ task_set_exc(strm_task* task, int type, strm_value arg)
   node_error* exc = malloc(sizeof(node_error));
 
   if (!exc) return NULL;
-  exc->type = NODE_ERROR_SKIP;
+  exc->type = type;
   exc->arg = arg;
+  exc->fname = 0;
+  exc->lineno = 0;
   task_clear_exc(task);
   task->exc = exc;
   return exc;
@@ -317,8 +319,12 @@ strm_funcall(strm_task* task, strm_value func, int argc, strm_value* argv, strm_
       node_error* exc;
 
       c.prev = lambda->state;
-      if ((args == NULL && argc != 0) &&
-          (args->len != argc)) return STRM_NG;
+      if ((args == NULL && argc != 0) || (args->len != argc)) {
+        strm_raise(task, "wrong number of arguments");
+        task->exc->fname = nlbd->fname;
+        task->exc->lineno = nlbd->lineno;
+        return STRM_NG;
+      }
       for (i=0; i<argc; i++) {
         n = strm_var_set(&c, node_to_sym(args->data[i]), argv[i]);
         if (n) return n;
@@ -791,6 +797,9 @@ blk_exec(strm_task* task, strm_value data)
       task_clear_exc(task);
     }
     else {
+      if (strm_option_verbose) {
+        strm_eprint(task);
+      }
       return STRM_NG;
     }
   }
