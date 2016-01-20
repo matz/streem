@@ -318,9 +318,9 @@ csv_finish(strm_task* task, strm_value data)
 }
 
 static int
-csv(strm_state* state, int argc, strm_value* args, strm_value* ret)
+csv(strm_task* task, int argc, strm_value* args, strm_value* ret)
 {
-  strm_task *task;
+  strm_task *t;
   struct csv_data *cd = malloc(sizeof(struct csv_data));
 
   if (!cd) return STRM_NG;
@@ -329,8 +329,8 @@ csv(strm_state* state, int argc, strm_value* args, strm_value* ret)
   cd->prev = strm_str_null;
   cd->n = 0;
 
-  task = strm_task_new(strm_task_filt, csv_accept, csv_finish, (void*)cd);
-  *ret = strm_task_value(task);
+  t = strm_task_new(strm_task_filt, csv_accept, csv_finish, (void*)cd);
+  *ret = strm_task_value(t);
   return STRM_OK;
 }
 

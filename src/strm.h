@@ -47,7 +47,8 @@ enum strm_value_tag {
 typedef uint64_t strm_value;
 
 struct strm_state;
-typedef int (*strm_cfunc)(struct strm_state*, int, strm_value*, strm_value*);
+struct strm_task;
+typedef int (*strm_cfunc)(struct strm_task*, int, strm_value*, strm_value*);
 
 typedef int32_t strm_int;
 strm_value strm_cfunc_value(strm_cfunc);
@@ -200,7 +201,7 @@ typedef struct strm_state {
 } strm_state;
 
 void strm_raise(strm_task*, const char*);
-int strm_funcall(strm_state*, strm_value, int, strm_value*, strm_value*);
+int strm_funcall(struct strm_task*, strm_value, int, strm_value*, strm_value*);
 int strm_var_set(strm_state*, strm_string, strm_value);
 int strm_var_def(strm_state*, const char*, strm_value);
 int strm_var_get(strm_state*, strm_string, strm_value*);
