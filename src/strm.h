@@ -199,8 +199,7 @@ typedef struct strm_state {
   strm_task *task;
 } strm_state;
 
-void strm_raise(strm_state*, const char*);
-void strm_task_raise(strm_task*, const char*);
+void strm_raise(strm_task*, const char*);
 int strm_funcall(strm_state*, strm_value, int, strm_value*, strm_value*);
 int strm_var_set(strm_state*, strm_string, strm_value);
 int strm_var_def(strm_state*, const char*, strm_value);

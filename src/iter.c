@@ -41,7 +41,7 @@ exec_seq(strm_state* state, int argc, strm_value* args, strm_value* ret)
     end = strm_value_int(args[2]);
     break;
   default:
-    strm_raise(state, "wrong number of arguments");
+    strm_raise(state->task, "wrong number of arguments");
     return STRM_NG;
   }
   s = malloc(sizeof(struct seq_data));
@@ -89,7 +89,7 @@ exec_rand(strm_state* state, int argc, strm_value* args, strm_value* ret)
   strm_int n;
 
   if (argc != 1) {
-    strm_raise(state, "wrong number of arguments");
+    strm_raise(state->task, "wrong number of arguments");
     return STRM_NG;
   }
   n = strm_value_int(args[0]);
@@ -249,7 +249,7 @@ exec_sum(strm_state* state, int argc, strm_value* args, strm_value* ret)
     s->func = args[0];
     break;
   default:
-    strm_raise(state, "wrong number of arguments");
+    strm_raise(state->task, "wrong number of arguments");
     return STRM_NG;
   }
   *ret = strm_task_value(strm_task_new(strm_task_filt, iter_sum, sum_finish, (void*)s));

@@ -236,7 +236,7 @@ exec_bar(strm_state* state, int argc, strm_value* args, strm_value* ret)
   /* task x task */
   if (strm_task_p(lhs) && strm_task_p(rhs)) {
     if (strm_value_task(lhs) == NULL || strm_value_task(rhs) == NULL) {
-      strm_raise(state, "task error");
+      strm_raise(state->task, "task error");
       return STRM_NG;
     }
     strm_task_connect(strm_value_task(lhs), strm_value_task(rhs));
@@ -244,7 +244,7 @@ exec_bar(strm_state* state, int argc, strm_value* args, strm_value* ret)
     return STRM_OK;
   }
 
-  strm_raise(state, "type error");
+  strm_raise(state->task, "type error");
   return STRM_NG;
 }
 
@@ -272,7 +272,7 @@ ary_get(strm_state* state, strm_value ary, int argc, strm_value* argv, strm_valu
   strm_value idx;
 
   if (argc != 1) {
-    strm_raise(state, "wrong number of arguments");
+    strm_raise(state->task, "wrong number of arguments");
     return STRM_NG;
   }
 
@@ -312,7 +312,7 @@ strm_funcall(strm_state* state, strm_value func, int argc, strm_value* argv, str
     return ary_get(state, func, argc, argv, ret);
   case STRM_TAG_PTR:
     if (!strm_lambda_p(func)) {
-      strm_raise(state, "not a function");
+      strm_raise(state->task, "not a function");
       return STRM_NG;
     }
     else {
@@ -370,7 +370,7 @@ exec_call(strm_state* state, strm_string name, int argc, strm_value* argv, strm_
   if (n == STRM_OK) {
     return strm_funcall(state, m, argc, argv, ret);
   }
-  strm_raise(state, "function not found");
+  strm_raise(state->task, "function not found");
   return STRM_NG;
 }
 
@@ -407,7 +407,7 @@ exec_expr(strm_state* state, node* np, strm_value* val)
       strm_state *s = strm_ns_find(state, node_to_sym(ns->name));
 
       if (!s) {
-        strm_raise(state, "failed to create namespace");
+        strm_raise(state->task, "failed to create namespace");
         return STRM_NG;
       }
       return exec_expr(s, ns->body, val);
@@ -418,12 +418,12 @@ exec_expr(strm_state* state, node* np, strm_value* val)
       node_import *ns = (node_import*)np;
       strm_state* s = strm_ns_get(node_to_sym(ns->name));
       if (!s) {
-        strm_raise(state, "no such namespace");
+        strm_raise(state->task, "no such namespace");
         return STRM_NG;
       }
       n = strm_env_copy(state, s);
       if (n) {
-        strm_raise(state, "failed to import");
+        strm_raise(state->task, "failed to import");
         return n;
       }
       return STRM_OK;
@@ -439,7 +439,7 @@ exec_expr(strm_state* state, node* np, strm_value* val)
       node_array* v0;
 
       if (!state->task) {
-        strm_raise(state, "failed to emit");
+        strm_raise(state->task, "failed to emit");
       }
       v0 = (node_array*)((node_emit*)np)->emit;
       if (!v0) {
@@ -460,7 +460,7 @@ exec_expr(strm_state* state, node* np, strm_value* val)
       node_let *nlet = (node_let*)np;
       n = exec_expr(state, nlet->rhs, val);
       if (n) {
-        strm_raise(state, "failed to assign");
+        strm_raise(state->task, "failed to assign");
         return n;
       }
       return strm_var_set(state, node_to_sym(nlet->lhs), *val);
@@ -493,7 +493,7 @@ exec_expr(strm_state* state, node* np, strm_value* val)
       node_ident* ni = (node_ident*)np;
       n = strm_var_get(state, node_to_sym(ni->name), val);
       if (n) {
-        strm_raise(state, "failed to reference variable");
+        strm_raise(state->task, "failed to reference variable");
       }
       return n;
     }
@@ -692,16 +692,9 @@ exec_fwrite(strm_state* state, int argc, strm_value* args, strm_value* ret)
 }
 
 void
-strm_task_raise(strm_task* task, const char* msg)
+strm_raise(strm_task* task, const char* msg)
 {
   task_set_exc(task, NODE_ERROR_RUNTIME,
-               strm_str_value(strm_str_new(msg, strlen(msg))));
-}
-
-void
-strm_raise(strm_state* state, const char* msg)
-{
-  task_set_exc(state->task, NODE_ERROR_RUNTIME,
                strm_str_value(strm_str_new(msg, strlen(msg))));
 }
 
