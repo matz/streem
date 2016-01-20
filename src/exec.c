@@ -8,6 +8,35 @@ int strm_flt_p(strm_value);
 #define NODE_ERROR_RETURN 1
 #define NODE_ERROR_SKIP 2
 
+
+static node_error*
+state_exc(strm_state* state)
+{
+  return state->task->exc;
+}
+
+static void
+state_clear_exc(strm_state* state)
+{
+  if (state->task->exc) {
+    free(state->task->exc);
+  }
+  state->task->exc = NULL;
+}
+
+static node_error*
+state_set_exc(strm_state* state, int type, strm_value arg)
+{
+  node_error* exc = malloc(sizeof(node_error));
+
+  if (!exc) return NULL;
+  exc->type = NODE_ERROR_SKIP;
+  exc->arg = arg;
+  state_clear_exc(state);
+  state->task->exc = exc;
+  return exc;
+}
+
 static strm_string
 node_to_sym(node_string s)
 {
@@ -292,8 +321,10 @@ strm_funcall(strm_state* state, strm_value func, int argc, strm_value* argv, str
       node_args* args = (node_args*)nlbd->args;
       strm_state c = {0};
       int i, n;
+      node_error* exc;
 
       c.prev = lambda->state;
+      c.task = state->task;
       if ((args == NULL && argc != 0) &&
           (args->len != argc)) return STRM_NG;
       for (i=0; i<argc; i++) {
@@ -301,9 +332,12 @@ strm_funcall(strm_state* state, strm_value func, int argc, strm_value* argv, str
         if (n) return n;
       }
       n = exec_expr(&c, nlbd->compstmt, ret);
-      if (c.exc && c.exc->type == NODE_ERROR_RETURN) {
-        *ret = c.exc->arg;
-        return STRM_OK;
+      if (n == STRM_NG) {
+        exc = state_exc(&c);
+        if (exc && exc->type == NODE_ERROR_RETURN) {
+          *ret = exc->arg;
+          return STRM_OK;
+        }
       }
       return n;
     }
@@ -397,12 +431,8 @@ exec_expr(strm_state* state, node* np, strm_value* val)
     break;
 
   case NODE_SKIP:
-    {
-       state->exc = malloc(sizeof(node_error));
-       state->exc->type = NODE_ERROR_SKIP;
-       state->exc->arg = strm_nil_value();
-       return STRM_OK;
-    }
+    state_set_exc(state, NODE_ERROR_SKIP, strm_nil_value());
+    return STRM_OK;
   case NODE_EMIT:
     {
       int i, n;
@@ -533,34 +563,35 @@ exec_expr(strm_state* state, node* np, strm_value* val)
     {
       node_return* nreturn = (node_return*)np;
       node_nodes* args = (node_nodes*)nreturn->rv;
+      strm_value arg;
 
-      state->exc = malloc(sizeof(node_error));
-      state->exc->type = NODE_ERROR_RETURN;
       if (!args) {
-        state->exc->arg = strm_nil_value();
-        return STRM_OK;
+        arg = strm_nil_value();
       }
-      switch (args->len) {
-      case 0:
-        state->exc->arg = strm_nil_value();
-        break;
-      case 1:
-        n = exec_expr(state, args->data[0], &state->exc->arg);
-        if (n) return n;
-        break;
-      default:
-        {
-          strm_array ary = strm_ary_new(NULL, args->len);
-          strm_int i;
+      else {
+        switch (args->len) {
+        case 0:
+          arg = strm_nil_value();
+          break;
+        case 1:
+          n = exec_expr(state, args->data[0], &arg);
+          if (n) return n;
+          break;
+        default:
+          {
+            strm_array ary = strm_ary_new(NULL, args->len);
+            strm_int i;
 
-          for (i=0; i<args->len; i++) {
-            n = exec_expr(state, args->data[i], (strm_value*)&strm_ary_ptr(ary)[i]);
-            if (n) return n;
+            for (i=0; i<args->len; i++) {
+              n = exec_expr(state, args->data[i], (strm_value*)&strm_ary_ptr(ary)[i]);
+              if (n) return n;
+            }
           }
+          break;
         }
-        break;
       }
-      return STRM_NG;
+      state_set_exc(state, NODE_ERROR_RETURN, arg);
+      return STRM_OK;
     }
     break;
   case NODE_NODES:
@@ -569,12 +600,15 @@ exec_expr(strm_state* state, node* np, strm_value* val)
       node_nodes* v = (node_nodes*)np;
       for (i = 0; i < v->len; i++) {
         n = exec_expr(state, v->data[i], val);
-        if (state->exc != NULL) {
-          node* n = v->data[i];
+        if (n) {
+          node_error* exc = state_exc(state);
+          if (exc != NULL) {
+            node* n = v->data[i];
 
-          state->fname = n->fname;
-          state->lineno = n->lineno;
-          return STRM_NG;
+            exc->fname = n->fname;
+            exc->lineno = n->lineno;
+            return STRM_NG;
+          }
         }
         if (n) return n;
       }
@@ -658,10 +692,19 @@ exec_fwrite(strm_state* state, int argc, strm_value* args, strm_value* ret)
 }
 
 void
-strm_raise(strm_state* state, const char* msg) {
-  state->exc = malloc(sizeof(node_error));
-  state->exc->type = NODE_ERROR_RUNTIME;
-  state->exc->arg = strm_str_value(strm_str_new(msg, strlen(msg)));
+strm_task_raise(strm_task* task, const char* msg)
+{
+  strm_state c = {0};
+  c.task = task;
+  state_set_exc(&c, NODE_ERROR_RUNTIME,
+                strm_str_value(strm_str_new(msg, strlen(msg))));
+}
+
+void
+strm_raise(strm_state* state, const char* msg)
+{
+  state_set_exc(state, NODE_ERROR_RUNTIME,
+                strm_str_value(strm_str_new(msg, strlen(msg))));
 }
 
 void strm_iter_init(strm_state* state);
@@ -699,21 +742,25 @@ int
 node_run(parser_state* p)
 {
   strm_value v;
-  strm_state *state = malloc(sizeof(strm_state));
+  strm_state c = {0};
+  strm_state *state = &c;
+  strm_task t = {0};
+  node_error* exc;
 
-  memset(state, 0, sizeof(strm_state));
+  c.task = &t;
   node_init(state);
 
   exec_expr(state, (node*)p->lval, &v);
-  if (state->exc != NULL) {
-    if (state->exc->type != NODE_ERROR_RETURN) {
+  exc = state_exc(state);
+  if (exc != NULL) {
+    if (exc->type != NODE_ERROR_RETURN) {
       strm_value v;
-      if (state->fname) {
-        fprintf(stderr, "%s:%d:", state->fname, state->lineno);
+      if (exc->fname) {
+        fprintf(stderr, "%s:%d:", exc->fname, exc->lineno);
       }
-      exec_cputs(state, stderr, 1, &state->exc->arg, &v);
+      exec_cputs(state, stderr, 1, &exc->arg, &v);
       /* TODO: garbage correct previous exception value */
-      state->exc = NULL;
+      state_clear_exc(state);
     }
   }
   return STRM_OK;
@@ -725,6 +772,7 @@ blk_exec(strm_task* task, strm_value data)
   strm_lambda lambda = task->data;
   strm_value ret = strm_nil_value();
   node_args* args = (node_args*)lambda->body->args;
+  node_error* exc;
   int n;
   strm_state c = {0};
 
@@ -737,11 +785,11 @@ blk_exec(strm_task* task, strm_value data)
 
   n = exec_expr(&c, lambda->body->compstmt, &ret);
   if (n) return STRM_NG;
-  if (lambda->state->exc) {
-    if (lambda->state->exc->type == NODE_ERROR_RETURN) {
-      ret = lambda->state->exc->arg;
-      free(lambda->state->exc);
-      lambda->state->exc = NULL;
+  exc = state_exc(lambda->state);
+  if (exc) {
+    if (exc->type == NODE_ERROR_RETURN) {
+      ret = exc->arg;
+      state_clear_exc(lambda->state);
     } else {
       return STRM_NG;
     }

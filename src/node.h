@@ -9,6 +9,8 @@ typedef struct node_string {
 typedef struct node_error {
   int type;
   strm_value arg;
+  const char* fname;
+  int lineno;
 } node_error;
 
 typedef struct parser_state {

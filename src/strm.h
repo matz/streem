@@ -157,6 +157,7 @@ struct strm_task {
   void *data;
   strm_task **dst;
   size_t dlen;
+  struct node_error* exc;
 };
 
 strm_task* strm_task_new(strm_task_mode mode, strm_callback start, strm_callback close, void *data);
@@ -193,15 +194,13 @@ void strm_task_push(struct strm_queue_task* t);
 /* ----- Variables */
 struct node_error;
 typedef struct strm_state {
-  struct node_error* exc;
-  const char* fname;
-  int lineno;
   void *env;
   struct strm_state *prev;
   strm_task *task;
 } strm_state;
 
 void strm_raise(strm_state*, const char*);
+void strm_task_raise(strm_task*, const char*);
 int strm_funcall(strm_state*, strm_value, int, strm_value*, strm_value*);
 int strm_var_set(strm_state*, strm_string, strm_value);
 int strm_var_def(strm_state*, const char*, strm_value);
