@@ -206,20 +206,35 @@ kvs_txn(strm_task* task, int argc, strm_value* args, strm_value* ret)
 static strm_txn*
 get_txn(int argc, strm_value* args)
 {
+  strm_txn* txn;
+
   if (argc == 0) return NULL;
-  return (strm_txn*)strm_value_ptr(args[0], STRM_PTR_AUX);
+  txn = (strm_txn*)strm_value_ptr(args[0], STRM_PTR_AUX);
+  if (!txn->tv) {
+    return NULL;
+  }
+  return txn;
+}
+
+static int
+void_txn(strm_task* task)
+{
+  strm_raise(task, "invalid transaction");
+  return STRM_NG;
 }
 
 static int
 txn_get(strm_task* task, int argc, strm_value* args, strm_value* ret)
 {
   strm_txn* t = get_txn(argc, args);
-  strm_kvs* k = t->kvs;
+  strm_kvs* k;
   strm_string key = strm_str_intern_str(strm_to_str(args[1]));
   khiter_t i;
   strm_value* v;
   int st;
 
+  if (!t) return void_txn(task);
+  k = t->kvs;
   i = kh_get(txn, t->tv, key);
   if (i == kh_end(t->tv)) {     /* not in transaction */
     i = kh_get(kvs, k->kv, key);
@@ -247,12 +262,14 @@ static int
 txn_put(strm_task* task, int argc, strm_value* args, strm_value* ret)
 {
   strm_txn* t = get_txn(argc, args);
-  strm_kvs* k = t->kvs;
+  strm_kvs* k;
   strm_string key = strm_str_intern_str(strm_to_str(args[1]));
   strm_value *v;
   khiter_t i, j;
   int st;
 
+  if (!t) return void_txn(task);
+  k = t->kvs;
   i = kh_put(txn, t->tv, key, &st);
   if (st < 0) {                 /* st<0: operation failed */
     return STRM_NG;
@@ -283,12 +300,14 @@ static int
 txn_update(strm_task* task, int argc, strm_value* args, strm_value* ret)
 {
   strm_txn* t = get_txn(argc, args);
-  strm_kvs* k = t->kvs;
+  strm_kvs* k;
   strm_string key = strm_str_intern_str(strm_to_str(args[1]));
   strm_value val;
   khiter_t i;
   int st;
   
+  if (!t) return void_txn(task);
+  k = t->kvs;
   i = kh_put(kvs, k->kv, key, &st);
   /* st<0: operation failed */
   /* st>0: key does not exist */

@@ -465,6 +465,7 @@ strm_value_ns(strm_value val)
   if (strm_value_tag(val) == STRM_TAG_PTR) {
     struct strm_misc* p = strm_ptr(val);
 
+    if (!p) return NULL;
     if (strm_ptr_type(p) == STRM_PTR_AUX) {
       return p->ns;
     }
