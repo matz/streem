@@ -454,7 +454,7 @@ strm_nil_value(void)
 }
 
 struct strm_misc {
-  STRM_MISC_HEADER;
+  STRM_AUX_HEADER;
 };
 
 strm_state*

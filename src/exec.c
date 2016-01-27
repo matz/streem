@@ -714,6 +714,7 @@ strm_raise(strm_task* task, const char* msg)
 void strm_iter_init(strm_state* state);
 void strm_socket_init(strm_state* state);
 void strm_csv_init(strm_state* state);
+void strm_kvs_init(strm_state* state);
 
 static void
 node_init(strm_state* state)
@@ -740,6 +741,7 @@ node_init(strm_state* state)
   strm_iter_init(state);
   strm_socket_init(state);
   strm_csv_init(state);
+  strm_kvs_init(state);
 }
 
 int

@@ -83,7 +83,7 @@ enum strm_ptr_type {
 #define STRM_PTR_HEADER \
   enum strm_ptr_type type
 
-#define STRM_MISC_HEADER \
+#define STRM_AUX_HEADER \
   STRM_PTR_HEADER;\
   struct strm_state* ns
 
