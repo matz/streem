@@ -758,17 +758,7 @@ node_run(parser_state* p)
   exc = t.exc;
   if (exc != NULL) {
     if (exc->type != NODE_ERROR_RETURN) {
-      strm_value v;
-      if (exc->fname) {
-        fprintf(stderr, "%s:%d:", exc->fname, exc->lineno);
-      }
-      exec_cputs(&t, stderr, 1, &exc->arg, &v);
-      /* TODO: garbage correct previous exception value */
-      if (exc != NULL) {
-        if (exc->type != NODE_ERROR_RETURN) {
-          strm_eprint(&t);
-        }
-      }
+      strm_eprint(&t);
     }
     task_clear_exc(&t);
   }
