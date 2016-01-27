@@ -74,9 +74,9 @@ int strm_array_p(strm_value);
 int strm_string_p(strm_value);
 
 enum strm_ptr_type {
+  STRM_PTR_TASK,
   STRM_PTR_LAMBDA,
   STRM_PTR_IO,
-  STRM_PTR_TASK,
   STRM_PTR_AUX,
 };
 
