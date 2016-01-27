@@ -145,7 +145,7 @@ str_intern(const char *p, strm_int len)
   if (ret == 0) {               /* found */
     return kh_value(sym_table, k);
   }
-  str = str_new(p, len, 1);
+  str = str_new(p, len, 0);
   kh_key(sym_table, k).ptr = strm_str_ptr(str);
   kh_value(sym_table, k) = str;
 
