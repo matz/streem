@@ -31,7 +31,10 @@ kvs_get(strm_task* task, int argc, strm_value* args, strm_value* ret)
   strm_string key = strm_str_intern_str(strm_to_str(args[1]));
   khiter_t i;
 
-  if (!k) return STRM_NG;
+  if (!k) {
+    strm_raise(task, "no kvs given");
+    return STRM_NG;
+  }
   pthread_mutex_lock(&k->lock);
   i = kh_get(kvs, k->kv, key);
   if (i == kh_end(k->kv)) {
@@ -52,7 +55,10 @@ kvs_put(strm_task* task, int argc, strm_value* args, strm_value* ret)
   khiter_t i;
   int st;
   
-  if (!k) return STRM_NG;
+  if (!k) {
+    strm_raise(task, "no kvs given");
+    return STRM_NG;
+  }
   pthread_mutex_lock(&k->lock);
   i = kh_put(kvs, k->kv, key, &st);
   if (st < 0) {                 /* st<0: operation failed */
@@ -73,7 +79,10 @@ kvs_update(strm_task* task, int argc, strm_value* args, strm_value* ret)
   khiter_t i;
   int st;
   
-  if (!k) return STRM_NG;
+  if (!k) {
+    strm_raise(task, "no kvs given");
+    return STRM_NG;
+  }
   pthread_mutex_lock(&k->lock);
   i = kh_put(kvs, k->kv, key, &st);
   /* st<0: operation failed */
@@ -96,7 +105,10 @@ static int
 kvs_close(strm_task* task, int argc, strm_value* args, strm_value* ret)
 {
   strm_kvs* k = get_kvs(argc, args);
-  if (!k) return STRM_NG;
+  if (!k) {
+    strm_raise(task, "no kvs given");
+    return STRM_NG;
+  }
   kh_destroy(kvs, k->kv);
   return STRM_OK;
 }
@@ -160,7 +172,10 @@ kvs_txn(strm_task* task, int argc, strm_value* args, strm_value* ret)
   int st = 0;
   int result = 0;               /* 0: OK, 1: retry, 2: failure */
 
-  if (!kvs) return STRM_NG;
+  if (!kvs) {
+    strm_raise(task, "no kvs given");
+    return STRM_NG;
+  }
   txn = txn_new(kvs);
   val = strm_ptr_value(txn);
  retry:
