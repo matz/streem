@@ -343,8 +343,12 @@ strm_io_new(int fd, int mode)
 }
 
 strm_task*
-strm_io_task(strm_io io, int mode)
+strm_io_task(strm_value iov, int mode)
 {
+  strm_io io;
+
+  assert(strm_io_p(iov));
+  io = strm_value_io(iov);
   switch (mode) {
   case STRM_IO_READ:
     if (io->read_task) {

@@ -194,8 +194,7 @@ exec_bar(strm_task* task, int argc, strm_value* args, strm_value* ret)
   lhs = args[0];
   /* lhs: io */
   if (strm_io_p(lhs)) {
-    strm_io io = strm_value_io(lhs);
-    lhs = strm_task_value(strm_io_task(io, STRM_IO_READ));
+    lhs = strm_task_value(strm_io_task(lhs, STRM_IO_READ));
   }
   /* lhs: lambda */
   else if (strm_lambda_p(lhs)) {
@@ -214,8 +213,7 @@ exec_bar(strm_task* task, int argc, strm_value* args, strm_value* ret)
   rhs = args[1];
   /* rhs: io */
   if (strm_io_p(rhs)) {
-    strm_io io = strm_value_io(rhs);
-    rhs = strm_task_value(strm_io_task(io, STRM_IO_WRITE));
+    rhs = strm_task_value(strm_io_task(rhs, STRM_IO_WRITE));
   }
   /* rhs: lambda */
   else if (strm_lambda_p(rhs)) {
