@@ -37,7 +37,7 @@ accept_cb(strm_task* task, strm_value data)
 #ifdef _WIN32
   sock = _open_osfhandle(sock, 0);
 #endif
-  strm_io_emit(task, strm_ptr_value(strm_io_new(sock, STRM_IO_READ|STRM_IO_WRITE|STRM_IO_FLUSH)),
+  strm_io_emit(task, strm_io_new(sock, STRM_IO_READ|STRM_IO_WRITE|STRM_IO_FLUSH),
                sd->sock, accept_cb);
   return STRM_OK;
 }
@@ -197,7 +197,7 @@ tcp_socket(strm_task* task, int argc, strm_value* args, strm_value* ret)
 #ifdef _WIN32
   sock = _open_osfhandle(sock, 0);
 #endif
-  *ret = strm_ptr_value(strm_io_new(sock, STRM_IO_READ|STRM_IO_WRITE|STRM_IO_FLUSH));
+  *ret = strm_io_new(sock, STRM_IO_READ|STRM_IO_WRITE|STRM_IO_FLUSH);
   return STRM_OK;
 }
 

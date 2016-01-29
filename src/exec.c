@@ -685,7 +685,7 @@ exec_fread(strm_task* task, int argc, strm_value* args, strm_value* ret)
   path = strm_value_str(args[0]);
   fd = open(strm_str_cstr(path, buf), O_RDONLY);
   if (fd < 0) return STRM_NG;
-  *ret = strm_ptr_value(strm_io_new(fd, STRM_IO_READ));
+  *ret = strm_io_new(fd, STRM_IO_READ);
   return STRM_OK;
 }
 
@@ -701,7 +701,7 @@ exec_fwrite(strm_task* task, int argc, strm_value* args, strm_value* ret)
   path = strm_value_str(args[0]);
   fd = open(strm_str_cstr(path, buf), O_WRONLY|O_CREAT, 0644);
   if (fd < 0) return STRM_NG;
-  *ret = strm_ptr_value(strm_io_new(fd, STRM_IO_WRITE));
+  *ret = strm_io_new(fd, STRM_IO_WRITE);
   return STRM_OK;
 }
 
@@ -720,9 +720,9 @@ void strm_kvs_init(strm_state* state);
 static void
 node_init(strm_state* state)
 {
-  strm_var_def(state, "stdin", strm_ptr_value(strm_io_new(0, STRM_IO_READ)));
-  strm_var_def(state, "stdout", strm_ptr_value(strm_io_new(1, STRM_IO_WRITE)));
-  strm_var_def(state, "stderr", strm_ptr_value(strm_io_new(2, STRM_IO_WRITE)));
+  strm_var_def(state, "stdin", strm_io_new(0, STRM_IO_READ));
+  strm_var_def(state, "stdout", strm_io_new(1, STRM_IO_WRITE));
+  strm_var_def(state, "stderr", strm_io_new(2, STRM_IO_WRITE));
   strm_var_def(state, "puts", strm_cfunc_value(exec_puts));
   strm_var_def(state, "+", strm_cfunc_value(exec_plus));
   strm_var_def(state, "-", strm_cfunc_value(exec_minus));

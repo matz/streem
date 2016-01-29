@@ -229,7 +229,7 @@ typedef struct strm_io {
   strm_task *read_task, *write_task;
 } *strm_io;
 
-strm_io strm_io_new(int fd, int mode);
+strm_value strm_io_new(int fd, int mode);
 strm_task* strm_io_task(strm_io io, int mode);
 void strm_io_start_read(strm_task* strm, int fd, strm_callback cb);
 #define strm_value_io(v) (strm_io)strm_value_ptr(v, STRM_PTR_IO)

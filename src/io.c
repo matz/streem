@@ -324,7 +324,7 @@ strm_writeio(strm_io io)
   }
 }
 
-strm_io
+strm_value
 strm_io_new(int fd, int mode)
 {
   strm_io io = malloc(sizeof(struct strm_io));
@@ -339,7 +339,7 @@ strm_io_new(int fd, int mode)
   if (mode & STRM_IO_WRITE) {
     strm_writeio(io);
   }
-  return io;
+  return strm_ptr_value(io);
 }
 
 strm_task*
