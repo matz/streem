@@ -228,7 +228,13 @@ exec_bar(strm_task* task, int argc, strm_value* args, strm_value* ret)
 
   /* task x task */
   if (strm_task_p(lhs) && strm_task_p(rhs)) {
-    if (strm_value_task(lhs) == NULL || strm_value_task(rhs) == NULL) {
+    strm_task* ltask = strm_value_task(lhs);
+    strm_task* rtask = strm_value_task(rhs);
+    if (ltask == NULL || rtask == NULL ||
+        ltask->mode == strm_task_cons ||
+        ltask->mode == strm_task_killed ||
+        ltask->mode == strm_task_prod ||
+        rtask->mode == strm_task_killed) {
       strm_raise(task, "task error");
       return STRM_NG;
     }
