@@ -351,17 +351,10 @@ strm_io_task(strm_value iov, int mode)
   io = strm_value_io(iov);
   switch (mode) {
   case STRM_IO_READ:
-    if (io->read_task) {
-      return io->read_task;
-    }
-    break;
+    return io->read_task;
   case STRM_IO_WRITE:
-    if (io->write_task) {
-      return io->write_task;
-    }
-    break;
+    return io->write_task;
  default:
-   break;
+   return NULL;
   }
-  return NULL;
 }
