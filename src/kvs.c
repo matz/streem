@@ -3,11 +3,12 @@
 #include <pthread.h>
 
 KHASH_INIT(kvs, strm_string, strm_value, 1, kh_int64_hash_func, kh_int64_hash_equal);
-KHASH_INIT(txn, strm_string, strm_value*, 1, kh_int64_hash_func, kh_int64_hash_equal);
+KHASH_INIT(txn, strm_string, strm_value, 1, kh_int64_hash_func, kh_int64_hash_equal);
 
 typedef struct strm_kvs {
   STRM_AUX_HEADER;
   khash_t(kvs) *kv;
+  uint64_t serial;
   pthread_mutex_t lock;
 } strm_kvs;
 
@@ -15,6 +16,7 @@ typedef struct strm_txn {
   STRM_AUX_HEADER;
   khash_t(txn) *tv;
   strm_kvs* kvs;
+  uint64_t serial;
 } strm_txn;
 
 static strm_kvs*
@@ -47,6 +49,17 @@ kvs_get(strm_task* task, int argc, strm_value* args, strm_value* ret)
   return STRM_OK;
 }
 
+static uint64_t
+kvs_serial(strm_kvs* kvs)
+{
+  uint64_t serial;
+
+  pthread_mutex_lock(&kvs->lock);
+  serial = kvs->serial;
+  pthread_mutex_unlock(&kvs->lock);
+  return serial;
+}
+
 static int
 kvs_put(strm_task* task, int argc, strm_value* args, strm_value* ret)
 {
@@ -65,6 +78,7 @@ kvs_put(strm_task* task, int argc, strm_value* args, strm_value* ret)
     pthread_mutex_unlock(&k->lock);
     return STRM_NG;
   }
+  k->serial++;
   kh_value(k->kv, i) = args[2];
   pthread_mutex_unlock(&k->lock);
   return STRM_OK;
@@ -108,8 +122,10 @@ kvs_update(strm_task* task, int argc, strm_value* args, strm_value* ret)
     pthread_mutex_unlock(&k->lock);
     return STRM_NG;
   }
+  k->serial++;
   kh_value(k->kv, i) = val;
   pthread_mutex_unlock(&k->lock);
+  *ret = val;
   return STRM_OK;
 }
 
@@ -137,6 +153,7 @@ kvs_new(strm_task* task, int argc, strm_value* args, strm_value* ret)
   k->ns = kvs_ns;
   k->type = STRM_PTR_AUX;
   k->kv = kh_init(kvs);
+  k->serial = 1;
   pthread_mutex_init(&k->lock, NULL);
   *ret = strm_ptr_value(k);
   return STRM_OK;
@@ -152,25 +169,18 @@ txn_new(strm_kvs* kvs)
   t->type = STRM_PTR_AUX;
   t->tv = kh_init(txn);
   t->kvs = kvs;
+  t->serial = kvs_serial(kvs);
   return t;
 }
 
 static void
 txn_free(strm_txn* txn)
 {
-  khash_t(txn)* tv;
-  khiter_t i;
-
-  tv = txn->tv;
-  if (!tv) return;
-  for (i = kh_begin(tv); i != kh_end(tv); i++) {
-    if (kh_exist(tv, i)) {
-      free(kh_value(tv, i));
-    }
-  }
-  kh_destroy(txn, tv);
+  kh_destroy(txn, txn->tv);
   txn->tv = NULL;
 }
+
+#define MAXTRY 10
 
 static int
 kvs_txn(strm_task* task, int argc, strm_value* args, strm_value* ret)
@@ -183,6 +193,7 @@ kvs_txn(strm_task* task, int argc, strm_value* args, strm_value* ret)
   khash_t(kvs)* kv;             /* target kvs */
   int st = 0;
   int result = 0;               /* 0: OK, 1: retry, 2: failure */
+  int tries = 0;
 
   if (!kvs) {
     strm_raise(task, "no kvs given");
@@ -192,29 +203,39 @@ kvs_txn(strm_task* task, int argc, strm_value* args, strm_value* ret)
   val = strm_ptr_value(txn);
  retry:
   if (strm_funcall(task, args[1], 1, &val, ret) == STRM_NG) {
+    if (txn->serial == 0) {
+      tries++;
+      if (tries > MAXTRY) {
+        strm_raise(task, "too many transaction retries");
+        goto fail;
+      }
+      txn->serial = kvs_serial(kvs);
+      goto retry;
+    }
     txn_free(txn);
     return STRM_NG;
   }
   pthread_mutex_lock(&kvs->lock);
+  if (kvs->serial != txn->serial) {
+    pthread_mutex_unlock(&kvs->lock);
+    goto retry;
+  }
   kv = kvs->kv;
   tv = txn->tv;
   for (i = kh_begin(tv); i != kh_end(tv); i++) {
     if (kh_exist(tv, i)) {
       strm_value key = kh_key(tv, i);
-      strm_value *v = kh_value(tv, i);
+      strm_value v = kh_value(tv, i);
       j = kh_put(kvs, kv, key, &st);
       if (st < 0) {
-        result = 2;             /* failure */
-        break;
+        pthread_mutex_unlock(&kvs->lock);
+        goto fail;
       }
-      if (st == 0) {
-        if (v[0] != kh_value(kv, j)) {
-          result = 1;           /* conflict */
-          break;
-        }
-      }
-      kh_value(kv, j) = v[1];
+      kh_value(kv, j) = v;
     }
+  }
+  if (result == 0) {
+    kvs->serial++;
   }
   pthread_mutex_unlock(&kvs->lock);
   switch (result) {
@@ -222,12 +243,13 @@ kvs_txn(strm_task* task, int argc, strm_value* args, strm_value* ret)
     goto retry;
   default:
   case 2:                       /* failure */
-    txn_free(txn);
-    return STRM_NG;
   case 0:
     txn_free(txn);
     return STRM_OK;
   }
+ fail:
+  txn_free(txn);
+  return STRM_NG;
 }
 
 static strm_txn*
@@ -251,36 +273,39 @@ void_txn(strm_task* task)
 }
 
 static int
+txn_retry(strm_txn* txn)
+{
+  txn->serial = 0;              /* retry mark */
+  return STRM_NG;
+}
+
+static int
 txn_get(strm_task* task, int argc, strm_value* args, strm_value* ret)
 {
   strm_txn* t = get_txn(argc, args);
   strm_kvs* k;
   strm_string key = strm_str_intern_str(strm_to_str(args[1]));
   khiter_t i;
-  strm_value* v;
-  int st;
 
   if (!t) return void_txn(task);
   k = t->kvs;
+  if (t->serial != kvs_serial(k)) {
+    return txn_retry(t);
+  }
   i = kh_get(txn, t->tv, key);
   if (i == kh_end(t->tv)) {     /* not in transaction */
+    pthread_mutex_lock(&k->lock);
     i = kh_get(kvs, k->kv, key);
     if (i == kh_end(k->kv)) {     /* not in database */
       *ret = strm_nil_value();
     }
-    v = malloc(sizeof(strm_value)*2);
-    v[0] = strm_nil_value();
-    v[1] = kh_value(k->kv, i);
-    i = kh_put(txn, t->tv, key, &st);
-    if (st < 0) {
-      free(v);
-      return STRM_NG;
+    else {
+      *ret = kh_value(k->kv, i);
     }
-    kh_value(t->tv, i) = v;
+    pthread_mutex_unlock(&k->lock);
   }
   else {
-    v = kh_value(t->tv, i);
-    *ret = v[1];
+    *ret = kh_value(t->tv, i);
   }
   return STRM_OK;
 }
@@ -289,37 +314,16 @@ static int
 txn_put(strm_task* task, int argc, strm_value* args, strm_value* ret)
 {
   strm_txn* t = get_txn(argc, args);
-  strm_kvs* k;
   strm_string key = strm_str_intern_str(strm_to_str(args[1]));
-  strm_value *v;
-  khiter_t i, j;
+  khiter_t i;
   int st;
 
   if (!t) return void_txn(task);
-  k = t->kvs;
   i = kh_put(txn, t->tv, key, &st);
   if (st < 0) {                 /* st<0: operation failed */
     return STRM_NG;
   }
-  if (st == 0) {                /* st=0: key exists */
-    v = kh_value(t->tv, i);
-    v[1] = args[2];
-  }
-  else {
-    strm_value val;
-
-    j = kh_get(kvs, k->kv, key);
-    if (j == kh_end(k->kv)) {     /* not in database */
-      val = strm_nil_value();
-    }
-    else {
-      val = kh_value(k->kv, j);
-    }
-    v = malloc(sizeof(strm_value)*2);
-    v[0] = val;
-    v[1] = args[2];
-    kh_value(t->tv, i) = v;
-  }
+  kh_value(t->tv, i) = args[2];
   return STRM_OK;
 }
 
@@ -335,17 +339,36 @@ txn_update(strm_task* task, int argc, strm_value* args, strm_value* ret)
 
   if (!t) return void_txn(task);
   k = t->kvs;
-  i = kh_put(kvs, k->kv, key, &st);
+  if (t->serial != kvs_serial(k)) {
+    return txn_retry(t);
+  }
+  i = kh_put(txn, t->tv, key, &st);
   /* st<0: operation failed */
-  /* st>0: key does not exist */
-  if (st != 0) {
+  if (st < 0) {
     return STRM_NG;
   }
-  val = kh_value(k->kv, i);
+  /* st=0: key exists */
+  if (st == 0) {
+    val = kh_value(t->tv, i);
+  }
+  /* st>0: key does not exist */
+  else {
+    pthread_mutex_lock(&k->lock);
+    i = kh_get(kvs, k->kv, key);
+    if (i == kh_end(k->kv)) {     /* not in database */
+      pthread_mutex_unlock(&k->lock);
+      return STRM_NG;
+    }
+    else {
+      val = kh_value(k->kv, i);
+    }
+    pthread_mutex_unlock(&k->lock);
+  }
   if (strm_funcall(task, args[2], 1, &val, &val) == STRM_NG) {
     return STRM_NG;
   }
-  kh_value(k->kv, i) = val;
+  kh_value(t->tv, i) = val;
+  *ret = val;
   return STRM_OK;
 }
 
