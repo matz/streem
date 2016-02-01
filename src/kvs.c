@@ -26,6 +26,7 @@ get_kvs(int argc, strm_value* args)
   return (strm_kvs*)strm_value_ptr(args[0], STRM_PTR_AUX);
 }
 
+/* db.get(key): return a value corresponding to the key (or nil) */
 static int
 kvs_get(strm_task* task, int argc, strm_value* args, strm_value* ret)
 {
@@ -60,6 +61,7 @@ kvs_serial(strm_kvs* kvs)
   return serial;
 }
 
+/* db.put(key,val): save the value associated with the key */
 static int
 kvs_put(strm_task* task, int argc, strm_value* args, strm_value* ret)
 {
@@ -84,6 +86,8 @@ kvs_put(strm_task* task, int argc, strm_value* args, strm_value* ret)
   return STRM_OK;
 }
 
+/* db.update(key){x->new_x}: update value for key with function */
+/* raises error when value does not exist */
 static int
 kvs_update(strm_task* task, int argc, strm_value* args, strm_value* ret)
 {
@@ -129,6 +133,7 @@ kvs_update(strm_task* task, int argc, strm_value* args, strm_value* ret)
   return STRM_OK;
 }
 
+/* db.close(): close db and free memory */
 static int
 kvs_close(strm_task* task, int argc, strm_value* args, strm_value* ret)
 {
@@ -144,6 +149,7 @@ kvs_close(strm_task* task, int argc, strm_value* args, strm_value* ret)
 static strm_state* kvs_ns;
 static strm_state* txn_ns;
 
+/* kvs(): return a new instance of key-value store */
 static int
 kvs_new(strm_task* task, int argc, strm_value* args, strm_value* ret)
 {
@@ -182,6 +188,9 @@ txn_free(strm_txn* txn)
 
 #define MAXTRY 10
 
+/* db.txn{txn->...}: run transaction on db */
+/* txn works like db (but no close/txn), updated at once */
+/* at the end of the function */
 static int
 kvs_txn(strm_task* task, int argc, strm_value* args, strm_value* ret)
 {
@@ -279,6 +288,7 @@ txn_retry(strm_txn* txn)
   return STRM_NG;
 }
 
+/* txn.get(key): return a value corresponding to the key (or nil) */
 static int
 txn_get(strm_task* task, int argc, strm_value* args, strm_value* ret)
 {
@@ -310,6 +320,7 @@ txn_get(strm_task* task, int argc, strm_value* args, strm_value* ret)
   return STRM_OK;
 }
 
+/* txn.put(key,val): save the value associated with the key */
 static int
 txn_put(strm_task* task, int argc, strm_value* args, strm_value* ret)
 {
@@ -327,6 +338,7 @@ txn_put(strm_task* task, int argc, strm_value* args, strm_value* ret)
   return STRM_OK;
 }
 
+/* txn.update(key){x->new_x}: update value for key with function */
 static int
 txn_update(strm_task* task, int argc, strm_value* args, strm_value* ret)
 {
