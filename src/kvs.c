@@ -78,7 +78,7 @@ kvs_update(strm_task* task, int argc, strm_value* args, strm_value* ret)
   strm_value old, val;
   khiter_t i;
   int st;
-  
+
   if (!k) {
     strm_raise(task, "no kvs given");
     return STRM_NG;
@@ -332,7 +332,7 @@ txn_update(strm_task* task, int argc, strm_value* args, strm_value* ret)
   strm_value val;
   khiter_t i;
   int st;
-  
+
   if (!t) return void_txn(task);
   k = t->kvs;
   i = kh_put(kvs, k->kv, key, &st);
