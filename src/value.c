@@ -421,6 +421,8 @@ strm_to_str(strm_value v)
           mode = "w"; break;
         case STRM_IO_READ|STRM_IO_WRITE:
           mode = "rw"; break;
+        default:
+          mode = "?"; break;
         }
         n = sprintf(buf, "<io: fd=%d mode=%s>", io->fd, mode);
         break;
