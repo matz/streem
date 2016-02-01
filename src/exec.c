@@ -340,6 +340,7 @@ strm_funcall(strm_task* task, strm_value func, int argc, strm_value* argv, strm_
       return n;
     }
   default:
+    strm_raise(task, "not a function");
     break;
   }
   return STRM_NG;
