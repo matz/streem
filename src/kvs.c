@@ -75,7 +75,7 @@ kvs_update(strm_task* task, int argc, strm_value* args, strm_value* ret)
 {
   strm_kvs* k = get_kvs(argc, args);
   strm_string key = strm_str_intern_str(strm_to_str(args[1]));
-  strm_value val;
+  strm_value old, val;
   khiter_t i;
   int st;
   
@@ -83,16 +83,28 @@ kvs_update(strm_task* task, int argc, strm_value* args, strm_value* ret)
     strm_raise(task, "no kvs given");
     return STRM_NG;
   }
+  /* get the old value */
+  pthread_mutex_lock(&k->lock);
+  i = kh_get(kvs, k->kv, key);
+  if (i == kh_end(k->kv)) {
+    /* no previous value */
+    pthread_mutex_unlock(&k->lock);
+    return STRM_NG;
+  }
+  old = kh_value(k->kv, i);
+  pthread_mutex_unlock(&k->lock);
+
+  /* call function */
+  if (strm_funcall(task, args[2], 1, &old, &val) == STRM_NG) {
+    pthread_mutex_unlock(&k->lock);
+    return STRM_NG;
+  }
+  
   pthread_mutex_lock(&k->lock);
   i = kh_put(kvs, k->kv, key, &st);
   /* st<0: operation failed */
   /* st>0: key does not exist */
-  if (st != 0) {
-    pthread_mutex_unlock(&k->lock);
-    return STRM_NG;
-  }
-  val = kh_value(k->kv, i);
-  if (strm_funcall(task, args[1], 1, &val, &val) == STRM_NG) {
+  if (st != 0 || kh_value(k->kv, i) != old) {
     pthread_mutex_unlock(&k->lock);
     return STRM_NG;
   }
