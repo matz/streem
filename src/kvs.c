@@ -145,14 +145,14 @@ kvs_new(strm_task* task, int argc, strm_value* args, strm_value* ret)
 static strm_txn*
 txn_new(strm_kvs* kvs)
 {
-  struct strm_txn *k = malloc(sizeof(struct strm_kvs));
+  struct strm_txn *t = malloc(sizeof(struct strm_txn));
 
-  if (!k) return NULL;
-  k->ns = txn_ns;
-  k->type = STRM_PTR_AUX;
-  k->tv = kh_init(txn);
-  k->kvs = kvs;
-  return k;
+  if (!t) return NULL;
+  t->ns = txn_ns;
+  t->type = STRM_PTR_AUX;
+  t->tv = kh_init(txn);
+  t->kvs = kvs;
+  return t;
 }
 
 static void
