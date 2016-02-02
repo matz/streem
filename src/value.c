@@ -6,13 +6,13 @@
 strm_value
 strm_ptr_value(void* p)
 {
-  return STRM_TAG_PTR | ((strm_value)p & STRM_VAL_MASK);
+  return strm_tag_vptr(p, STRM_TAG_PTR);
 }
 
 strm_value
 strm_cfunc_value(strm_cfunc f)
 {
-  return STRM_TAG_CFUNC | ((strm_value)f & STRM_VAL_MASK);
+  return strm_tag_vptr(f, STRM_TAG_CFUNC);
 }
 
 strm_value
@@ -45,13 +45,13 @@ strm_flt_value(double f)
 strm_value
 strm_foreign_value(void* p)
 {
-  return STRM_TAG_FOREIGN | ((strm_value)p & STRM_VAL_MASK);
+  return strm_tag_vptr(p, STRM_TAG_FOREIGN);
 }
 
 static void*
 strm_ptr(strm_value v)
 {
-  return (void*)strm_value_val(v);
+  return strm_value_vptr(v);
 }
 
 static enum strm_ptr_type
@@ -171,7 +171,7 @@ strm_cfunc
 strm_value_cfunc(strm_value v)
 {
   assert(strm_value_tag(v) == STRM_TAG_CFUNC);
-  return (strm_cfunc)strm_value_val(v);
+  return (strm_cfunc)strm_value_vptr(v);
 }
 
 int
@@ -228,9 +228,9 @@ strm_value_eq(strm_value a, strm_value b)
   case STRM_TAG_STRING_F:
     return strm_str_eq(a, b);
   case STRM_TAG_CFUNC:
-    return (strm_cfunc)strm_value_val(a) == (strm_cfunc)strm_value_val(b);
+    return (strm_cfunc)strm_value_vptr(a) == (strm_cfunc)strm_value_vptr(b);
   case STRM_TAG_PTR:
-    return (void*)strm_value_val(a) == (void*)strm_value_val(b);
+    return strm_value_vptr(a) == strm_value_vptr(b);
   default:
     return FALSE;
   }
@@ -440,7 +440,7 @@ strm_to_str(strm_value v)
       n = sprintf(buf, "%g", strm_to_flt(v));
       return strm_str_new(buf, n);
     }
-    n = sprintf(buf, "<%p>", (void*)strm_value_val(v));
+    n = sprintf(buf, "<%p>", strm_value_vptr(v));
     return strm_str_new(buf, n);
   }
   /* not reached */
