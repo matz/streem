@@ -119,7 +119,7 @@ str_new(const char* p, strm_int len, int foreign)
       str->ptr = buf;
     }
     str->len = len;
-    val = (strm_value)str;
+    val = strm_tag_vptr(str, 0);
   }
   return tag | (val & STRM_VAL_MASK);
 }
@@ -254,7 +254,7 @@ strm_strp_ptr(strm_string* s)
   case STRM_TAG_STRING_O:
   case STRM_TAG_STRING_F:
     {
-      struct strm_string* str = (struct strm_string*)strm_value_val(*s);
+      struct strm_string* str = (struct strm_string*)strm_value_vptr(*s);
       return str->ptr;
     }
   default:
@@ -280,7 +280,7 @@ strm_str_cstr(strm_string s, char buf[])
   case STRM_TAG_STRING_O:
   case STRM_TAG_STRING_F:
     {
-      struct strm_string* str = (struct strm_string*)strm_value_val(s);
+      struct strm_string* str = (struct strm_string*)strm_value_vptr(s);
       return str->ptr;
     }
   default:
@@ -299,7 +299,7 @@ strm_str_len(strm_string s)
   case STRM_TAG_STRING_O:
   case STRM_TAG_STRING_F:
     {
-      struct strm_string* str = (struct strm_string*)strm_value_val(s);
+      struct strm_string* str = (struct strm_string*)strm_value_vptr(s);
 
       return str->len;
     }

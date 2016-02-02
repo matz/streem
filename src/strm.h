@@ -45,6 +45,9 @@ enum strm_value_tag {
 #define STRM_VAL_MASK ~STRM_TAG_MASK
 #define strm_value_tag(v) ((v) & STRM_TAG_MASK)
 #define strm_value_val(v) ((v) & STRM_VAL_MASK)
+#define strm_value_vptr(v) (void*)(intptr_t)strm_value_val(v)
+#define strm_tag_val(v,tag) ((tag)|((strm_value)(v)&STRM_VAL_MASK))
+#define strm_tag_vptr(v,tag) strm_tag_val((intptr_t)v,tag)
 
 typedef uint64_t strm_value;
 

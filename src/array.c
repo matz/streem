@@ -51,5 +51,5 @@ strm_ary_eq(strm_array a, strm_array b)
 struct strm_array*
 strm_ary_struct(strm_value v)
 {
-  return (struct strm_array*)strm_value_val(v);
+  return (struct strm_array*)strm_value_vptr(v);
 }
