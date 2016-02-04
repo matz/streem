@@ -435,7 +435,6 @@ strm_to_str(strm_value v)
         break;
       }
       return strm_str_new(buf, n);
-      break;
     }
   default:
     if (strm_flt_p(v)) {
