@@ -238,20 +238,24 @@ sum_finish(strm_task* task, strm_value data)
 static int
 exec_sum(strm_task* task, int argc, strm_value* args, strm_value* ret)
 {
-  struct sum_data* s = malloc(sizeof(struct sum_data));
+  struct sum_data* s;
+  strm_value func;
 
-  s->sum = 0;
   switch (argc) {
   case 0:
-    s->func = strm_nil_value();
+    func = strm_nil_value();
     break;
   case 1:
-    s->func = args[0];
+    func = args[0];
     break;
   default:
     strm_raise(task, "wrong number of arguments");
     return STRM_NG;
   }
+  s = malloc(sizeof(struct sum_data));
+  if (!s) return STRM_NG;
+  s->sum = 0;
+  s->func = func;
   *ret = strm_task_value(strm_task_new(strm_task_filt, iter_sum, sum_finish, (void*)s));
   return STRM_OK;
 }

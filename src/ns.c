@@ -31,22 +31,22 @@ strm_ns_find(strm_state* state, strm_string name)
   strm_state *s = strm_ns_get(name);
 
   if (!s) {
+    int r;
+    khiter_t k;
+
+    if (!nstbl) {
+      nstbl = kh_init(ns);
+    }
     s = malloc(sizeof(strm_state));
     if (!s) return NULL;
-    else {
-      int r;
-      khiter_t k;
-
-      if (!nstbl) {
-        nstbl = kh_init(ns);
-      }
-      k = kh_put(ns, nstbl, (intptr_t)name, &r);
-      if (r <= 0) return NULL;  /* r=0  key is present in the hash table */
-                                /* r=-1 operation failed */
-      kh_value(nstbl, k) = s;
+    k = kh_put(ns, nstbl, (intptr_t)name, &r);
+    if (r < 0) {                /* r<0 operation failed */
+      free(s);
+      return NULL;
     }
     memset(s, 0, sizeof(strm_state));
     s->prev = state;
+    kh_value(nstbl, k) = s;
   }
   return s;
 }

@@ -161,7 +161,7 @@ node_obj_new(node* np, node_string ns)
   if (!np) v = (node_array*)node_array_new();
   else v = (node_array*)np;
   v->ns = ns;
-  return np;
+  return (node*)v;
 }
 
 node*
