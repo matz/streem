@@ -133,7 +133,7 @@ tcp_server(strm_task* task, int argc, strm_value* args, strm_value* ret)
 #endif
   sd = malloc(sizeof(struct socket_data));
   sd->sock = sock;
-  t = strm_task_new(strm_task_prod, server_accept, server_close, (void*)sd);
+  t = strm_task_new(strm_producer, server_accept, server_close, (void*)sd);
   *ret = strm_task_value(t);
   return STRM_OK;
 }

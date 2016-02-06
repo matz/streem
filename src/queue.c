@@ -77,7 +77,7 @@ strm_queue_push(strm_queue* q, struct strm_queue_task* t)
 {
   if (!q) return;
 
-  if (t->task->mode == strm_task_prod)
+  if (t->task->mode == strm_producer)
     push_low_task(q, t);
   else
     push_high_task(q, t);

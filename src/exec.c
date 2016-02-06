@@ -199,14 +199,14 @@ exec_bar(strm_task* task, int argc, strm_value* args, strm_value* ret)
   /* lhs: lambda */
   else if (strm_lambda_p(lhs)) {
     strm_lambda lmbd = strm_value_lambda(lhs);
-    lhs = strm_task_value(strm_task_new(strm_task_filt, blk_exec, NULL, (void*)lmbd));
+    lhs = strm_task_value(strm_task_new(strm_filter, blk_exec, NULL, (void*)lmbd));
   }
   /* lhs: array */
   else if (strm_array_p(lhs)) {
     struct array_data *arrd = malloc(sizeof(struct array_data));
     arrd->arr = strm_value_ary(lhs);
     arrd->n = 0;
-    lhs = strm_task_value(strm_task_new(strm_task_prod, arr_exec, NULL, (void*)arrd));
+    lhs = strm_task_value(strm_task_new(strm_producer, arr_exec, NULL, (void*)arrd));
   }
   /* lhs: should be task */
 
@@ -218,12 +218,12 @@ exec_bar(strm_task* task, int argc, strm_value* args, strm_value* ret)
   /* rhs: lambda */
   else if (strm_lambda_p(rhs)) {
     strm_lambda lmbd = strm_value_lambda(rhs);
-    rhs = strm_task_value(strm_task_new(strm_task_filt, blk_exec, NULL, (void*)lmbd));
+    rhs = strm_task_value(strm_task_new(strm_filter, blk_exec, NULL, (void*)lmbd));
   }
   /* rhs: cfunc */
   else if (strm_cfunc_p(rhs)) {
     strm_cfunc func = strm_value_cfunc(rhs);
-    rhs = strm_task_value(strm_task_new(strm_task_filt, cfunc_exec, NULL, func));
+    rhs = strm_task_value(strm_task_new(strm_filter, cfunc_exec, NULL, func));
   }
 
   /* task x task */
@@ -231,10 +231,10 @@ exec_bar(strm_task* task, int argc, strm_value* args, strm_value* ret)
     strm_task* ltask = strm_value_task(lhs);
     strm_task* rtask = strm_value_task(rhs);
     if (ltask == NULL || rtask == NULL ||
-        ltask->mode == strm_task_cons ||
-        ltask->mode == strm_task_killed ||
-        ltask->mode == strm_task_prod ||
-        rtask->mode == strm_task_killed) {
+        ltask->mode == strm_consumer ||
+        ltask->mode == strm_killed ||
+        ltask->mode == strm_producer ||
+        rtask->mode == strm_killed) {
       strm_raise(task, "task error");
       return STRM_NG;
     }

@@ -48,7 +48,7 @@ exec_seq(strm_task* task, int argc, strm_value* args, strm_value* ret)
   s->n = start;
   s->inc = inc;
   s->end = end;
-  *ret = strm_task_value(strm_task_new(strm_task_prod, gen_seq, NULL, (void*)s));
+  *ret = strm_task_value(strm_task_new(strm_producer, gen_seq, NULL, (void*)s));
   return STRM_OK;
 }
 
@@ -97,7 +97,7 @@ exec_rand(strm_task* task, int argc, strm_value* args, strm_value* ret)
   x ^= (uint32_t)tv.tv_usec;
   x ^= x >> 11; x ^= x << 17; x ^= x >> 4;
   x *= 2685821657736338717LL;
-  *ret = strm_task_value(strm_task_new(strm_task_prod, gen_rand, fin_rand,
+  *ret = strm_task_value(strm_task_new(strm_producer, gen_rand, fin_rand,
                                        (void*)(intptr_t)n));
   return STRM_OK;
 }
@@ -124,7 +124,7 @@ exec_each(strm_task* task, int argc, strm_value* args, strm_value* ret)
   struct map_data* m = malloc(sizeof(struct map_data));
 
   m->func = args[0];
-  *ret = strm_task_value(strm_task_new(strm_task_cons, iter_each, NULL, (void*)m));
+  *ret = strm_task_value(strm_task_new(strm_consumer, iter_each, NULL, (void*)m));
   return STRM_OK;
 }
 
@@ -147,7 +147,7 @@ exec_map(strm_task* task, int argc, strm_value* args, strm_value* ret)
   struct map_data* m = malloc(sizeof(struct map_data));
 
   m->func = args[0];
-  *ret = strm_task_value(strm_task_new(strm_task_filt, iter_map, NULL, (void*)m));
+  *ret = strm_task_value(strm_task_new(strm_filter, iter_map, NULL, (void*)m));
   return STRM_OK;
 }
 
@@ -172,7 +172,7 @@ exec_filter(strm_task* task, int argc, strm_value* args, strm_value* ret)
   struct map_data* m = malloc(sizeof(struct map_data));
 
   m->func = args[0];
-  *ret = strm_task_value(strm_task_new(strm_task_filt, iter_filter, NULL, (void*)m));
+  *ret = strm_task_value(strm_task_new(strm_filter, iter_filter, NULL, (void*)m));
   return STRM_OK;
 }
 
@@ -203,7 +203,7 @@ exec_count(strm_task* task, int argc, strm_value* args, strm_value* ret)
 {
   struct count_data* c = malloc(sizeof(struct count_data));
   c->count = 0;
-  *ret = strm_task_value(strm_task_new(strm_task_filt, iter_count, count_finish, (void*)c));
+  *ret = strm_task_value(strm_task_new(strm_filter, iter_count, count_finish, (void*)c));
   return STRM_OK;
 }
 
@@ -256,7 +256,7 @@ exec_sum(strm_task* task, int argc, strm_value* args, strm_value* ret)
   if (!s) return STRM_NG;
   s->sum = 0;
   s->func = func;
-  *ret = strm_task_value(strm_task_new(strm_task_filt, iter_sum, sum_finish, (void*)s));
+  *ret = strm_task_value(strm_task_new(strm_filter, iter_sum, sum_finish, (void*)s));
   return STRM_OK;
 }
 

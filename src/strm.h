@@ -142,12 +142,12 @@ struct strm_array* strm_ary_struct(strm_array);
 int strm_ary_eq(strm_array a, strm_array b);
 #define strm_ary_null 0
 
-/* ----- Tasks */
+/* ----- Streams */
 typedef enum {
-  strm_task_prod,               /* Producer */
-  strm_task_filt,               /* Filter */
-  strm_task_cons,               /* Consumer */
-  strm_task_killed,             /* Terminated */
+  strm_producer,
+  strm_filter,
+  strm_consumer,
+  strm_killed,
 } strm_task_mode;
 
 typedef struct strm_task strm_task;

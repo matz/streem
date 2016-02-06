@@ -262,7 +262,7 @@ strm_readio(strm_io io)
     else {
       buf->beg = buf->end = buf->buf;
     }
-    io->read_task = strm_task_new(strm_task_prod, cb, read_close, (void*)buf);
+    io->read_task = strm_task_new(strm_producer, cb, read_close, (void*)buf);
     io->read_task->flags |= flags;
   }
 }
@@ -320,7 +320,7 @@ strm_writeio(strm_io io)
     d->f = fdopen(io->fd, "w");
     d->io = io;
     d->rc = 1;
-    io->write_task = strm_task_new(strm_task_cons, write_cb, write_close, (void*)d);
+    io->write_task = strm_task_new(strm_consumer, write_cb, write_close, (void*)d);
   }
 }
 

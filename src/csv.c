@@ -329,7 +329,7 @@ csv(strm_task* task, int argc, strm_value* args, strm_value* ret)
   cd->prev = strm_str_null;
   cd->n = 0;
 
-  t = strm_task_new(strm_task_filt, csv_accept, csv_finish, (void*)cd);
+  t = strm_task_new(strm_filter, csv_accept, csv_finish, (void*)cd);
   *ret = strm_task_value(t);
   return STRM_OK;
 }

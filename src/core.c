@@ -76,7 +76,7 @@ strm_emit(strm_task* task, strm_value data, strm_callback func)
 
   if (!strm_nil_p(data)) {
     while (t < e) {
-      if ((*d)->mode == strm_task_killed) {
+      if ((*d)->mode == strm_killed) {
         task->dlen--;
         t++;
       }
@@ -97,7 +97,7 @@ strm_task_connect(strm_task* src, strm_task* dst)
 {
   strm_task** d;
 
-  assert(dst->mode != strm_task_prod);
+  assert(dst->mode != strm_producer);
   d = src->dst;
   if (!d) {
     d = malloc(sizeof(strm_task*));
@@ -108,7 +108,7 @@ strm_task_connect(strm_task* src, strm_task* dst)
   d[src->dlen++] = dst;
   src->dst = d;
 
-  if (src->mode == strm_task_prod) {
+  if (src->mode == strm_producer) {
     task_init();
     pipeline_count++;
     strm_task_push(strm_queue_task(src, src->start_func, strm_nil_value()));
@@ -242,14 +242,14 @@ strm_task_close(strm_task* task)
 
   d = task->dst;
   while (dlen--) {
-    if ((*d)->mode != strm_task_killed) {
+    if ((*d)->mode != strm_killed) {
       strm_task_push(strm_queue_task(*d, (strm_callback)strm_task_close, strm_nil_value()));
     }
     d++;
   }
   free(task->dst);
-  if (task->mode == strm_task_prod) {
+  if (task->mode == strm_producer) {
     strm_task_push(strm_queue_task(task, pipeline_finish, strm_nil_value()));
   }
-  task->mode = strm_task_killed;
+  task->mode = strm_killed;
 }
