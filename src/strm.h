@@ -52,8 +52,8 @@ enum strm_value_tag {
 typedef uint64_t strm_value;
 
 struct strm_state;
-struct strm_task;
-typedef int (*strm_cfunc)(struct strm_task*, int, strm_value*, strm_value*);
+struct strm_stream;
+typedef int (*strm_cfunc)(struct strm_stream*, int, strm_value*, strm_value*);
 
 typedef int32_t strm_int;
 strm_value strm_cfunc_value(strm_cfunc);
@@ -77,7 +77,7 @@ int strm_array_p(strm_value);
 int strm_string_p(strm_value);
 
 enum strm_ptr_type {
-  STRM_PTR_TASK,
+  STRM_PTR_STREAM,
   STRM_PTR_LAMBDA,
   STRM_PTR_IO,
   STRM_PTR_AUX,
@@ -148,58 +148,58 @@ typedef enum {
   strm_filter,
   strm_consumer,
   strm_killed,
-} strm_task_mode;
+} strm_stream_mode;
 
-typedef struct strm_task strm_task;
-typedef int (*strm_callback)(strm_task*, strm_value);
+typedef struct strm_stream strm_stream;
+typedef int (*strm_callback)(strm_stream*, strm_value);
 
-struct strm_task {
+struct strm_stream {
   STRM_PTR_HEADER;
   unsigned int flags;
   int tid;
-  strm_task_mode mode;
+  strm_stream_mode mode;
   strm_callback start_func;
   strm_callback close_func;
   void *data;
-  strm_task **dst;
+  strm_stream **dst;
   size_t dlen;
   struct node_error* exc;
 };
 
-strm_task* strm_task_new(strm_task_mode mode, strm_callback start, strm_callback close, void *data);
-#define strm_task_value(t) strm_ptr_value(t)
-void strm_emit(strm_task* task, strm_value data, strm_callback cb);
-void strm_io_emit(strm_task* task, strm_value data, int fd, strm_callback cb);
-int strm_task_connect(strm_task* src, strm_task* dst);
+strm_stream* strm_stream_new(strm_stream_mode mode, strm_callback start, strm_callback close, void *data);
+#define strm_stream_value(t) strm_ptr_value(t)
+void strm_emit(strm_stream* strm, strm_value data, strm_callback cb);
+void strm_io_emit(strm_stream* strm, strm_value data, int fd, strm_callback cb);
+int strm_stream_connect(strm_stream* src, strm_stream* dst);
 int strm_loop();
-void strm_task_close(strm_task* strm);
-#define strm_task_p(v) strm_ptr_tag_p(v, STRM_PTR_TASK)
+void strm_stream_close(strm_stream* strm);
+#define strm_stream_p(v) strm_ptr_tag_p(v, STRM_PTR_STREAM)
 
 extern int strm_event_loop_started;
-#define strm_value_task(t) (strm_task*)strm_value_ptr(t, STRM_PTR_TASK)
+#define strm_value_stream(t) (strm_stream*)strm_value_ptr(t, STRM_PTR_STREAM)
 
-void strm_raise(strm_task*, const char*);
-int strm_funcall(strm_task*, strm_value, int, strm_value*, strm_value*);
-void strm_eprint(strm_task*);
+void strm_raise(strm_stream*, const char*);
+int strm_funcall(strm_stream*, strm_value, int, strm_value*, strm_value*);
+void strm_eprint(strm_stream*);
 
 /* ----- queue */
 typedef struct strm_queue strm_queue;
 struct strm_queue_task {
-  strm_task* task;
+  strm_stream* strm;
   strm_callback func;
   strm_value data;
   struct strm_queue_task *next;
 };
 
 strm_queue* strm_queue_alloc(void);
-struct strm_queue_task* strm_queue_task(strm_task* strm, strm_callback func, strm_value data);
+struct strm_queue_task* strm_queue_task(strm_stream* strm, strm_callback func, strm_value data);
 void strm_queue_free(strm_queue* q);
 void strm_queue_push(strm_queue* q, struct strm_queue_task* t);
 int strm_queue_exec(strm_queue* q);
 int strm_queue_size(strm_queue* q);
 int strm_queue_p(strm_queue* q);
 
-void strm_task_push(struct strm_queue_task* t);
+void strm_stream_push(struct strm_queue_task* t);
 
 /* ----- Variables */
 struct node_error;
@@ -229,12 +229,13 @@ typedef struct strm_io {
   STRM_PTR_HEADER;
   int fd;
   int mode;
-  strm_task *read_task, *write_task;
+  strm_stream* read_stream;
+  strm_stream* write_stream;
 } *strm_io;
 
 strm_value strm_io_new(int fd, int mode);
-strm_task* strm_io_task(strm_value io, int mode);
-void strm_io_start_read(strm_task* strm, int fd, strm_callback cb);
+strm_stream* strm_io_stream(strm_value io, int mode);
+void strm_io_start_read(strm_stream* strm, int fd, strm_callback cb);
 #define strm_value_io(v) (strm_io)strm_value_ptr(v, STRM_PTR_IO)
 #define strm_io_p(v) strm_ptr_tag_p(v, STRM_PTR_IO)
 

@@ -19,7 +19,7 @@ struct socket_data {
 };
 
 static int
-accept_cb(strm_task* task, strm_value data)
+accept_cb(strm_stream* task, strm_value data)
 {
   struct socket_data *sd = task->data;
   struct sockaddr_in writer_addr;
@@ -43,7 +43,7 @@ accept_cb(strm_task* task, strm_value data)
 }
 
 static int
-server_accept(strm_task* task, strm_value data)
+server_accept(strm_stream* task, strm_value data)
 {
   struct socket_data *sd = task->data;
 
@@ -52,7 +52,7 @@ server_accept(strm_task* task, strm_value data)
 }
 
 static int
-server_close(strm_task* task, strm_value d)
+server_close(strm_stream* task, strm_value d)
 {
   struct socket_data *sd = task->data;
 
@@ -61,7 +61,7 @@ server_close(strm_task* task, strm_value d)
 }
 
 static int
-tcp_server(strm_task* task, int argc, strm_value* args, strm_value* ret)
+tcp_server(strm_stream* task, int argc, strm_value* args, strm_value* ret)
 {
   struct addrinfo hints;
   struct addrinfo *result, *rp;
@@ -69,7 +69,7 @@ tcp_server(strm_task* task, int argc, strm_value* args, strm_value* ret)
   const char *service;
   char buf[12];
   struct socket_data *sd;
-  strm_task *t;
+  strm_stream *t;
 
 #ifdef _WIN32
   int sockopt = SO_SYNCHRONOUS_NONALERT;
@@ -133,13 +133,13 @@ tcp_server(strm_task* task, int argc, strm_value* args, strm_value* ret)
 #endif
   sd = malloc(sizeof(struct socket_data));
   sd->sock = sock;
-  t = strm_task_new(strm_producer, server_accept, server_close, (void*)sd);
-  *ret = strm_task_value(t);
+  t = strm_stream_new(strm_producer, server_accept, server_close, (void*)sd);
+  *ret = strm_stream_value(t);
   return STRM_OK;
 }
 
 static int
-tcp_socket(strm_task* task, int argc, strm_value* args, strm_value* ret)
+tcp_socket(strm_stream* task, int argc, strm_value* args, strm_value* ret)
 {
   struct addrinfo hints;
   struct addrinfo *result, *rp;

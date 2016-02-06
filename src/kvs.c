@@ -28,14 +28,14 @@ get_kvs(int argc, strm_value* args)
 
 /* db.get(key): return a value corresponding to the key (or nil) */
 static int
-kvs_get(strm_task* task, int argc, strm_value* args, strm_value* ret)
+kvs_get(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   strm_kvs* k = get_kvs(argc, args);
   strm_string key = strm_str_intern_str(strm_to_str(args[1]));
   khiter_t i;
 
   if (!k) {
-    strm_raise(task, "no kvs given");
+    strm_raise(strm, "no kvs given");
     return STRM_NG;
   }
   pthread_mutex_lock(&k->lock);
@@ -63,7 +63,7 @@ kvs_serial(strm_kvs* kvs)
 
 /* db.put(key,val): save the value associated with the key */
 static int
-kvs_put(strm_task* task, int argc, strm_value* args, strm_value* ret)
+kvs_put(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   strm_kvs* k = get_kvs(argc, args);
   strm_string key = strm_str_intern_str(strm_to_str(args[1]));
@@ -71,7 +71,7 @@ kvs_put(strm_task* task, int argc, strm_value* args, strm_value* ret)
   int st;
   
   if (!k) {
-    strm_raise(task, "no kvs given");
+    strm_raise(strm, "no kvs given");
     return STRM_NG;
   }
   pthread_mutex_lock(&k->lock);
@@ -89,7 +89,7 @@ kvs_put(strm_task* task, int argc, strm_value* args, strm_value* ret)
 /* db.update(key){x->new_x}: update value for key with function */
 /* raises error when value does not exist */
 static int
-kvs_update(strm_task* task, int argc, strm_value* args, strm_value* ret)
+kvs_update(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   strm_kvs* k = get_kvs(argc, args);
   strm_string key = strm_str_intern_str(strm_to_str(args[1]));
@@ -98,7 +98,7 @@ kvs_update(strm_task* task, int argc, strm_value* args, strm_value* ret)
   int st;
 
   if (!k) {
-    strm_raise(task, "no kvs given");
+    strm_raise(strm, "no kvs given");
     return STRM_NG;
   }
   /* get the old value */
@@ -113,7 +113,7 @@ kvs_update(strm_task* task, int argc, strm_value* args, strm_value* ret)
   pthread_mutex_unlock(&k->lock);
 
   /* call function */
-  if (strm_funcall(task, args[2], 1, &old, &val) == STRM_NG) {
+  if (strm_funcall(strm, args[2], 1, &old, &val) == STRM_NG) {
     pthread_mutex_unlock(&k->lock);
     return STRM_NG;
   }
@@ -135,11 +135,11 @@ kvs_update(strm_task* task, int argc, strm_value* args, strm_value* ret)
 
 /* db.close(): close db and free memory */
 static int
-kvs_close(strm_task* task, int argc, strm_value* args, strm_value* ret)
+kvs_close(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   strm_kvs* k = get_kvs(argc, args);
   if (!k) {
-    strm_raise(task, "no kvs given");
+    strm_raise(strm, "no kvs given");
     return STRM_NG;
   }
   kh_destroy(kvs, k->kv);
@@ -151,7 +151,7 @@ static strm_state* txn_ns;
 
 /* kvs(): return a new instance of key-value store */
 static int
-kvs_new(strm_task* task, int argc, strm_value* args, strm_value* ret)
+kvs_new(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   struct strm_kvs *k = malloc(sizeof(struct strm_kvs));
 
@@ -192,7 +192,7 @@ txn_free(strm_txn* txn)
 /* txn works like db (but no close/txn), updated at once */
 /* at the end of the function */
 static int
-kvs_txn(strm_task* task, int argc, strm_value* args, strm_value* ret)
+kvs_txn(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   strm_kvs* kvs = get_kvs(argc, args);
   strm_txn* txn;
@@ -205,17 +205,17 @@ kvs_txn(strm_task* task, int argc, strm_value* args, strm_value* ret)
   int tries = 0;
 
   if (!kvs) {
-    strm_raise(task, "no kvs given");
+    strm_raise(strm, "no kvs given");
     return STRM_NG;
   }
   txn = txn_new(kvs);
   val = strm_ptr_value(txn);
  retry:
-  if (strm_funcall(task, args[1], 1, &val, ret) == STRM_NG) {
+  if (strm_funcall(strm, args[1], 1, &val, ret) == STRM_NG) {
     if (txn->serial == 0) {
       tries++;
       if (tries > MAXTRY) {
-        strm_raise(task, "too many transaction retries");
+        strm_raise(strm, "too many transaction retries");
         goto fail;
       }
       txn->serial = kvs_serial(kvs);
@@ -275,9 +275,9 @@ get_txn(int argc, strm_value* args)
 }
 
 static int
-void_txn(strm_task* task)
+void_txn(strm_stream* strm)
 {
-  strm_raise(task, "invalid transaction");
+  strm_raise(strm, "invalid transaction");
   return STRM_NG;
 }
 
@@ -290,14 +290,14 @@ txn_retry(strm_txn* txn)
 
 /* txn.get(key): return a value corresponding to the key (or nil) */
 static int
-txn_get(strm_task* task, int argc, strm_value* args, strm_value* ret)
+txn_get(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   strm_txn* t = get_txn(argc, args);
   strm_kvs* k;
   strm_string key = strm_str_intern_str(strm_to_str(args[1]));
   khiter_t i;
 
-  if (!t) return void_txn(task);
+  if (!t) return void_txn(strm);
   k = t->kvs;
   if (t->serial != kvs_serial(k)) {
     return txn_retry(t);
@@ -322,14 +322,14 @@ txn_get(strm_task* task, int argc, strm_value* args, strm_value* ret)
 
 /* txn.put(key,val): save the value associated with the key */
 static int
-txn_put(strm_task* task, int argc, strm_value* args, strm_value* ret)
+txn_put(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   strm_txn* t = get_txn(argc, args);
   strm_string key = strm_str_intern_str(strm_to_str(args[1]));
   khiter_t i;
   int st;
 
-  if (!t) return void_txn(task);
+  if (!t) return void_txn(strm);
   i = kh_put(txn, t->tv, key, &st);
   if (st < 0) {                 /* st<0: operation failed */
     return STRM_NG;
@@ -340,7 +340,7 @@ txn_put(strm_task* task, int argc, strm_value* args, strm_value* ret)
 
 /* txn.update(key){x->new_x}: update value for key with function */
 static int
-txn_update(strm_task* task, int argc, strm_value* args, strm_value* ret)
+txn_update(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   strm_txn* t = get_txn(argc, args);
   strm_kvs* k;
@@ -349,7 +349,7 @@ txn_update(strm_task* task, int argc, strm_value* args, strm_value* ret)
   khiter_t i;
   int st;
 
-  if (!t) return void_txn(task);
+  if (!t) return void_txn(strm);
   k = t->kvs;
   if (t->serial != kvs_serial(k)) {
     return txn_retry(t);
@@ -376,7 +376,7 @@ txn_update(strm_task* task, int argc, strm_value* args, strm_value* ret)
     }
     pthread_mutex_unlock(&k->lock);
   }
-  if (strm_funcall(task, args[2], 1, &val, &val) == STRM_NG) {
+  if (strm_funcall(strm, args[2], 1, &val, &val) == STRM_NG) {
     return STRM_NG;
   }
   kh_value(t->tv, i) = val;

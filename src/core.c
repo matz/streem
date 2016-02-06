@@ -19,7 +19,7 @@ int strm_event_loop_started = FALSE;
 static void task_init();
 
 static int
-task_tid(strm_task* s, int tid)
+task_tid(strm_stream* s, int tid)
 {
   int i;
 
@@ -53,7 +53,7 @@ task_tid(strm_task* s, int tid)
 static void
 task_push(int tid, struct strm_queue_task* t)
 {
-  strm_task *s = t->task;
+  strm_stream *s = t->strm;
 
   assert(threads != NULL);
   task_tid(s, tid);
@@ -61,18 +61,18 @@ task_push(int tid, struct strm_queue_task* t)
 }
 
 void
-strm_task_push(struct strm_queue_task* t)
+strm_stream_push(struct strm_queue_task* t)
 {
   task_push(-1, t);
 }
 
 void
-strm_emit(strm_task* task, strm_value data, strm_callback func)
+strm_emit(strm_stream* task, strm_value data, strm_callback func)
 {
   int tid = task->tid;
-  strm_task **d = task->dst;
-  strm_task **t = d;
-  strm_task **e = d + task->dlen;
+  strm_stream **d = task->dst;
+  strm_stream **t = d;
+  strm_stream **e = d + task->dlen;
 
   if (!strm_nil_p(data)) {
     while (t < e) {
@@ -88,22 +88,22 @@ strm_emit(strm_task* task, strm_value data, strm_callback func)
     }
   }
   if (func) {
-    strm_task_push(strm_queue_task(task, func, strm_nil_value()));
+    strm_stream_push(strm_queue_task(task, func, strm_nil_value()));
   }
 }
 
 int
-strm_task_connect(strm_task* src, strm_task* dst)
+strm_stream_connect(strm_stream* src, strm_stream* dst)
 {
-  strm_task** d;
+  strm_stream** d;
 
   assert(dst->mode != strm_producer);
   d = src->dst;
   if (!d) {
-    d = malloc(sizeof(strm_task*));
+    d = malloc(sizeof(strm_stream*));
   }
   else {
-    d = realloc(d, sizeof(strm_task*)*(src->dlen+1));
+    d = realloc(d, sizeof(strm_stream*)*(src->dlen+1));
   }
   d[src->dlen++] = dst;
   src->dst = d;
@@ -111,14 +111,14 @@ strm_task_connect(strm_task* src, strm_task* dst)
   if (src->mode == strm_producer) {
     task_init();
     pipeline_count++;
-    strm_task_push(strm_queue_task(src, src->start_func, strm_nil_value()));
+    strm_stream_push(strm_queue_task(src, src->start_func, strm_nil_value()));
   }
   return STRM_OK;
 }
 
 int cpu_count();
 void strm_init_io_loop();
-strm_task* strm_io_deque();
+strm_stream* strm_io_deque();
 int strm_io_waiting();
 
 static int
@@ -199,11 +199,11 @@ strm_loop()
   return STRM_OK;
 }
 
-strm_task*
-strm_task_new(strm_task_mode mode, strm_callback start_func, strm_callback close_func, void* data)
+strm_stream*
+strm_stream_new(strm_stream_mode mode, strm_callback start_func, strm_callback close_func, void* data)
 {
-  strm_task *s = malloc(sizeof(strm_task));
-  s->type = STRM_PTR_TASK;
+  strm_stream *s = malloc(sizeof(strm_stream));
+  s->type = STRM_PTR_STREAM;
   s->tid = -1;                  /* -1 means uninitialized */
   s->mode = mode;
   s->start_func = start_func;
@@ -218,7 +218,7 @@ strm_task_new(strm_task_mode mode, strm_callback start_func, strm_callback close
 }
 
 static int
-pipeline_finish(strm_task* task, strm_value data)
+pipeline_finish(strm_stream* strm, strm_value data)
 {
   pthread_mutex_lock(&pipeline_mutex);
   pipeline_count--;
@@ -230,26 +230,26 @@ pipeline_finish(strm_task* task, strm_value data)
 }
 
 void
-strm_task_close(strm_task* task)
+strm_stream_close(strm_stream* strm)
 {
-  strm_task** d;
-  size_t dlen = task->dlen;
+  strm_stream** d;
+  size_t dlen = strm->dlen;
 
-  if (task->close_func) {
-    (*task->close_func)(task, strm_nil_value());
-    free(task->data);
+  if (strm->close_func) {
+    (*strm->close_func)(strm, strm_nil_value());
+    free(strm->data);
   }
 
-  d = task->dst;
+  d = strm->dst;
   while (dlen--) {
     if ((*d)->mode != strm_killed) {
-      strm_task_push(strm_queue_task(*d, (strm_callback)strm_task_close, strm_nil_value()));
+      strm_stream_push(strm_queue_task(*d, (strm_callback)strm_stream_close, strm_nil_value()));
     }
     d++;
   }
-  free(task->dst);
-  if (task->mode == strm_producer) {
-    strm_task_push(strm_queue_task(task, pipeline_finish, strm_nil_value()));
+  free(strm->dst);
+  if (strm->mode == strm_producer) {
+    strm_stream_push(strm_queue_task(strm, pipeline_finish, strm_nil_value()));
   }
-  task->mode = strm_killed;
+  strm->mode = strm_killed;
 }

@@ -7,21 +7,21 @@ struct seq_data {
 };
 
 static int
-gen_seq(strm_task* task, strm_value data)
+gen_seq(strm_stream* strm, strm_value data)
 {
-  struct seq_data *s = task->data;
+  struct seq_data *s = strm->data;
 
   if (s->n > s->end) {
-    strm_task_close(task);
+    strm_stream_close(strm);
     return STRM_OK;
   }
-  strm_emit(task, strm_int_value(s->n), gen_seq);
+  strm_emit(strm, strm_int_value(s->n), gen_seq);
   s->n += s->inc;
   return STRM_OK;
 }
 
 static int
-exec_seq(strm_task* task, int argc, strm_value* args, strm_value* ret)
+exec_seq(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   strm_int start, end, inc=1;
   struct seq_data *s;
@@ -41,14 +41,14 @@ exec_seq(strm_task* task, int argc, strm_value* args, strm_value* ret)
     end = strm_value_int(args[2]);
     break;
   default:
-    strm_raise(task, "wrong number of arguments");
+    strm_raise(strm, "wrong number of arguments");
     return STRM_NG;
   }
   s = malloc(sizeof(struct seq_data));
   s->n = start;
   s->inc = inc;
   s->end = end;
-  *ret = strm_task_value(strm_task_new(strm_producer, gen_seq, NULL, (void*)s));
+  *ret = strm_stream_value(strm_stream_new(strm_producer, gen_seq, NULL, (void*)s));
   return STRM_OK;
 }
 
@@ -66,30 +66,30 @@ xorshift64star(void)
 }
 
 static int
-gen_rand(strm_task* task, strm_value data)
+gen_rand(strm_stream* strm, strm_value data)
 {
-  strm_int n = (strm_int)(intptr_t)task->data;
+  strm_int n = (strm_int)(intptr_t)strm->data;
   uint64_t r = xorshift64star();
   
-  strm_emit(task, strm_int_value(r % n), gen_rand);
+  strm_emit(strm, strm_int_value(r % n), gen_rand);
   return STRM_OK;
 }
 
 static int
-fin_rand(strm_task* task, strm_value data)
+fin_rand(strm_stream* strm, strm_value data)
 {
-  task->data = NULL;
+  strm->data = NULL;
   return STRM_OK;
 }
 
 static int
-exec_rand(strm_task* task, int argc, strm_value* args, strm_value* ret)
+exec_rand(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   struct timeval tv;
   strm_int n;
 
   if (argc != 1) {
-    strm_raise(task, "wrong number of arguments");
+    strm_raise(strm, "wrong number of arguments");
     return STRM_NG;
   }
   n = strm_value_int(args[0]);
@@ -97,7 +97,7 @@ exec_rand(strm_task* task, int argc, strm_value* args, strm_value* ret)
   x ^= (uint32_t)tv.tv_usec;
   x ^= x >> 11; x ^= x << 17; x ^= x >> 4;
   x *= 2685821657736338717LL;
-  *ret = strm_task_value(strm_task_new(strm_producer, gen_rand, fin_rand,
+  *ret = strm_stream_value(strm_stream_new(strm_producer, gen_rand, fin_rand,
                                        (void*)(intptr_t)n));
   return STRM_OK;
 }
@@ -107,9 +107,9 @@ struct map_data {
 };
 
 static int
-iter_each(strm_task* task, strm_value data)
+iter_each(strm_stream* strm, strm_value data)
 {
-  struct map_data *m = task->data;
+  struct map_data *m = strm->data;
   strm_value val;
 
   if (strm_funcall(NULL, m->func, 1, &data, &val) == STRM_NG) {
@@ -119,60 +119,60 @@ iter_each(strm_task* task, strm_value data)
 }
 
 static int
-exec_each(strm_task* task, int argc, strm_value* args, strm_value* ret)
+exec_each(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   struct map_data* m = malloc(sizeof(struct map_data));
 
   m->func = args[0];
-  *ret = strm_task_value(strm_task_new(strm_consumer, iter_each, NULL, (void*)m));
+  *ret = strm_stream_value(strm_stream_new(strm_consumer, iter_each, NULL, (void*)m));
   return STRM_OK;
 }
 
 static int
-iter_map(strm_task* task, strm_value data)
+iter_map(strm_stream* strm, strm_value data)
 {
-  struct map_data *m = task->data;
+  struct map_data *m = strm->data;
   strm_value val;
 
-  if (strm_funcall(task, m->func, 1, &data, &val) == STRM_NG) {
+  if (strm_funcall(strm, m->func, 1, &data, &val) == STRM_NG) {
     return STRM_NG;
   }
-  strm_emit(task, val, NULL);
+  strm_emit(strm, val, NULL);
   return STRM_OK;
 }
 
 static int
-exec_map(strm_task* task, int argc, strm_value* args, strm_value* ret)
+exec_map(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   struct map_data* m = malloc(sizeof(struct map_data));
 
   m->func = args[0];
-  *ret = strm_task_value(strm_task_new(strm_filter, iter_map, NULL, (void*)m));
+  *ret = strm_stream_value(strm_stream_new(strm_filter, iter_map, NULL, (void*)m));
   return STRM_OK;
 }
 
 static int
-iter_filter(strm_task* task, strm_value data)
+iter_filter(strm_stream* strm, strm_value data)
 {
-  struct map_data *m = task->data;
+  struct map_data *m = strm->data;
   strm_value val;
 
   if (strm_funcall(NULL, m->func, 1, &data, &val) == STRM_NG) {
     return STRM_NG;
   }
   if (strm_value_bool(val)) {
-    strm_emit(task, data, NULL);
+    strm_emit(strm, data, NULL);
   }
   return STRM_OK;
 }
 
 static int
-exec_filter(strm_task* task, int argc, strm_value* args, strm_value* ret)
+exec_filter(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   struct map_data* m = malloc(sizeof(struct map_data));
 
   m->func = args[0];
-  *ret = strm_task_value(strm_task_new(strm_filter, iter_filter, NULL, (void*)m));
+  *ret = strm_stream_value(strm_stream_new(strm_filter, iter_filter, NULL, (void*)m));
   return STRM_OK;
 }
 
@@ -181,29 +181,29 @@ struct count_data {
 };
 
 static int
-iter_count(strm_task* task, strm_value data)
+iter_count(strm_stream* strm, strm_value data)
 {
-  struct count_data *s = task->data;
+  struct count_data *s = strm->data;
 
   s->count++;
   return STRM_OK;
 }
 
 static int
-count_finish(strm_task* task, strm_value data)
+count_finish(strm_stream* strm, strm_value data)
 {
-  struct count_data *s = task->data;
+  struct count_data *s = strm->data;
 
-  strm_emit(task, strm_int_value(s->count), NULL);
+  strm_emit(strm, strm_int_value(s->count), NULL);
   return STRM_OK;
 }
 
 static int
-exec_count(strm_task* task, int argc, strm_value* args, strm_value* ret)
+exec_count(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   struct count_data* c = malloc(sizeof(struct count_data));
   c->count = 0;
-  *ret = strm_task_value(strm_task_new(strm_filter, iter_count, count_finish, (void*)c));
+  *ret = strm_stream_value(strm_stream_new(strm_filter, iter_count, count_finish, (void*)c));
   return STRM_OK;
 }
 
@@ -213,9 +213,9 @@ struct sum_data {
 };
 
 static int
-iter_sum(strm_task* task, strm_value data)
+iter_sum(strm_stream* strm, strm_value data)
 {
-  struct sum_data *s = task->data;
+  struct sum_data *s = strm->data;
 
   if (!strm_nil_p(s->func)) {
     if (strm_funcall(NULL, s->func, 1, &data, &data) == STRM_NG) {
@@ -227,16 +227,16 @@ iter_sum(strm_task* task, strm_value data)
 }
 
 static int
-sum_finish(strm_task* task, strm_value data)
+sum_finish(strm_stream* strm, strm_value data)
 {
-  struct sum_data *s = task->data;
+  struct sum_data *s = strm->data;
 
-  strm_emit(task, strm_int_value(s->sum), NULL);
+  strm_emit(strm, strm_int_value(s->sum), NULL);
   return STRM_OK;
 }
 
 static int
-exec_sum(strm_task* task, int argc, strm_value* args, strm_value* ret)
+exec_sum(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   struct sum_data* s;
   strm_value func;
@@ -249,14 +249,14 @@ exec_sum(strm_task* task, int argc, strm_value* args, strm_value* ret)
     func = args[0];
     break;
   default:
-    strm_raise(task, "wrong number of arguments");
+    strm_raise(strm, "wrong number of arguments");
     return STRM_NG;
   }
   s = malloc(sizeof(struct sum_data));
   if (!s) return STRM_NG;
   s->sum = 0;
   s->func = func;
-  *ret = strm_task_value(strm_task_new(strm_filter, iter_sum, sum_finish, (void*)s));
+  *ret = strm_stream_value(strm_stream_new(strm_filter, iter_sum, sum_finish, (void*)s));
   return STRM_OK;
 }
 

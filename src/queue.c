@@ -77,19 +77,19 @@ strm_queue_push(strm_queue* q, struct strm_queue_task* t)
 {
   if (!q) return;
 
-  if (t->task->mode == strm_producer)
+  if (t->strm->mode == strm_producer)
     push_low_task(q, t);
   else
     push_high_task(q, t);
 }
 
 struct strm_queue_task*
-strm_queue_task(strm_task* task, strm_callback func, strm_value data)
+strm_queue_task(strm_stream* strm, strm_callback func, strm_value data)
 {
   struct strm_queue_task *t;
 
   t = malloc(sizeof(struct strm_queue_task));
-  t->task = task;
+  t->strm = strm;
   t->func = func;
   t->data = data;
   t->next = NULL;
@@ -101,7 +101,7 @@ int
 strm_queue_exec(strm_queue* q)
 {
   struct strm_queue_task *t;
-  strm_task* task;
+  strm_stream* strm;
   strm_callback func;
   strm_value data;
 
@@ -119,14 +119,14 @@ strm_queue_exec(strm_queue* q)
   }
   pthread_mutex_unlock(&q->mutex);
 
-  task = t->task;
+  strm = t->strm;
   func = t->func;
   data = t->data;
   free(t);
 
-  if ((*func)(task, data) == STRM_NG) {
+  if ((*func)(strm, data) == STRM_NG) {
     if (strm_option_verbose) {
-      strm_eprint(task);
+      strm_eprint(strm);
     }
     return STRM_NG;
   }

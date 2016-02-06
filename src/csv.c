@@ -155,7 +155,7 @@ csv_type(strm_value v)
 }
 
 static int
-csv_accept(strm_task* task, strm_value data)
+csv_accept(strm_stream* strm, strm_value data)
 {
   strm_array ary;
   strm_string line = strm_value_str(data);
@@ -166,7 +166,7 @@ csv_accept(strm_task* task, strm_value data)
   int fieldcnt;
   int in_quote = 0, all_str = 1;;
   int ftype = 0;               /* 0: unspecified, 1: string, 2: escaped_string */
-  struct csv_data *cd = task->data;
+  struct csv_data *cd = strm->data;
 
   if (cd->prev) {
     strm_int len = strm_str_len(cd->prev)+strm_str_len(line)+1;
@@ -258,7 +258,7 @@ csv_accept(strm_task* task, strm_value data)
       /* first data line (after optinal header line) */
       if (cd->headers) {
         if (all_str) {          /* data line is all string; emit header line */
-          strm_emit(task, strm_ary_value(cd->headers), NULL);
+          strm_emit(strm, strm_ary_value(cd->headers), NULL);
           cd->headers = strm_ary_null;
         }
         else {                  /* intern header strings */
@@ -295,18 +295,18 @@ csv_accept(strm_task* task, strm_value data)
         }
       }
     }
-    strm_emit(task, strm_str_value(ary), NULL);
+    strm_emit(strm, strm_str_value(ary), NULL);
   }
   return STRM_OK;
 }
 
 static int
-csv_finish(strm_task* task, strm_value data)
+csv_finish(strm_stream* strm, strm_value data)
 {
-  struct csv_data *cd = task->data;
+  struct csv_data *cd = strm->data;
 
   if (cd->headers && cd->types == NULL) {
-    strm_emit(task, strm_ary_value(cd->headers), NULL);
+    strm_emit(strm, strm_ary_value(cd->headers), NULL);
     cd->headers = strm_ary_null;
   }
   /* memory deallocation */
@@ -318,9 +318,9 @@ csv_finish(strm_task* task, strm_value data)
 }
 
 static int
-csv(strm_task* task, int argc, strm_value* args, strm_value* ret)
+csv(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
-  strm_task *t;
+  strm_stream *t;
   struct csv_data *cd = malloc(sizeof(struct csv_data));
 
   if (!cd) return STRM_NG;
@@ -329,8 +329,8 @@ csv(strm_task* task, int argc, strm_value* args, strm_value* ret)
   cd->prev = strm_str_null;
   cd->n = 0;
 
-  t = strm_task_new(strm_filter, csv_accept, csv_finish, (void*)cd);
-  *ret = strm_task_value(t);
+  t = strm_stream_new(strm_filter, csv_accept, csv_finish, (void*)cd);
+  *ret = strm_stream_value(t);
   return STRM_OK;
 }
 

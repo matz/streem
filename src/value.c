@@ -407,8 +407,8 @@ strm_to_str(strm_value v)
     else {
       void *p = strm_ptr(v);
       switch (strm_ptr_type(p)) {
-      case STRM_PTR_TASK:
-        n = sprintf(buf, "<task:%p>", p);
+      case STRM_PTR_STREAM:
+        n = sprintf(buf, "<stream:%p>", p);
         break;
       case STRM_PTR_IO: {
         strm_io io = (strm_io)p;
