@@ -441,9 +441,6 @@ exec_expr(strm_stream* strm, strm_state* state, node* np, strm_value* val)
       int i, n;
       node_array* v0;
 
-      if (!strm) {
-        strm_raise(strm, "failed to emit");
-      }
       v0 = (node_array*)((node_emit*)np)->emit;
       if (!v0) {
         strm_emit(strm, strm_nil_value(), NULL);
