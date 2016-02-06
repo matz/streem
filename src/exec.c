@@ -233,7 +233,7 @@ exec_bar(strm_task* task, int argc, strm_value* args, strm_value* ret)
     if (ltask == NULL || rtask == NULL ||
         ltask->mode == strm_consumer ||
         ltask->mode == strm_killed ||
-        ltask->mode == strm_producer ||
+        rtask->mode == strm_producer ||
         rtask->mode == strm_killed) {
       strm_raise(task, "task error");
       return STRM_NG;
