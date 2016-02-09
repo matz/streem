@@ -441,7 +441,7 @@ strm_to_str(strm_value v)
       n = sprintf(buf, "%g", strm_to_flt(v));
       return strm_str_new(buf, n);
     }
-    n = sprintf(buf, "<%p>", (void*)strm_value_val(v));
+    n = sprintf(buf, "<%p>", strm_value_vptr(v));
     return strm_str_new(buf, n);
   }
   /* not reached */
