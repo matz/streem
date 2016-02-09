@@ -382,7 +382,17 @@ strm_to_str(strm_value v)
 {
   char buf[32];
   int n;
+  strm_state* ns = strm_value_ns(v);
 
+  if (ns) {
+    strm_value m;
+
+    n = strm_var_get(ns, strm_str_intern("to_str", 6), &m);
+    if (n == STRM_OK) {
+      n = strm_funcall(NULL, m, 1, &v, &m);
+      if (n == STRM_OK) return m;
+    }
+  }
   switch (strm_value_tag(v)) {
   case STRM_TAG_INT:
     n = sprintf(buf, "%d", strm_to_int(v));
