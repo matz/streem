@@ -390,7 +390,7 @@ strm_to_str(strm_value v)
     n = strm_var_get(ns, strm_str_intern("to_str", 6), &m);
     if (n == STRM_OK) {
       n = strm_funcall(NULL, m, 1, &v, &m);
-      if (n == STRM_OK) return m;
+      if (n == STRM_OK && strm_string_p(m)) return m;
     }
   }
   switch (strm_value_tag(v)) {
