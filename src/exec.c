@@ -709,6 +709,7 @@ exec_fwrite(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 void
 strm_raise(strm_stream* strm, const char* msg)
 {
+  if (!strm) return;
   strm_set_exc(strm, NODE_ERROR_RUNTIME,
                strm_str_value(strm_str_new(msg, strlen(msg))));
 }
