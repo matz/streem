@@ -459,6 +459,17 @@ strm_to_str(strm_value v)
 }
 
 strm_value
+strm_p(strm_value val)
+{
+  char buf[7];
+  strm_string str = strm_to_str(val);
+  const char* p = strm_str_cstr(str, buf);
+  fputs(p, stdout);
+  fputs("\n", stdout);
+  return val;
+}
+
+strm_value
 strm_nil_value(void)
 {
   return STRM_TAG_PTR | 0;
