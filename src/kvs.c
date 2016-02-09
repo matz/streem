@@ -384,6 +384,32 @@ txn_update(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   return STRM_OK;
 }
 
+static strm_value
+to_str(strm_stream* strm, strm_value val, char* type)
+{
+  char buf[256];
+  int n;
+
+  n = sprintf(buf, "<%s:%p>", type, (void*)strm_value_vptr(val));
+  return strm_str_new(buf, n);
+}
+
+static int
+kvs_str(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  if (argc != 1) return STRM_NG;
+  *ret = to_str(strm, args[0], "kvs");
+  return STRM_OK;
+}
+
+static int
+txn_str(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  if (argc != 1) return STRM_NG;
+  *ret = to_str(strm, args[0], "txn");
+  return STRM_OK;
+}
+
 void
 strm_kvs_init(strm_state* state)
 {
@@ -393,11 +419,13 @@ strm_kvs_init(strm_state* state)
   strm_var_def(kvs_ns, "update", strm_cfunc_value(kvs_update));
   strm_var_def(kvs_ns, "txn", strm_cfunc_value(kvs_txn));
   strm_var_def(kvs_ns, "close", strm_cfunc_value(kvs_close));
+  strm_var_def(kvs_ns, "to_str", strm_cfunc_value(kvs_str));
 
   txn_ns = strm_ns_new(NULL);
   strm_var_def(txn_ns, "get", strm_cfunc_value(txn_get));
   strm_var_def(txn_ns, "put", strm_cfunc_value(txn_put));
   strm_var_def(txn_ns, "update", strm_cfunc_value(txn_update));
+  strm_var_def(kvs_ns, "to_str", strm_cfunc_value(txn_str));
 
   strm_var_def(state, "kvs", strm_cfunc_value(kvs_new));
 }
