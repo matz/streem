@@ -1,12 +1,12 @@
 #include "strm.h"
 #include <pthread.h>
 
-struct strm_thread {
+struct strm_worker {
   pthread_t th;
   strm_queue *queue;
-} *threads;
+} *workers;
 
-static int thread_max;
+static int worker_max;
 static int pipeline_count = 0;
 static pthread_mutex_t pipeline_mutex;
 static pthread_cond_t pipeline_cond;
@@ -25,21 +25,21 @@ task_tid(strm_stream* s, int tid)
 
   if (s->tid < 0) {
     if (tid >= 0) {
-      s->tid = tid % thread_max;
+      s->tid = tid % worker_max;
     }
     else {
       int n = 0;
       int max = 0;
 
-      for (i=0; i<thread_max; i++) {
-        int size = strm_queue_size(threads[i].queue);
+      for (i=0; i<worker_max; i++) {
+        int size = strm_queue_size(workers[i].queue);
         if (size == 0) break;
         if (size > max) {
           max = size;
           n = i;
         }
       }
-      if (i == thread_max) {
+      if (i == worker_max) {
         s->tid = n;
       }
       else {
@@ -55,9 +55,9 @@ task_push(int tid, struct strm_queue_task* t)
 {
   strm_stream *s = t->strm;
 
-  assert(threads != NULL);
+  assert(workers != NULL);
   task_tid(s, tid);
-  strm_queue_push(threads[s->tid].queue, t);
+  strm_queue_push(workers[s->tid].queue, t);
 }
 
 void
@@ -122,9 +122,9 @@ strm_stream* strm_io_deque();
 int strm_io_waiting();
 
 static int
-thread_count()
+worker_count()
 {
-  char *e = getenv("STRM_THREAD_MAX");
+  char *e = getenv("STRM_WORKER_MAX");
   int n;
 
   if (e) {
@@ -145,11 +145,11 @@ task_ping()
 static void*
 task_loop(void *data)
 {
-  struct strm_thread *th = (struct strm_thread*)data;
+  struct strm_worker *w = (struct strm_worker*)data;
 
   for (;;) {
-    strm_queue_exec(th->queue);
-    if (pipeline_count == 0 && !strm_queue_p(th->queue)) {
+    strm_queue_exec(w->queue);
+    if (pipeline_count == 0 && !strm_queue_p(w->queue)) {
       task_ping();
     }
   }
@@ -161,7 +161,7 @@ task_init()
 {
   int i;
 
-  if (threads) return;
+  if (workers) return;
 
   strm_event_loop_started = TRUE;
   strm_init_io_loop();
@@ -169,11 +169,11 @@ task_init()
   pthread_mutex_init(&pipeline_mutex, NULL);
   pthread_cond_init(&pipeline_cond, NULL);
 
-  thread_max = thread_count();
-  threads = malloc(sizeof(struct strm_thread)*thread_max);
-  for (i=0; i<thread_max; i++) {
-    threads[i].queue = strm_queue_alloc();
-    pthread_create(&threads[i].th, NULL, task_loop, &threads[i]);
+  worker_max = worker_count();
+  workers = malloc(sizeof(struct strm_worker)*worker_max);
+  for (i=0; i<worker_max; i++) {
+    workers[i].queue = strm_queue_alloc();
+    pthread_create(&workers[i].th, NULL, task_loop, &workers[i]);
   }
 }
 
@@ -189,11 +189,11 @@ strm_loop()
     if (pipeline_count == 0) {
       int i;
 
-      for (i=0; i<thread_max; i++) {
-        if (strm_queue_p(threads[i].queue))
+      for (i=0; i<worker_max; i++) {
+        if (strm_queue_p(workers[i].queue))
           break;
       }
-      if (i == thread_max) break;
+      if (i == worker_max) break;
     }
   }
   return STRM_OK;
