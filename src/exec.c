@@ -301,6 +301,38 @@ ary_get(strm_stream* strm, strm_value ary, int argc, strm_value* argv, strm_valu
   return STRM_NG;
 }
 
+static int
+lambda_call(strm_stream* strm, strm_value func, int argc, strm_value* argv, strm_value* ret)
+{
+  strm_lambda lambda = strm_value_lambda(func);
+  node_lambda* nlbd = lambda->body;
+  node_args* args = (node_args*)nlbd->args;
+  strm_state c = {0};
+  int i, n;
+  node_error* exc;
+
+  c.prev = lambda->state;
+  if ((args == NULL && argc != 0) || (args->len != argc)) {
+    strm_raise(strm, "wrong number of arguments");
+    strm->exc->fname = nlbd->fname;
+    strm->exc->lineno = nlbd->lineno;
+    return STRM_NG;
+  }
+  for (i=0; i<argc; i++) {
+    n = strm_var_set(&c, node_to_sym(args->data[i]), argv[i]);
+    if (n) return n;
+  }
+  n = exec_expr(strm, &c, nlbd->compstmt, ret);
+  if (n == STRM_NG) {
+    exc = strm->exc;
+    if (exc && exc->type == NODE_ERROR_RETURN) {
+      *ret = exc->arg;
+      return STRM_OK;
+    }
+  }
+  return n;
+}
+
 int
 strm_funcall(strm_stream* strm, strm_value func, int argc, strm_value* argv, strm_value* ret)
 {
@@ -315,33 +347,7 @@ strm_funcall(strm_stream* strm, strm_value func, int argc, strm_value* argv, str
       return STRM_NG;
     }
     else {
-      strm_lambda lambda = strm_value_lambda(func);
-      node_lambda* nlbd = lambda->body;
-      node_args* args = (node_args*)nlbd->args;
-      strm_state c = {0};
-      int i, n;
-      node_error* exc;
-
-      c.prev = lambda->state;
-      if ((args == NULL && argc != 0) || (args->len != argc)) {
-        strm_raise(strm, "wrong number of arguments");
-        strm->exc->fname = nlbd->fname;
-        strm->exc->lineno = nlbd->lineno;
-        return STRM_NG;
-      }
-      for (i=0; i<argc; i++) {
-        n = strm_var_set(&c, node_to_sym(args->data[i]), argv[i]);
-        if (n) return n;
-      }
-      n = exec_expr(strm, &c, nlbd->compstmt, ret);
-      if (n == STRM_NG) {
-        exc = strm->exc;
-        if (exc && exc->type == NODE_ERROR_RETURN) {
-          *ret = exc->arg;
-          return STRM_OK;
-        }
-      }
-      return n;
+      return lambda_call(strm, func, argc, argv, ret);
     }
   default:
     strm_raise(strm, "not a function");
