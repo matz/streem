@@ -387,7 +387,7 @@ strm_to_str(strm_value v)
   if (ns) {
     strm_value m;
 
-    n = strm_var_get(ns, strm_str_intern("to_str", 6), &m);
+    n = strm_var_get(ns, strm_str_intern_lit("to_str"), &m);
     if (n == STRM_OK) {
       n = strm_funcall(NULL, m, 1, &v, &m);
       if (n == STRM_OK && strm_string_p(m)) return m;
@@ -413,7 +413,7 @@ strm_to_str(strm_value v)
     return strm_inspect(v);
   case STRM_TAG_PTR:
     if (strm_value_val(v) == 0)
-      return strm_str_new("nil", 3);
+      return strm_str_lit("nil");
     else {
       void *p = strm_ptr(v);
       switch (strm_ptr_type(p)) {

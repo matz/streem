@@ -105,6 +105,10 @@ struct strm_string {
 typedef uint64_t strm_string;
 
 strm_string strm_str_new(const char*, strm_int);
+strm_string strm_str_static(const char*, strm_int);
+#define strm_strlen_lit(s) (sizeof(s "") - 1)
+#define strm_str_lit(s) strm_str_static(s, strm_strlen_lit(s))
+
 #define strm_str_value(s) (strm_value)(s)
 #define strm_value_str(v) (strm_string)(v)
 const char* strm_strp_ptr(strm_string*);
@@ -114,6 +118,8 @@ strm_int strm_str_len(strm_string);
 
 strm_string strm_str_intern(const char *p, strm_int len);
 strm_string strm_str_intern_str(strm_string s);
+strm_string strm_str_intern_static(const char *p, strm_int len);
+#define strm_str_intern_lit(s) strm_str_intern_static(s, strm_strlen_lit(s))
 int strm_str_eq(strm_string a, strm_string b);
 int strm_str_intern_p(strm_string v);
 

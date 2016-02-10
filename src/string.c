@@ -125,7 +125,7 @@ str_new(const char* p, strm_int len, int foreign)
 }
 
 static strm_string
-str_intern(const char *p, strm_int len)
+str_intern(const char *p, strm_int len, int foreign)
 {
   khiter_t k;
   struct sym_key key;
@@ -133,7 +133,7 @@ str_intern(const char *p, strm_int len)
   strm_string str;
 
   if (len <= 6) {
-    return str_new(p, len, 0);
+    return str_new(p, len, foreign);
   }
   if (!sym_table) {
     sym_table = kh_init(sym);
@@ -145,7 +145,7 @@ str_intern(const char *p, strm_int len)
   if (ret == 0) {               /* found */
     return kh_value(sym_table, k);
   }
-  str = str_new(p, len, 0);
+  str = str_new(p, len, foreign);
   kh_key(sym_table, k).ptr = strm_str_ptr(str);
   kh_value(sym_table, k) = str;
 
@@ -162,10 +162,16 @@ strm_str_new(const char* p, strm_int len)
   if (!strm_event_loop_started) {
     /* single thread mode */
     if (p && (len < STRM_STR_INTERN_LIMIT || readonly_data_p(p))) {
-      return str_intern(p, len);
+      return str_intern(p, len, 0);
     }
   }
   return str_new(p, len, 0);
+}
+
+strm_string
+strm_str_static(const char* p, strm_int len)
+{
+  return str_new(p, len, 1);
 }
 
 strm_string
@@ -175,10 +181,10 @@ strm_str_intern(const char* p, strm_int len)
 
   assert(p!=NULL);
   if (!strm_event_loop_started) {
-    return str_intern(p, len);
+    return str_intern(p, len, 0);
   }
   pthread_mutex_lock(&sym_mutex);
-  str = str_intern(p, len);
+  str = str_intern(p, len, 0);
   pthread_mutex_unlock(&sym_mutex);
 
   return str;
@@ -191,13 +197,19 @@ strm_str_intern_str(strm_string str)
     return str;
   }
   if (!strm_event_loop_started) {
-    return str_intern(strm_str_ptr(str), strm_str_len(str));
+    return str_intern(strm_str_ptr(str), strm_str_len(str), 0);
   }
   pthread_mutex_lock(&sym_mutex);
-  str = str_intern(strm_str_ptr(str), strm_str_len(str));
+  str = str_intern(strm_str_ptr(str), strm_str_len(str), 0);
   pthread_mutex_unlock(&sym_mutex);
 
   return str;
+}
+
+strm_string
+strm_str_intern_static(const char* p, strm_int len)
+{
+  return str_intern(p, len, 1);
 }
 
 int
