@@ -270,7 +270,7 @@ strm_str_cstr(strm_string s, char buf[])
   switch (strm_value_tag(s)) {
   case STRM_TAG_STRING_I:
     len = VAL_PTR(s)[0];
-    memcpy(buf, VAL_PTR(s), len);
+    memcpy(buf, VAL_PTR(s)+1, len);
     buf[len] = '\0';
     return buf;
   case STRM_TAG_STRING_6:
