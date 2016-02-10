@@ -294,6 +294,74 @@ exec_sum(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   return STRM_OK;
 }
 
+struct reduce_data {
+  strm_int init;
+  strm_value acc;
+  strm_value func;
+};
+
+static int
+iter_reduce(strm_stream* strm, strm_value data)
+{
+  struct reduce_data *r = strm->data;
+  strm_value args[2];
+
+  /* first acc */
+  if (!r->init) {
+    r->init = 1;
+    r->acc = data;
+    return STRM_OK;
+  }
+
+  args[0] = r->acc;
+  args[1] = data;
+  if (strm_funcall(NULL, r->func, 2, args, &data) == STRM_NG) {
+    return STRM_NG;
+  }
+  r->acc = data;
+  return STRM_OK;
+}
+
+static int
+reduce_finish(strm_stream* strm, strm_value data)
+{
+  struct reduce_data *r = strm->data;
+
+  if (!r->init) return STRM_NG;
+  strm_emit(strm, strm_int_value(r->acc), NULL);
+  return STRM_OK;
+}
+
+static int
+exec_reduce(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  struct reduce_data* s;
+  strm_int init = 0;
+  strm_value acc;
+  strm_value func;
+
+  switch (argc) {
+  case 1:
+    func = args[0];
+    break;
+  case 2:
+    init = 1;
+    acc = args[0];
+    func = args[1];
+    break;
+  default:
+    strm_raise(strm, "wrong number of arguments");
+    return STRM_NG;
+  }
+  s = malloc(sizeof(struct reduce_data));
+  if (!s) return STRM_NG;
+  s->init = init;
+  s->acc = (init) ? acc : strm_nil_value();
+  s->func = func;
+  *ret = strm_stream_value(strm_stream_new(strm_filter, iter_reduce, reduce_finish, (void*)s));
+  return STRM_OK;
+}
+
 void
 strm_iter_init(strm_state* state)
 {
@@ -305,4 +373,5 @@ strm_iter_init(strm_state* state)
   strm_var_def(state, "filter", strm_cfunc_value(exec_filter));
   strm_var_def(state, "count", strm_cfunc_value(exec_count));
   strm_var_def(state, "sum", strm_cfunc_value(exec_sum));
+  strm_var_def(state, "reduce", strm_cfunc_value(exec_reduce));
 }
