@@ -11,7 +11,7 @@ gen_seq(strm_stream* strm, strm_value data)
 {
   struct seq_data *s = strm->data;
 
-  if (s->n > s->end) {
+  if (s->end > 0 && s->n > s->end) {
     strm_stream_close(strm);
     return STRM_OK;
   }
@@ -23,12 +23,13 @@ gen_seq(strm_stream* strm, strm_value data)
 static int
 exec_seq(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
-  strm_int start, end, inc=1;
+  strm_int start=1, end=-1, inc=1;
   struct seq_data *s;
 
   switch (argc) {
+  case 0:
+    break;
   case 1:
-    start = 1;
     end = strm_value_int(args[0]);
     break;
   case 2:
