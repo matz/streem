@@ -65,4 +65,4 @@ MIT license.  Use <http://github.com/matz/streem/issues> for
 discussion.
 
 ## License
-MIT license (&copy; 2015 Yukihiro Matsumoto)
+MIT license (&copy; 2015-2016 Yukihiro Matsumoto)
