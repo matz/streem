@@ -152,6 +152,39 @@ exec_map(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 }
 
 static int
+iter_flatmap(strm_stream* strm, strm_value data)
+{
+  struct map_data *m = strm->data;
+  strm_value val;
+  strm_int i, len;
+  strm_value* e;
+
+  if (strm_funcall(strm, m->func, 1, &data, &val) == STRM_NG) {
+    return STRM_NG;
+  }
+  if (!strm_array_p(val)) {
+    strm_raise(strm, "no array given for flatmap");
+    return STRM_NG;
+  }
+  len = strm_ary_len(val);
+  e = strm_ary_ptr(val);
+  for (i=0; i<len; i++){
+    strm_emit(strm, e[i], NULL);
+  }
+  return STRM_OK;
+}
+
+static int
+exec_flatmap(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  struct map_data* m = malloc(sizeof(struct map_data));
+
+  m->func = args[0];
+  *ret = strm_stream_value(strm_stream_new(strm_filter, iter_flatmap, NULL, (void*)m));
+  return STRM_OK;
+}
+
+static int
 iter_filter(strm_stream* strm, strm_value data)
 {
   struct map_data *m = strm->data;
@@ -267,6 +300,7 @@ strm_iter_init(strm_state* state)
   strm_var_def(state, "rand", strm_cfunc_value(exec_rand));
   strm_var_def(state, "each", strm_cfunc_value(exec_each));
   strm_var_def(state, "map", strm_cfunc_value(exec_map));
+  strm_var_def(state, "flatmap", strm_cfunc_value(exec_flatmap));
   strm_var_def(state, "filter", strm_cfunc_value(exec_filter));
   strm_var_def(state, "count", strm_cfunc_value(exec_count));
   strm_var_def(state, "sum", strm_cfunc_value(exec_sum));
