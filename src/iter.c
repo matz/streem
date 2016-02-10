@@ -362,6 +362,73 @@ exec_reduce(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   return STRM_OK;
 }
 
+struct split_data {
+  strm_value sep;
+};
+
+static int
+iter_split(strm_stream* strm, strm_value data)
+{
+  struct split_data *sp = strm->data;
+  const char* s;
+  strm_int slen;
+  const char* t;
+  const char* p;
+  const char* pend;
+  char c;
+
+  if (!strm_string_p(data)) {
+    return STRM_NG;
+  }
+  s = strm_str_ptr(sp->sep);
+  slen = strm_str_len(sp->sep);
+  c = s[0];
+  t = p = strm_str_ptr(data);
+  pend = p + strm_str_len(data) - slen;
+  while (p<pend) {
+    if (*p == c) {
+      if (memcmp(p, s, slen) == 0) {
+        if (!(slen == 1 && c == ' ' && (p-t) == 0)) {
+          strm_emit(strm, strm_str_new(t, p-t), NULL);
+        }
+        t = p + slen;
+      }
+    }
+    p++;
+  }
+  pend = strm_str_ptr(data) + strm_str_len(data);
+  strm_emit(strm, strm_str_new(t, pend-t), NULL);
+  return STRM_OK;
+}
+
+static int
+exec_split(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  struct split_data* sp = malloc(sizeof(struct split_data));
+
+  switch (argc) {
+  case 0:
+    sp->sep = strm_str_lit(" ");
+    break;
+  case 1:
+    if (!strm_string_p(args[0])) {
+      strm_raise(strm, "need string separator");
+      return STRM_NG;
+    }
+    sp->sep = args[0];
+    break;
+  default:
+    strm_raise(strm, "wrong number of arguments");
+    return STRM_NG;
+  }
+  if (strm_str_len(sp->sep) < 1) {
+    strm_raise(strm, "separator string too short");
+    return STRM_NG;
+  }
+  *ret = strm_stream_value(strm_stream_new(strm_filter, iter_split, NULL, (void*)sp));
+  return STRM_OK;
+}
+
 void
 strm_iter_init(strm_state* state)
 {
@@ -374,4 +441,5 @@ strm_iter_init(strm_state* state)
   strm_var_def(state, "count", strm_cfunc_value(exec_count));
   strm_var_def(state, "sum", strm_cfunc_value(exec_sum));
   strm_var_def(state, "reduce", strm_cfunc_value(exec_reduce));
+  strm_var_def(state, "split", strm_cfunc_value(exec_split));
 }
