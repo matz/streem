@@ -242,7 +242,7 @@ exec_count(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 }
 
 struct sum_data {
-  strm_int sum;
+  double sum;
   strm_value func;
 };
 
@@ -256,7 +256,7 @@ iter_sum(strm_stream* strm, strm_value data)
       return STRM_NG;
     }
   }
-  s->sum += strm_value_int(data);
+  s->sum += strm_value_flt(data);
   return STRM_OK;
 }
 
@@ -265,7 +265,7 @@ sum_finish(strm_stream* strm, strm_value data)
 {
   struct sum_data *s = strm->data;
 
-  strm_emit(strm, strm_int_value(s->sum), NULL);
+  strm_emit(strm, strm_flt_value(s->sum), NULL);
   return STRM_OK;
 }
 
