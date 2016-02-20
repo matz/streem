@@ -269,7 +269,6 @@ strm_readio(strm_io io)
 struct write_data {
   FILE *f;
   strm_io io;
-  strm_int rc;
 };
 
 static int
@@ -291,8 +290,6 @@ write_close(strm_stream* strm, strm_value data)
 {
   struct write_data *d = (struct write_data*)strm->data;
 
-  d->rc--;                       /* decrement reference count */
-  if (d->rc > 0) return STRM_NG; /* do not close referenced io */
   /* tell peer we close the socket for writing (if it is) */
   shutdown(fileno(d->f), 1);
   /* if we have a reading strm, let it close the fd */
@@ -309,14 +306,12 @@ strm_writeio(strm_io io)
 
   if (io->write_stream) {
     d = (struct write_data*)io->write_stream->data;
-    d->rc++;
   }
   else {
     d = malloc(sizeof(struct write_data));
 
     d->f = fdopen(io->fd, "w");
     d->io = io;
-    d->rc = 1;
     io->write_stream = strm_stream_new(strm_consumer, write_cb, write_close, (void*)d);
   }
   return io->write_stream;

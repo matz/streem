@@ -96,6 +96,7 @@ strm_stream_connect(strm_stream* src, strm_stream* dst)
     task_init();
     strm_task_push(src, src->start_func, strm_nil_value());
   }
+  strm_atomic_add(&dst->refcnt, 1);
   return STRM_OK;
 }
 
@@ -217,6 +218,7 @@ strm_stream_new(strm_stream_mode mode, strm_callback start_func, strm_callback c
   s->dlen = 0;
   s->flags = 0;
   s->exc = NULL;
+  s->refcnt = 0;
   s->queue = NULL;
   strm_atomic_add(&stream_count, 1);
 
@@ -229,6 +231,8 @@ strm_stream_close(strm_stream* strm)
   strm_stream** d;
   size_t dlen = strm->dlen;
 
+  strm_atomic_sub(&strm->refcnt, 1);
+  if (strm->refcnt > 0) return;
   if (strm->close_func) {
     if ((*strm->close_func)(strm, strm_nil_value()) == STRM_NG)
       return;

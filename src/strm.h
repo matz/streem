@@ -170,6 +170,7 @@ struct strm_stream {
   strm_stream **dst;
   size_t dlen;
   struct node_error* exc;
+  strm_int refcnt;
   struct strm_queue* queue;
 };
 
