@@ -458,7 +458,7 @@ strm_to_str(strm_value v)
   return strm_str_null;
 }
 
-strm_value
+const char*
 strm_p(strm_value val)
 {
   char buf[7];
@@ -466,7 +466,7 @@ strm_p(strm_value val)
   const char* p = strm_str_cstr(str, buf);
   fputs(p, stdout);
   fputs("\n", stdout);
-  return val;
+  return p;
 }
 
 strm_value
