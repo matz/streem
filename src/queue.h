@@ -22,7 +22,7 @@ struct strm_queue {
   volatile unsigned int size;
 };
 
-struct strm_queue* strm_queue_alloc();
+struct strm_queue* strm_queue_new();
 int strm_queue_add(struct strm_queue* root, void* val);
 void* strm_queue_get(struct strm_queue* root);
 

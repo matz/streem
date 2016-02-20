@@ -18,7 +18,7 @@ struct strm_queue_node {
 };
 
 struct strm_queue*
-strm_queue_alloc()
+strm_queue_new()
 {
   struct strm_queue* q;
 

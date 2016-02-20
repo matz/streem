@@ -43,7 +43,7 @@ io_push(int fd, strm_stream* strm, strm_callback cb)
   struct epoll_event ev = { 0 };
 
   ev.events = EPOLLIN | EPOLLONESHOT;
-  ev.data.ptr = strm_task_alloc(strm, cb, strm_nil_value());
+  ev.data.ptr = strm_task_new(strm, cb, strm_nil_value());
   return epoll_ctl(epoll_fd, EPOLL_CTL_ADD, fd, &ev);
 }
 
@@ -53,7 +53,7 @@ io_kick(int fd, strm_stream* strm, strm_callback cb)
   struct epoll_event ev;
 
   ev.events = EPOLLIN | EPOLLONESHOT;
-  ev.data.ptr = strm_task_alloc(strm, cb, strm_nil_value());
+  ev.data.ptr = strm_task_new(strm, cb, strm_nil_value());
   return epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &ev);
 }
 

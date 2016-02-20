@@ -27,7 +27,7 @@ int strm_event_loop_started = FALSE;
 static void task_init();
 
 struct strm_task*
-strm_task_alloc(strm_stream* strm, strm_callback func, strm_value data)
+strm_task_new(strm_stream* strm, strm_callback func, strm_value data)
 {
   struct strm_task *t;
  
@@ -48,7 +48,7 @@ strm_task_add(struct strm_task* task)
 void
 strm_task_push(strm_stream* strm, strm_callback func, strm_value data)
 {
-  struct strm_task *t = strm_task_alloc(strm, func, data);
+  struct strm_task *t = strm_task_new(strm, func, data);
   strm_task_add(t);
 }
 
@@ -72,7 +72,7 @@ strm_emit(strm_stream* strm, strm_value data, strm_callback func)
     }
   }
   if (func) {
-    strm_queue_add(prod_queue, strm_task_alloc(strm, func, strm_nil_value()));
+    strm_queue_add(prod_queue, strm_task_new(strm, func, strm_nil_value()));
   }
 }
 
@@ -181,12 +181,12 @@ task_init()
   strm_event_loop_started = TRUE;
   strm_init_io_loop();
 
-  queue = strm_queue_alloc();
-  prod_queue = strm_queue_alloc();
+  queue = strm_queue_new();
+  prod_queue = strm_queue_new();
   worker_max = worker_count();
   workers = malloc(sizeof(struct strm_worker)*worker_max);
   for (i=0; i<worker_max; i++) {
-    workers[i].queue = strm_queue_alloc();
+    workers[i].queue = strm_queue_new();
     pthread_create(&workers[i].th, NULL, task_loop, &workers[i]);
   }
 }

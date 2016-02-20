@@ -190,7 +190,7 @@ int strm_funcall(strm_stream*, strm_value, int, strm_value*, strm_value*);
 void strm_eprint(strm_stream*);
 
 /* ----- queue */
-struct strm_task* strm_task_alloc(strm_stream* strm, strm_callback func, strm_value data);
+struct strm_task* strm_task_new(strm_stream* strm, strm_callback func, strm_value data);
 void strm_task_push(strm_stream* strm, strm_callback func, strm_value data);
 void strm_task_add(struct strm_task*);
 
