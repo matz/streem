@@ -239,17 +239,18 @@ strm_value_eq(strm_value a, strm_value b)
 static int
 str_symbol_p(strm_string str)
 {
-  switch (strm_value_tag(str)) {
-  case STRM_TAG_STRING_I:
-  case STRM_TAG_STRING_6:
-    return TRUE;
-  case STRM_TAG_STRING_O:
+  const char* p = strm_str_ptr(str);
+  const char* pend = p + strm_str_len(str);
+
+  if (!isalpha(*p) && *p != '_')
     return FALSE;
-  case STRM_TAG_STRING_F:
-    return TRUE;
-  default:
-    return FALSE;
+  p++;
+  while (p<pend) {
+    if (!isalnum(*p) && *p != '_')
+      return FALSE;
+    p++;
   }
+  return TRUE;
 }
 
 static strm_int
