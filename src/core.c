@@ -2,6 +2,7 @@
 #include "queue.h"
 #include "atomic.h"
 #include <pthread.h>
+#include <sched.h>
 
 struct strm_worker {
   pthread_t th;
@@ -141,6 +142,7 @@ task_loop(void *data)
   struct strm_task* t;
 
   for (;;) {
+    sched_yield();
     t = strm_queue_get(q);
     if (t) {
       task_exec(t);
@@ -198,6 +200,7 @@ strm_loop()
   if (stream_count == 0) return STRM_OK;
   task_init();
   for (;;) {
+    sched_yield();
     if (stream_count == 0) {
       break;
     }
