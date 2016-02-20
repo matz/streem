@@ -325,11 +325,10 @@ lambda_call(strm_stream* strm, strm_value func, int argc, strm_value* argv, strm
     if (n) return n;
   }
   n = exec_expr(strm, &c, nlbd->compstmt, ret);
-  if (n == STRM_NG) {
+  if (n == STRM_NG && strm) {
     exc = strm->exc;
     if (exc && exc->type == NODE_ERROR_RETURN) {
       *ret = exc->arg;
-      return STRM_OK;
     }
   }
   return n;
@@ -609,16 +608,17 @@ exec_expr(strm_stream* strm, strm_state* state, node* np, strm_value* val)
       for (i = 0; i < v->len; i++) {
         n = exec_expr(strm, state, v->data[i], val);
         if (n) {
-          node_error* exc = strm->exc;
-          if (exc != NULL) {
-            node* n = v->data[i];
+          if (strm) {
+            node_error* exc = strm->exc;
+            if (exc != NULL) {
+              node* n = v->data[i];
 
-            exc->fname = n->fname;
-            exc->lineno = n->lineno;
-            return STRM_NG;
+              exc->fname = n->fname;
+              exc->lineno = n->lineno;
+            }
           }
+          return n;
         }
-        if (n) return n;
       }
     }
     return STRM_OK;
