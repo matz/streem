@@ -291,10 +291,8 @@ write_close(strm_stream* strm, strm_value data)
 {
   struct write_data *d = (struct write_data*)strm->data;
 
-  d->rc--;                      /* decrement reference count */
-  if (d->rc > 0) return STRM_OK;
-  /* do not close stdout duing execution */
-  if (fileno(d->f) == fileno(stdout)) return STRM_OK;
+  d->rc--;                       /* decrement reference count */
+  if (d->rc > 0) return STRM_NG; /* do not close referenced io */
   /* tell peer we close the socket for writing (if it is) */
   shutdown(fileno(d->f), 1);
   /* if we have a reading strm, let it close the fd */
