@@ -313,8 +313,8 @@ lambda_call(strm_stream* strm, strm_value func, int argc, strm_value* argv, strm
 
   c.prev = lambda->state;
   if ((args == NULL && argc != 0) || (args->len != argc)) {
-    strm_raise(strm, "wrong number of arguments");
     if (strm) {
+      strm_raise(strm, "wrong number of arguments");
       strm->exc->fname = nlbd->fname;
       strm->exc->lineno = nlbd->lineno;
     }
