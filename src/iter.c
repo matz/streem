@@ -1,4 +1,5 @@
 #include "strm.h"
+#include "atomic.h"
 
 struct seq_data {
   strm_int n;
@@ -219,7 +220,7 @@ iter_count(strm_stream* strm, strm_value data)
 {
   struct count_data *s = strm->data;
 
-  s->count++;
+  strm_atomic_add(&s->count, 1);
   return STRM_OK;
 }
 
