@@ -230,7 +230,8 @@ strm_stream_close(strm_stream* strm)
   size_t dlen = strm->dlen;
 
   if (strm->close_func) {
-    (*strm->close_func)(strm, strm_nil_value());
+    if ((*strm->close_func)(strm, strm_nil_value()) == STRM_NG)
+      return;
     free(strm->data);
   }
 
