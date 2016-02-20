@@ -149,7 +149,7 @@ exec_map(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   struct map_data* m = malloc(sizeof(struct map_data));
 
   m->func = args[0];
-  *ret = strm_stream_value(strm_stream_new(strm_filter, iter_map, NULL, (void*)m));
+  *ret = strm_stream_value(strm_stream_new(strm_filter_async, iter_map, NULL, (void*)m));
   return STRM_OK;
 }
 
@@ -207,7 +207,7 @@ exec_filter(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   struct map_data* m = malloc(sizeof(struct map_data));
 
   m->func = args[0];
-  *ret = strm_stream_value(strm_stream_new(strm_filter, iter_filter, NULL, (void*)m));
+  *ret = strm_stream_value(strm_stream_new(strm_filter_async, iter_filter, NULL, (void*)m));
   return STRM_OK;
 }
 
@@ -238,7 +238,7 @@ exec_count(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   struct count_data* c = malloc(sizeof(struct count_data));
   c->count = 0;
-  *ret = strm_stream_value(strm_stream_new(strm_filter, iter_count, count_finish, (void*)c));
+  *ret = strm_stream_value(strm_stream_new(strm_filter_async, iter_count, count_finish, (void*)c));
   return STRM_OK;
 }
 
