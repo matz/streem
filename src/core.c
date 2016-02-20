@@ -164,7 +164,7 @@ task_loop(void *data)
         task_exec(t);
       }
     }
-    if (stream_count < 4) {
+    if (stream_count == 0) {
       break;
     }
   }
@@ -197,7 +197,7 @@ strm_loop()
   if (stream_count == 0) return STRM_OK;
   task_init();
   for (;;) {
-    if (stream_count < 4) {
+    if (stream_count == 0) {
       break;
     }
   }
