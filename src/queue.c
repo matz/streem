@@ -1,156 +1,74 @@
-#include "strm.h"
-#include <pthread.h>
+/* copied and modified https://github.com/supermartian/lockfree-queue
+ *
+ * Copyright (C) 2014 Yuzhong Wen<supermartian@gmail.com>
+ *
+ * Distributed under terms of the MIT license.
+ */
 
-struct strm_queue {
-  pthread_mutex_t mutex;
-  pthread_cond_t cond;
-  struct strm_queue_task *fi, *hi, *fo;
+#include <memory.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "queue.h"
+#include "atomic.h"
+
+struct strm_queue_node {
+  struct strm_queue_node *next;
+  void *n;
 };
 
-strm_queue*
+struct strm_queue*
 strm_queue_alloc()
 {
-  strm_queue *q = malloc(sizeof(strm_queue));
+  struct strm_queue* q;
 
-  pthread_mutex_init(&q->mutex, NULL);
-  pthread_cond_init(&q->cond, NULL);
-  q->fi = q->hi = q->fo = NULL;
+  q = (struct strm_queue*)malloc(sizeof(struct strm_queue));
+  if (q == NULL) {
+    return NULL;
+  }
+  q->head = (struct strm_queue_node*)malloc(sizeof(struct strm_queue_node)); /* Sentinel node */
+  q->tail = q->head;
+  q->head->next = NULL;
   return q;
 }
 
-void
-strm_queue_free(strm_queue* q)
+int
+strm_queue_add(struct strm_queue* root, void* val)
 {
-  if (!q) return;
-  if (q->fo) {
-    struct strm_queue_task *t = q->fo;
-    struct strm_queue_task *tmp;
+  struct strm_queue_node *n;
+  struct strm_queue_node *node = (struct strm_queue_node*)malloc(sizeof(struct strm_queue_node));
 
-    while (t) {
-      tmp = t->next;
-      free(t);
-      t = tmp;
+  node->n = val; 
+  node->next = NULL;
+  while (1) {
+    n = root->tail;
+    if (strm_atomic_cas(&(n->next), NULL, node)) {
+      break;
+    }
+    else {
+      strm_atomic_cas(&(root->tail), n, n->next);
     }
   }
-  pthread_mutex_destroy(&q->mutex);
-  pthread_cond_destroy(&q->cond);
-  free(q);
+  strm_atomic_cas(&(root->tail), n, node);
+  return 1;
 }
 
-static void
-push_high_task(strm_queue* q, struct strm_queue_task* t)
+void*
+strm_queue_get(struct strm_queue* root)
 {
-  pthread_mutex_lock(&q->mutex);
-  if (q->hi) {
-    t->next = q->hi->next;
-    q->hi->next = t;
-    q->hi = t;
-  }
-  else {
-    t->next = q->fo;
-    q->fo = t;
-    q->hi = t;
-  }
-  if (!q->fi)
-    q->fi = t;
-  pthread_cond_signal(&q->cond);
-  pthread_mutex_unlock(&q->mutex);
-}
+  struct strm_queue_node *n;
+  void *val;
 
-static void
-push_low_task(strm_queue* q, struct strm_queue_task* t)
-{
-  pthread_mutex_lock(&q->mutex);
-  if (q->fi) {
-    q->fi->next = t;
-  }
-  q->fi = t;
-  if (!q->fo) {
-    q->fo = t;
-  }
-  pthread_cond_signal(&q->cond);
-  pthread_mutex_unlock(&q->mutex);
-}
-
-void
-strm_queue_push(strm_queue* q, struct strm_queue_task* t)
-{
-  if (!q) return;
-
-  if (t->strm->mode == strm_producer)
-    push_low_task(q, t);
-  else
-    push_high_task(q, t);
-}
-
-struct strm_queue_task*
-strm_queue_task(strm_stream* strm, strm_callback func, strm_value data)
-{
-  struct strm_queue_task *t;
-
-  t = malloc(sizeof(struct strm_queue_task));
-  t->strm = strm;
-  t->func = func;
-  t->data = data;
-  t->next = NULL;
-
-  return t;
-}
-
-int
-strm_queue_exec(strm_queue* q)
-{
-  struct strm_queue_task *t;
-  strm_stream* strm;
-  strm_callback func;
-  strm_value data;
-
-  pthread_mutex_lock(&q->mutex);
-  while (!q->fo) {
-    pthread_cond_wait(&q->cond, &q->mutex);
-  }
-  t = q->fo;
-  q->fo = t->next;
-  if (t == q->hi) {
-    q->hi = NULL;
-  }
-  if (!q->fo) {
-    q->fi = NULL;
-  }
-  pthread_mutex_unlock(&q->mutex);
-
-  strm = t->strm;
-  func = t->func;
-  data = t->data;
-  free(t);
-
-  if ((*func)(strm, data) == STRM_NG) {
-    if (strm_option_verbose) {
-      strm_eprint(strm);
+  while (1) {
+    n = root->head;
+    if (n->next == NULL) {
+      return NULL;
     }
-    return STRM_NG;
+    if (strm_atomic_cas(&(root->head), n, n->next)) {
+      break;
+    }
   }
-  return STRM_OK;
-}
-
-int
-strm_queue_size(strm_queue* q)
-{
-  int n = 0;
-  struct strm_queue_task *e;
-
-  pthread_mutex_lock(&q->mutex);
-  e = q->fo;
-  while (e) {
-    n++;
-    e = e->next;
-  }
-  pthread_mutex_unlock(&q->mutex);
-  return n;
-}
-
-int
-strm_queue_p(strm_queue* q)
-{
-  return q->fi != NULL;
+  val = (void *) n->next->n;
+  free(n);
+  return val;
 }

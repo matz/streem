@@ -43,7 +43,7 @@ io_push(int fd, strm_stream* strm, strm_callback cb)
   struct epoll_event ev = { 0 };
 
   ev.events = EPOLLIN | EPOLLONESHOT;
-  ev.data.ptr = strm_queue_task(strm, cb, strm_nil_value());
+  ev.data.ptr = strm_task_alloc(strm, cb, strm_nil_value());
   return epoll_ctl(epoll_fd, EPOLL_CTL_ADD, fd, &ev);
 }
 
@@ -53,7 +53,7 @@ io_kick(int fd, strm_stream* strm, strm_callback cb)
   struct epoll_event ev;
 
   ev.events = EPOLLIN | EPOLLONESHOT;
-  ev.data.ptr = strm_queue_task(strm, cb, strm_nil_value());
+  ev.data.ptr = strm_task_alloc(strm, cb, strm_nil_value());
   return epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &ev);
 }
 
@@ -62,8 +62,6 @@ io_pop(int fd)
 {
   return epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL);
 }
-
-void strm_stream_push_task(struct strm_queue_task* t);
 
 static void*
 io_loop(void* d)
@@ -77,8 +75,8 @@ io_loop(void* d)
       return NULL;
     }
     for (i=0; i<n; i++) {
-      struct strm_queue_task *t = events[i].data.ptr;
-      strm_stream_push(t);
+      struct strm_task *t = events[i].data.ptr;
+      strm_task_add(t);
     }
   }
   return NULL;
@@ -196,7 +194,7 @@ readline_cb(strm_stream* strm, strm_value data)
       b->end = b->beg + len;
     }
     if (strm->flags & STRM_IO_NOWAIT) {
-      strm_stream_push(strm_queue_task(strm, read_cb, strm_nil_value()));
+      strm_task_push(strm, read_cb, strm_nil_value());
     }
     else {
       io_kick(b->fd, strm, read_cb);

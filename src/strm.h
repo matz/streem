@@ -152,6 +152,7 @@ int strm_ary_eq(strm_array a, strm_array b);
 typedef enum {
   strm_producer,
   strm_filter,
+  strm_filter_async,
   strm_consumer,
   strm_killed,
 } strm_stream_mode;
@@ -162,7 +163,6 @@ typedef int (*strm_callback)(strm_stream*, strm_value);
 struct strm_stream {
   STRM_PTR_HEADER;
   unsigned int flags;
-  int tid;
   strm_stream_mode mode;
   strm_callback start_func;
   strm_callback close_func;
@@ -170,6 +170,7 @@ struct strm_stream {
   strm_stream **dst;
   size_t dlen;
   struct node_error* exc;
+  struct strm_queue* queue;
 };
 
 strm_stream* strm_stream_new(strm_stream_mode mode, strm_callback start, strm_callback close, void *data);
@@ -189,23 +190,9 @@ int strm_funcall(strm_stream*, strm_value, int, strm_value*, strm_value*);
 void strm_eprint(strm_stream*);
 
 /* ----- queue */
-typedef struct strm_queue strm_queue;
-struct strm_queue_task {
-  strm_stream* strm;
-  strm_callback func;
-  strm_value data;
-  struct strm_queue_task *next;
-};
-
-strm_queue* strm_queue_alloc(void);
-struct strm_queue_task* strm_queue_task(strm_stream* strm, strm_callback func, strm_value data);
-void strm_queue_free(strm_queue* q);
-void strm_queue_push(strm_queue* q, struct strm_queue_task* t);
-int strm_queue_exec(strm_queue* q);
-int strm_queue_size(strm_queue* q);
-int strm_queue_p(strm_queue* q);
-
-void strm_stream_push(struct strm_queue_task* t);
+struct strm_task* strm_task_alloc(strm_stream* strm, strm_callback func, strm_value data);
+void strm_task_push(strm_stream* strm, strm_callback func, strm_value data);
+void strm_task_add(struct strm_task*);
 
 /* ----- Variables */
 struct node_error;
