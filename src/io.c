@@ -225,7 +225,7 @@ read_close(strm_stream* strm, strm_value d)
   return STRM_OK;
 }
 
-static void
+static strm_stream*
 strm_readio(strm_io io)
 {
   strm_callback cb = stdio_read;
@@ -263,6 +263,7 @@ strm_readio(strm_io io)
     io->read_stream = strm_stream_new(strm_producer, cb, read_close, (void*)buf);
     io->read_stream->flags |= flags;
   }
+  return io->read_stream;
 }
 
 struct write_data {
@@ -303,7 +304,7 @@ write_close(strm_stream* strm, strm_value data)
   return STRM_OK;
 }
 
-static void
+static strm_stream*
 strm_writeio(strm_io io)
 {
   struct write_data *d;
@@ -320,6 +321,7 @@ strm_writeio(strm_io io)
     d->rc = 1;
     io->write_stream = strm_stream_new(strm_consumer, write_cb, write_close, (void*)d);
   }
+  return io->write_stream;
 }
 
 strm_value
@@ -331,12 +333,6 @@ strm_io_new(int fd, int mode)
   io->mode = mode;
   io->type = STRM_PTR_IO;
   io->read_stream = io->write_stream = NULL;
-  if (mode & STRM_IO_READ) {
-    strm_readio(io);
-  }
-  if (mode & STRM_IO_WRITE) {
-    strm_writeio(io);
-  }
   return strm_ptr_value(io);
 }
 
@@ -349,9 +345,9 @@ strm_io_stream(strm_value iov, int mode)
   io = strm_value_io(iov);
   switch (mode) {
   case STRM_IO_READ:
-    return io->read_stream;
+    return strm_readio(io);
   case STRM_IO_WRITE:
-    return io->write_stream;
+    return strm_writeio(io);
  default:
    return NULL;
   }
