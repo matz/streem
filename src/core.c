@@ -84,12 +84,7 @@ strm_stream_connect(strm_stream* src, strm_stream* dst)
 
   assert(dst->mode != strm_producer);
   d = src->dst;
-  if (!d) {
-    d = malloc(sizeof(strm_stream*));
-  }
-  else {
-    d = realloc(d, sizeof(strm_stream*)*(src->dlen+1));
-  }
+  d = realloc(d, sizeof(strm_stream*)*(src->dlen+1));
   d[src->dlen++] = dst;
   src->dst = d;
 
