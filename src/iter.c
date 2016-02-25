@@ -10,14 +10,14 @@ struct seq_data {
 static int
 gen_seq(strm_stream* strm, strm_value data)
 {
-  struct seq_data *s = strm->data;
+  struct seq_data* d = strm->data;
 
-  if (s->end > 0 && s->n > s->end) {
+  if (d->end > 0 && d->n > d->end) {
     strm_stream_close(strm);
     return STRM_OK;
   }
-  strm_emit(strm, strm_int_value(s->n), gen_seq);
-  s->n += s->inc;
+  strm_emit(strm, strm_int_value(d->n), gen_seq);
+  d->n += d->inc;
   return STRM_OK;
 }
 
@@ -25,7 +25,7 @@ static int
 exec_seq(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   strm_int start=1, end=-1, inc=1;
-  struct seq_data *s;
+  struct seq_data* d;
 
   switch (argc) {
   case 0:
@@ -46,11 +46,11 @@ exec_seq(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
     strm_raise(strm, "wrong number of arguments");
     return STRM_NG;
   }
-  s = malloc(sizeof(struct seq_data));
-  s->n = start;
-  s->inc = inc;
-  s->end = end;
-  *ret = strm_stream_value(strm_stream_new(strm_producer, gen_seq, NULL, (void*)s));
+  d = malloc(sizeof(struct seq_data));
+  d->n = start;
+  d->inc = inc;
+  d->end = end;
+  *ret = strm_stream_value(strm_stream_new(strm_producer, gen_seq, NULL, (void*)d));
   return STRM_OK;
 }
 
@@ -111,10 +111,10 @@ struct map_data {
 static int
 iter_each(strm_stream* strm, strm_value data)
 {
-  struct map_data *m = strm->data;
+  struct map_data* d = strm->data;
   strm_value val;
 
-  if (strm_funcall(NULL, m->func, 1, &data, &val) == STRM_NG) {
+  if (strm_funcall(NULL, d->func, 1, &data, &val) == STRM_NG) {
     return STRM_NG;
   }
   return STRM_OK;
@@ -123,20 +123,20 @@ iter_each(strm_stream* strm, strm_value data)
 static int
 exec_each(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
-  struct map_data* m = malloc(sizeof(struct map_data));
+  struct map_data* d = malloc(sizeof(struct map_data));
 
-  m->func = args[0];
-  *ret = strm_stream_value(strm_stream_new(strm_consumer, iter_each, NULL, (void*)m));
+  d->func = args[0];
+  *ret = strm_stream_value(strm_stream_new(strm_consumer, iter_each, NULL, (void*)d));
   return STRM_OK;
 }
 
 static int
 iter_map(strm_stream* strm, strm_value data)
 {
-  struct map_data *m = strm->data;
+  struct map_data* d = strm->data;
   strm_value val;
 
-  if (strm_funcall(strm, m->func, 1, &data, &val) == STRM_NG) {
+  if (strm_funcall(strm, d->func, 1, &data, &val) == STRM_NG) {
     return STRM_NG;
   }
   strm_emit(strm, val, NULL);
@@ -146,22 +146,22 @@ iter_map(strm_stream* strm, strm_value data)
 static int
 exec_map(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
-  struct map_data* m = malloc(sizeof(struct map_data));
+  struct map_data* d = malloc(sizeof(struct map_data));
 
-  m->func = args[0];
-  *ret = strm_stream_value(strm_stream_new(strm_filter_async, iter_map, NULL, (void*)m));
+  d->func = args[0];
+  *ret = strm_stream_value(strm_stream_new(strm_filter_async, iter_map, NULL, (void*)d));
   return STRM_OK;
 }
 
 static int
 iter_flatmap(strm_stream* strm, strm_value data)
 {
-  struct map_data *m = strm->data;
+  struct map_data* d = strm->data;
   strm_value val;
   strm_int i, len;
   strm_value* e;
 
-  if (strm_funcall(strm, m->func, 1, &data, &val) == STRM_NG) {
+  if (strm_funcall(strm, d->func, 1, &data, &val) == STRM_NG) {
     return STRM_NG;
   }
   if (!strm_array_p(val)) {
@@ -179,20 +179,20 @@ iter_flatmap(strm_stream* strm, strm_value data)
 static int
 exec_flatmap(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
-  struct map_data* m = malloc(sizeof(struct map_data));
+  struct map_data* d = malloc(sizeof(struct map_data));
 
-  m->func = args[0];
-  *ret = strm_stream_value(strm_stream_new(strm_filter, iter_flatmap, NULL, (void*)m));
+  d->func = args[0];
+  *ret = strm_stream_value(strm_stream_new(strm_filter, iter_flatmap, NULL, (void*)d));
   return STRM_OK;
 }
 
 static int
 iter_filter(strm_stream* strm, strm_value data)
 {
-  struct map_data *m = strm->data;
+  struct map_data* d = strm->data;
   strm_value val;
 
-  if (strm_funcall(NULL, m->func, 1, &data, &val) == STRM_NG) {
+  if (strm_funcall(NULL, d->func, 1, &data, &val) == STRM_NG) {
     return STRM_NG;
   }
   if (strm_value_bool(val)) {
@@ -204,10 +204,10 @@ iter_filter(strm_stream* strm, strm_value data)
 static int
 exec_filter(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
-  struct map_data* m = malloc(sizeof(struct map_data));
+  struct map_data* d = malloc(sizeof(struct map_data));
 
-  m->func = args[0];
-  *ret = strm_stream_value(strm_stream_new(strm_filter_async, iter_filter, NULL, (void*)m));
+  d->func = args[0];
+  *ret = strm_stream_value(strm_stream_new(strm_filter_async, iter_filter, NULL, (void*)d));
   return STRM_OK;
 }
 
@@ -218,27 +218,27 @@ struct count_data {
 static int
 iter_count(strm_stream* strm, strm_value data)
 {
-  struct count_data *s = strm->data;
+  struct count_data* d = strm->data;
 
-  strm_atomic_add(&s->count, 1);
+  strm_atomic_add(&d->count, 1);
   return STRM_OK;
 }
 
 static int
 count_finish(strm_stream* strm, strm_value data)
 {
-  struct count_data *s = strm->data;
+  struct count_data* d = strm->data;
 
-  strm_emit(strm, strm_int_value(s->count), NULL);
+  strm_emit(strm, strm_int_value(d->count), NULL);
   return STRM_OK;
 }
 
 static int
 exec_count(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
-  struct count_data* c = malloc(sizeof(struct count_data));
-  c->count = 0;
-  *ret = strm_stream_value(strm_stream_new(strm_filter_async, iter_count, count_finish, (void*)c));
+  struct count_data* d = malloc(sizeof(struct count_data));
+  d->count = 0;
+  *ret = strm_stream_value(strm_stream_new(strm_filter_async, iter_count, count_finish, (void*)d));
   return STRM_OK;
 }
 
@@ -250,30 +250,30 @@ struct sum_data {
 static int
 iter_sum(strm_stream* strm, strm_value data)
 {
-  struct sum_data *s = strm->data;
+  struct sum_data* d = strm->data;
 
-  if (!strm_nil_p(s->func)) {
-    if (strm_funcall(NULL, s->func, 1, &data, &data) == STRM_NG) {
+  if (!strm_nil_p(d->func)) {
+    if (strm_funcall(NULL, d->func, 1, &data, &data) == STRM_NG) {
       return STRM_NG;
     }
   }
-  s->sum += strm_value_flt(data);
+  d->sum += strm_value_flt(data);
   return STRM_OK;
 }
 
 static int
 sum_finish(strm_stream* strm, strm_value data)
 {
-  struct sum_data *s = strm->data;
+  struct sum_data* d = strm->data;
 
-  strm_emit(strm, strm_flt_value(s->sum), NULL);
+  strm_emit(strm, strm_flt_value(d->sum), NULL);
   return STRM_OK;
 }
 
 static int
 exec_sum(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
-  struct sum_data* s;
+  struct sum_data* d;
   strm_value func;
 
   switch (argc) {
@@ -287,11 +287,11 @@ exec_sum(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
     strm_raise(strm, "wrong number of arguments");
     return STRM_NG;
   }
-  s = malloc(sizeof(struct sum_data));
-  if (!s) return STRM_NG;
-  s->sum = 0;
-  s->func = func;
-  *ret = strm_stream_value(strm_stream_new(strm_filter, iter_sum, sum_finish, (void*)s));
+  d = malloc(sizeof(struct sum_data));
+  if (!d) return STRM_NG;
+  d->sum = 0;
+  d->func = func;
+  *ret = strm_stream_value(strm_stream_new(strm_filter, iter_sum, sum_finish, (void*)d));
   return STRM_OK;
 }
 
@@ -304,39 +304,39 @@ struct reduce_data {
 static int
 iter_reduce(strm_stream* strm, strm_value data)
 {
-  struct reduce_data *r = strm->data;
+  struct reduce_data* d = strm->data;
   strm_value args[2];
 
   /* first acc */
-  if (!r->init) {
-    r->init = 1;
-    r->acc = data;
+  if (!d->init) {
+    d->init = 1;
+    d->acc = data;
     return STRM_OK;
   }
 
-  args[0] = r->acc;
+  args[0] = d->acc;
   args[1] = data;
-  if (strm_funcall(NULL, r->func, 2, args, &data) == STRM_NG) {
+  if (strm_funcall(NULL, d->func, 2, args, &data) == STRM_NG) {
     return STRM_NG;
   }
-  r->acc = data;
+  d->acc = data;
   return STRM_OK;
 }
 
 static int
 reduce_finish(strm_stream* strm, strm_value data)
 {
-  struct reduce_data *r = strm->data;
+  struct reduce_data* d = strm->data;
 
-  if (!r->init) return STRM_NG;
-  strm_emit(strm, strm_int_value(r->acc), NULL);
+  if (!d->init) return STRM_NG;
+  strm_emit(strm, strm_int_value(d->acc), NULL);
   return STRM_OK;
 }
 
 static int
 exec_reduce(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
-  struct reduce_data* s;
+  struct reduce_data* d;
   strm_int init = 0;
   strm_value acc;
   strm_value func;
@@ -354,12 +354,12 @@ exec_reduce(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
     strm_raise(strm, "wrong number of arguments");
     return STRM_NG;
   }
-  s = malloc(sizeof(struct reduce_data));
-  if (!s) return STRM_NG;
-  s->init = init;
-  s->acc = (init) ? acc : strm_nil_value();
-  s->func = func;
-  *ret = strm_stream_value(strm_stream_new(strm_filter, iter_reduce, reduce_finish, (void*)s));
+  d = malloc(sizeof(struct reduce_data));
+  if (!d) return STRM_NG;
+  d->init = init;
+  d->acc = (init) ? acc : strm_nil_value();
+  d->func = func;
+  *ret = strm_stream_value(strm_stream_new(strm_filter, iter_reduce, reduce_finish, (void*)d));
   return STRM_OK;
 }
 
@@ -370,7 +370,7 @@ struct split_data {
 static int
 iter_split(strm_stream* strm, strm_value data)
 {
-  struct split_data *sp = strm->data;
+  struct split_data* d = strm->data;
   const char* s;
   strm_int slen;
   const char* t;
@@ -381,8 +381,8 @@ iter_split(strm_stream* strm, strm_value data)
   if (!strm_string_p(data)) {
     return STRM_NG;
   }
-  s = strm_str_ptr(sp->sep);
-  slen = strm_str_len(sp->sep);
+  s = strm_str_ptr(d->sep);
+  slen = strm_str_len(d->sep);
   c = s[0];
   t = p = strm_str_ptr(data);
   pend = p + strm_str_len(data) - slen;
@@ -405,28 +405,28 @@ iter_split(strm_stream* strm, strm_value data)
 static int
 exec_split(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
-  struct split_data* sp = malloc(sizeof(struct split_data));
+  struct split_data* d = malloc(sizeof(struct split_data));
 
   switch (argc) {
   case 0:
-    sp->sep = strm_str_lit(" ");
+    d->sep = strm_str_lit(" ");
     break;
   case 1:
     if (!strm_string_p(args[0])) {
       strm_raise(strm, "need string separator");
       return STRM_NG;
     }
-    sp->sep = args[0];
+    d->sep = args[0];
     break;
   default:
     strm_raise(strm, "wrong number of arguments");
     return STRM_NG;
   }
-  if (strm_str_len(sp->sep) < 1) {
+  if (strm_str_len(d->sep) < 1) {
     strm_raise(strm, "separator string too short");
     return STRM_NG;
   }
-  *ret = strm_stream_value(strm_stream_new(strm_filter, iter_split, NULL, (void*)sp));
+  *ret = strm_stream_value(strm_stream_new(strm_filter, iter_split, NULL, (void*)d));
   return STRM_OK;
 }
 
