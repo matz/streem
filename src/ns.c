@@ -28,7 +28,7 @@ strm_ns_new(strm_state* state)
 strm_state*
 strm_ns_find(strm_state* state, strm_string name)
 {
-  strm_state *s = strm_ns_get(name);
+  strm_state* s = strm_ns_get(name);
 
   if (!s) {
     int r;
