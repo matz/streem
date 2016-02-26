@@ -1,4 +1,5 @@
 #include "strm.h"
+#include "khash.h"
 
 struct seq_data {
   strm_int n;
@@ -362,6 +363,88 @@ exec_reduce(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   return STRM_OK;
 }
 
+
+KHASH_MAP_INIT_INT64(rbk, strm_value);
+
+struct rbk_data {
+  khash_t(rbk) *tbl;
+  strm_value func;
+};
+
+static int
+iter_rbk(strm_stream* strm, strm_value data)
+{
+  struct rbk_data *d = strm->data;
+  strm_value k, v;
+  khiter_t i;
+  int r;
+
+  if (!strm_array_p(data) || strm_ary_len(data) != 2) {
+    strm_raise(strm, "reduce_by_key element must be a key-value pair");
+    return STRM_NG;
+  }
+  k = strm_ary_ptr(data)[0];
+  v = strm_ary_ptr(data)[1];
+
+  i = kh_put(rbk, d->tbl, k, &r);
+  if (r < 0) {                  /* r<0 operation failed */
+    return STRM_NG;
+  }
+  if (r != 0) {                 /* key does not exist */
+    kh_value(d->tbl, i) = v;
+  }
+  else {
+    strm_value args[2];
+
+    args[0] = kh_value(d->tbl, i);
+    args[1] = v;
+    if (strm_funcall(NULL, d->func, 2, args, &v) == STRM_NG) {
+      return STRM_NG;
+    }
+    kh_value(d->tbl, i) = v;
+  }
+  return STRM_OK;
+}
+
+static int
+rbk_finish(strm_stream* strm, strm_value data)
+{
+  struct rbk_data *d = strm->data;
+  khiter_t i;
+
+  for (i=kh_begin(d->tbl); i!=kh_end(d->tbl); i++) {
+    if (kh_exist(d->tbl, i)) {
+      strm_value values[2];
+
+      values[0] = kh_key(d->tbl, i);
+      values[1] = kh_value(d->tbl, i);
+      strm_emit(strm, strm_ary_new(values, 2), NULL);
+    }
+  }
+  return STRM_OK;
+}
+
+static int
+exec_rbk(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  struct rbk_data *d;
+  khash_t(rbk) *t;
+  strm_value func;
+
+  if (argc != 1) {
+    strm_raise(strm, "wrong number of arguments");
+    return STRM_NG;
+  }
+  func = args[0];
+  t = kh_init(rbk);
+  if (!t) return STRM_NG;
+  d = malloc(sizeof(struct rbk_data));
+  d->tbl = t;
+  d->func = func;
+  *ret = strm_stream_value(strm_stream_new(strm_filter, iter_rbk, rbk_finish, (void*)d));
+  return STRM_OK;
+}
+
 struct split_data {
   strm_value sep;
 };
@@ -441,5 +524,6 @@ strm_iter_init(strm_state* state)
   strm_var_def(state, "count", strm_cfunc_value(exec_count));
   strm_var_def(state, "sum", strm_cfunc_value(exec_sum));
   strm_var_def(state, "reduce", strm_cfunc_value(exec_reduce));
+  strm_var_def(state, "reduce_by_key", strm_cfunc_value(exec_rbk));
   strm_var_def(state, "split", strm_cfunc_value(exec_split));
 }
