@@ -152,7 +152,6 @@ int strm_ary_eq(strm_array a, strm_array b);
 typedef enum {
   strm_producer,
   strm_filter,
-  strm_filter_async,
   strm_consumer,
   strm_killed,
 } strm_stream_mode;
@@ -172,6 +171,7 @@ struct strm_stream {
   struct node_error* exc;
   strm_int refcnt;
   struct strm_queue* queue;
+  strm_int excl;
 };
 
 strm_stream* strm_stream_new(strm_stream_mode mode, strm_callback start, strm_callback close, void *data);
@@ -191,9 +191,14 @@ int strm_funcall(strm_stream*, strm_value, int, strm_value*, strm_value*);
 void strm_eprint(strm_stream*);
 
 /* ----- queue */
-struct strm_task* strm_task_new(strm_stream* strm, strm_callback func, strm_value data);
+struct strm_task {
+  strm_callback func;
+  strm_value data;
+};
+
+struct strm_task* strm_task_new(strm_callback func, strm_value data);
 void strm_task_push(strm_stream* strm, strm_callback func, strm_value data);
-void strm_task_add(struct strm_task*);
+void strm_task_add(strm_stream* strm, struct strm_task*);
 
 /* ----- Variables */
 struct node_error;

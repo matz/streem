@@ -1,5 +1,4 @@
 #include "strm.h"
-#include "atomic.h"
 
 struct seq_data {
   strm_int n;
@@ -149,7 +148,7 @@ exec_map(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   struct map_data* d = malloc(sizeof(struct map_data));
 
   d->func = args[0];
-  *ret = strm_stream_value(strm_stream_new(strm_filter_async, iter_map, NULL, (void*)d));
+  *ret = strm_stream_value(strm_stream_new(strm_filter, iter_map, NULL, (void*)d));
   return STRM_OK;
 }
 
@@ -207,7 +206,7 @@ exec_filter(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   struct map_data* d = malloc(sizeof(struct map_data));
 
   d->func = args[0];
-  *ret = strm_stream_value(strm_stream_new(strm_filter_async, iter_filter, NULL, (void*)d));
+  *ret = strm_stream_value(strm_stream_new(strm_filter, iter_filter, NULL, (void*)d));
   return STRM_OK;
 }
 
@@ -220,7 +219,7 @@ iter_count(strm_stream* strm, strm_value data)
 {
   struct count_data* d = strm->data;
 
-  strm_atomic_add(&d->count, 1);
+  d->count++;
   return STRM_OK;
 }
 
@@ -238,7 +237,7 @@ exec_count(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   struct count_data* d = malloc(sizeof(struct count_data));
   d->count = 0;
-  *ret = strm_stream_value(strm_stream_new(strm_filter_async, iter_count, count_finish, (void*)d));
+  *ret = strm_stream_value(strm_stream_new(strm_filter, iter_count, count_finish, (void*)d));
   return STRM_OK;
 }
 

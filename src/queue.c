@@ -33,7 +33,7 @@ strm_queue_new()
 }
 
 int
-strm_queue_add(struct strm_queue* root, void* val)
+strm_queue_add(struct strm_queue* q, void* val)
 {
   struct strm_queue_node *n;
   struct strm_queue_node *node = (struct strm_queue_node*)malloc(sizeof(struct strm_queue_node));
@@ -41,30 +41,30 @@ strm_queue_add(struct strm_queue* root, void* val)
   node->n = val; 
   node->next = NULL;
   while (1) {
-    n = root->tail;
+    n = q->tail;
     if (strm_atomic_cas(&(n->next), NULL, node)) {
       break;
     }
     else {
-      strm_atomic_cas(&(root->tail), n, n->next);
+      strm_atomic_cas(&(q->tail), n, n->next);
     }
   }
-  strm_atomic_cas(&(root->tail), n, node);
+  strm_atomic_cas(&(q->tail), n, node);
   return 1;
 }
 
 void*
-strm_queue_get(struct strm_queue* root)
+strm_queue_get(struct strm_queue* q)
 {
   struct strm_queue_node *n;
   void *val;
 
   while (1) {
-    n = root->head;
+    n = q->head;
     if (n->next == NULL) {
       return NULL;
     }
-    if (strm_atomic_cas(&(root->head), n, n->next)) {
+    if (strm_atomic_cas(&(q->head), n, n->next)) {
       break;
     }
   }

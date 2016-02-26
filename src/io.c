@@ -31,10 +31,18 @@ static int epoll_fd;
 
 #define MAX_EVENTS 10
 
-int
-strm_io_waiting()
+static struct strm_task*
+io_task(strm_stream* strm, strm_callback func)
 {
-  return (io_wait_num > 0);
+  return strm_task_new(func, strm_foreign_value(strm));
+}
+
+static void
+io_task_add(struct strm_task* task)
+{
+  strm_stream* strm = strm_value_foreign(task->data);
+  task->data = strm_nil_value();
+  strm_task_add(strm, task);
 }
 
 static int
@@ -43,7 +51,7 @@ io_push(int fd, strm_stream* strm, strm_callback cb)
   struct epoll_event ev = { 0 };
 
   ev.events = EPOLLIN | EPOLLONESHOT;
-  ev.data.ptr = strm_task_new(strm, cb, strm_nil_value());
+  ev.data.ptr = io_task(strm, cb);
   return epoll_ctl(epoll_fd, EPOLL_CTL_ADD, fd, &ev);
 }
 
@@ -53,7 +61,7 @@ io_kick(int fd, strm_stream* strm, strm_callback cb)
   struct epoll_event ev;
 
   ev.events = EPOLLIN | EPOLLONESHOT;
-  ev.data.ptr = strm_task_new(strm, cb, strm_nil_value());
+  ev.data.ptr = io_task(strm, cb);
   return epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &ev);
 }
 
@@ -75,8 +83,7 @@ io_loop(void* d)
       return NULL;
     }
     for (i=0; i<n; i++) {
-      struct strm_task *t = events[i].data.ptr;
-      strm_task_add(t);
+      io_task_add(events[i].data.ptr);
     }
   }
   return NULL;

@@ -3,7 +3,8 @@
 
 KHASH_MAP_INIT_INT64(ns, strm_state*);
 static khash_t(ns) *nstbl;
-
+static strm_state szero = {0};
+                   
 strm_state*
 strm_ns_get(strm_string name)
 {
@@ -20,7 +21,7 @@ strm_ns_new(strm_state* state)
 {
   strm_state* s = malloc(sizeof(strm_state));
   if (!s) return NULL;
-  memset(s, 0, sizeof(strm_state));
+  *s = szero;
   s->prev = state;
   return s;
 }
@@ -44,7 +45,7 @@ strm_ns_find(strm_state* state, strm_string name)
       free(s);
       return NULL;
     }
-    memset(s, 0, sizeof(strm_state));
+    *s = szero;
     s->prev = state;
     kh_value(nstbl, k) = s;
   }

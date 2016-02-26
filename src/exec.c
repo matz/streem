@@ -232,9 +232,7 @@ exec_bar(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
     strm_stream* rstrm = strm_value_stream(rhs);
     if (lstrm == NULL || rstrm == NULL ||
         lstrm->mode == strm_consumer ||
-        lstrm->mode == strm_killed ||
-        rstrm->mode == strm_producer ||
-        rstrm->mode == strm_killed) {
+        rstrm->mode == strm_producer) {
       strm_raise(strm, "stream error");
       return STRM_NG;
     }

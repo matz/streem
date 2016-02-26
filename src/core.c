@@ -6,19 +6,12 @@
 
 struct strm_worker {
   pthread_t th;
-  struct strm_queue* queue;
 } *workers;
 
 static struct strm_queue* queue;
 static struct strm_queue* prod_queue;
 static int worker_max;
 static int stream_count = 0;
-
-struct strm_task {
-  strm_stream* strm;
-  strm_callback func;
-  strm_value data;
-};
 
 /* internal variable to tell multi-threaded mode */
 int strm_event_loop_started = FALSE;
@@ -28,52 +21,50 @@ int strm_event_loop_started = FALSE;
 static void task_init();
 
 struct strm_task*
-strm_task_new(strm_stream* strm, strm_callback func, strm_value data)
+strm_task_new(strm_callback func, strm_value data)
 {
   struct strm_task *t;
  
   t = malloc(sizeof(struct strm_task));
-  t->strm = strm;
   t->func = func;
   t->data = data;
- 
+
   return t;
 }
 
 void
-strm_task_add(struct strm_task* task)
+strm_task_add(strm_stream* strm, struct strm_task* task)
 {
-  strm_queue_add(queue, task);
+  strm_queue_add(strm->queue, task);
+  if (strm->mode == strm_producer) {
+    strm_queue_add(prod_queue, strm);
+  }
+  else {
+    strm_queue_add(queue, strm);
+  }
 }
 
 void
 strm_task_push(strm_stream* strm, strm_callback func, strm_value data)
 {
-  struct strm_task *t = strm_task_new(strm, func, data);
-  strm_task_add(t);
+  strm_task_add(strm, strm_task_new(func, data));
 }
 
 void
 strm_emit(strm_stream* strm, strm_value data, strm_callback func)
 {
   strm_stream **d = strm->dst;
-  strm_stream **t = d;
   strm_stream **e = d + strm->dlen;
 
   if (!strm_nil_p(data)) {
-    while (t < e) {
-      if ((*d)->mode == strm_killed) {
-        strm->dlen--;
-        t++;
-      }
-      else {
-        strm_task_push(*d, (*d)->start_func, data);
-        *d++ = *t++;
-      }
+    while (d < e) {
+      strm_task_push(*d, (*d)->start_func, data);
+      d++;
     }
   }
+  sched_yield();
   if (func) {
-    strm_queue_add(prod_queue, strm_task_new(strm, func, strm_nil_value()));
+    strm_task_push(strm, func, strm_nil_value());
   }
 }
 
@@ -82,24 +73,24 @@ strm_stream_connect(strm_stream* src, strm_stream* dst)
 {
   strm_stream** d;
 
+  assert(src->mode != strm_consumer);
   assert(dst->mode != strm_producer);
   d = src->dst;
   d = realloc(d, sizeof(strm_stream*)*(src->dlen+1));
   d[src->dlen++] = dst;
   src->dst = d;
+  strm_atomic_add(&dst->refcnt, 1);
 
   if (src->mode == strm_producer) {
     task_init();
     strm_task_push(src, src->start_func, strm_nil_value());
   }
-  strm_atomic_add(&dst->refcnt, 1);
   return STRM_OK;
 }
 
 int cpu_count();
 void strm_init_io_loop();
 strm_stream* strm_io_deque();
-int strm_io_waiting();
 
 static int
 worker_count()
@@ -115,9 +106,8 @@ worker_count()
 }
 
 static void
-task_exec(struct strm_task* task)
+task_exec(strm_stream* strm, struct strm_task* task)
 {
-  strm_stream* strm = task->strm;
   strm_callback func = task->func;
   strm_value data = task->data;
 
@@ -132,34 +122,21 @@ task_exec(struct strm_task* task)
 static void*
 task_loop(void *data)
 {
-  struct strm_worker* w = (struct strm_worker*)data;
-  struct strm_queue* q = w->queue;
-  struct strm_task* t;
+  strm_stream* strm;
 
   for (;;) {
-    sched_yield();
-    t = strm_queue_get(q);
-    if (t) {
-      task_exec(t);
+    strm = strm_queue_get(queue);
+    if (!strm) {
+      strm = strm_queue_get(prod_queue);
     }
-    else {
-      t = strm_queue_get(queue);
-      if (!t) {
-        t = strm_queue_get(prod_queue);
-      }
-      if (t) {
-        switch (t->strm->mode) {
-        case strm_filter:
-        case strm_consumer:
-          if (!t->strm->queue) {
-            strm_atomic_cas(&t->strm->queue, NULL, q);
-          }
-          strm_queue_add(t->strm->queue, t);
-          continue;
-        default:
-          break;
+    if (strm) {
+      if (strm_atomic_cas(&strm->excl, 0, 1)) {
+        struct strm_task* t;
+
+        while ((t = strm_queue_get(strm->queue)) != NULL) {
+          task_exec(strm, t);
         }
-        task_exec(t);
+        strm_atomic_cas(&strm->excl, 1, 0);
       }
     }
     if (stream_count == 0) {
@@ -184,7 +161,6 @@ task_init()
   worker_max = worker_count();
   workers = malloc(sizeof(struct strm_worker)*worker_max);
   for (i=0; i<worker_max; i++) {
-    workers[i].queue = strm_queue_new();
     pthread_create(&workers[i].th, NULL, task_loop, &workers[i]);
   }
 }
@@ -217,7 +193,8 @@ strm_stream_new(strm_stream_mode mode, strm_callback start_func, strm_callback c
   s->flags = 0;
   s->exc = NULL;
   s->refcnt = 0;
-  s->queue = NULL;
+  s->excl = 0;
+  s->queue = strm_queue_new();
   strm_atomic_add(&stream_count, 1);
 
   return s;
@@ -228,7 +205,12 @@ strm_stream_close(strm_stream* strm)
 {
   strm_stream** d;
   size_t dlen = strm->dlen;
+  strm_stream_mode mode = strm->mode;
 
+  if (mode == strm_killed) return;
+  if (!strm_atomic_cas(&strm->mode, mode, strm_killed)) {
+    return;
+  }
   strm_atomic_sub(&strm->refcnt, 1);
   if (strm->refcnt > 0) return;
   if (strm->close_func) {
@@ -239,12 +221,9 @@ strm_stream_close(strm_stream* strm)
 
   d = strm->dst;
   while (dlen--) {
-    if ((*d)->mode != strm_killed) {
-      strm_task_push(*d, (strm_callback)strm_stream_close, strm_nil_value());
-    }
+    strm_task_push(*d, (strm_callback)strm_stream_close, strm_nil_value());
     d++;
   }
   free(strm->dst);
-  strm->mode = strm_killed;
   strm_atomic_sub(&stream_count, 1);
 }
