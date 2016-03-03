@@ -333,3 +333,23 @@ strm_string_p(strm_string s)
     return FALSE;
   }
 }
+
+strm_state* strm_string_ns;
+
+static int
+str_length(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  strm_int len;
+
+  if (argc != 1) return STRM_NG;
+  len = strm_str_len(strm_value_str(args[0]));
+  *ret = strm_int_value(len);
+  return STRM_OK;
+}
+
+void
+strm_string_init(strm_state* state)
+{
+  strm_string_ns = strm_ns_new(NULL);
+  strm_var_def(strm_string_ns, "length", strm_cfunc_value(str_length));
+}

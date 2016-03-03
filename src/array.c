@@ -53,3 +53,23 @@ strm_ary_struct(strm_value v)
 {
   return (struct strm_array*)strm_value_vptr(v);
 }
+
+strm_state* strm_array_ns;
+
+static int
+ary_length(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  strm_int len;
+
+  if (argc != 1) return STRM_NG;
+  len = strm_ary_len(strm_value_ary(args[0]));
+  *ret = strm_int_value(len);
+  return STRM_OK;
+}
+
+void
+strm_array_init(strm_state* state)
+{
+  strm_array_ns = strm_ns_new(NULL);
+  strm_var_def(strm_array_ns, "length", strm_cfunc_value(ary_length));
+}

@@ -720,6 +720,8 @@ strm_raise(strm_stream* strm, const char* msg)
                strm_str_value(strm_str_new(msg, strlen(msg))));
 }
 
+void strm_array_init(strm_state* state);
+void strm_string_init(strm_state* state);
 void strm_iter_init(strm_state* state);
 void strm_socket_init(strm_state* state);
 void strm_csv_init(strm_state* state);
@@ -747,6 +749,8 @@ node_init(strm_state* state)
   strm_var_def(state, "fread", strm_cfunc_value(exec_fread));
   strm_var_def(state, "fwrite", strm_cfunc_value(exec_fwrite));
 
+  strm_array_init(state);
+  strm_string_init(state);
   strm_iter_init(state);
   strm_socket_init(state);
   strm_csv_init(state);

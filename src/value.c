@@ -480,11 +480,20 @@ struct strm_misc {
   STRM_AUX_HEADER;
 };
 
+extern strm_state* strm_array_ns;
+extern strm_state* strm_string_ns;
+
 strm_state*
 strm_value_ns(strm_value val)
 {
-  if (strm_array_p(val))
-    return strm_ary_ns(val);
+  if (strm_array_p(val)) {
+    strm_state* ns = strm_ary_ns(val);
+    if (ns) return ns;
+    return strm_array_ns;
+  }
+  if (strm_string_p(val)) {
+    return strm_string_ns;
+  }
   if (strm_value_tag(val) == STRM_TAG_PTR) {
     struct strm_misc* p = strm_ptr(val);
 
