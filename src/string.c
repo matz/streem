@@ -347,9 +347,94 @@ str_length(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   return STRM_OK;
 }
 
+struct split_data {
+  strm_value sep;
+};
+
+static int
+str_split(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  strm_string str;
+  strm_string sep;
+  const char* s;
+  strm_int slen;
+  const char* t;
+  const char* p;
+  const char* pend;
+  char c;
+  strm_int n = 0;
+  strm_array ary;
+  strm_value* sps;
+  strm_int i;
+
+  switch (argc) {
+  case 1:
+    str = args[0];
+    sep = strm_str_lit(" ");
+    break;
+  case 2:
+    str = args[0];
+    if (!strm_string_p(args[1])) {
+      strm_raise(strm, "need string separator");
+      return STRM_NG;
+    }
+    sep = strm_value_str(args[1]);
+    break;
+  default:
+    strm_raise(strm, "wrong number of arguments");
+    return STRM_NG;
+  }
+
+  /* count number of split strings */
+  s = strm_str_ptr(sep);
+  slen = strm_str_len(sep);
+  c = s[0];
+  t = p = strm_str_ptr(str);
+  pend = p + strm_str_len(str) - slen;
+  n = 0;
+  while (p<pend) {
+    if (*p == c) {
+      if (memcmp(p, s, slen) == 0) {
+        if (!(slen == 1 && c == ' ' && (p-t) == 0)) {
+          n++;
+        }
+        t = p + slen;
+      }
+    }
+    p++;
+  }
+  n++;
+
+  /* actual split */
+  ary = strm_ary_new(NULL, n);
+  sps = strm_ary_ptr(ary);
+  s = strm_str_ptr(sep);
+  slen = strm_str_len(sep);
+  c = s[0];
+  t = p = strm_str_ptr(str);
+  pend = p + strm_str_len(str) - slen;
+  i = 0;
+  while (p<pend) {
+    if (*p == c) {
+      if (memcmp(p, s, slen) == 0) {
+        if (!(slen == 1 && c == ' ' && (p-t) == 0)) {
+          sps[i++] = strm_str_new(t, p-t);
+        }
+        t = p + slen;
+      }
+    }
+    p++;
+  }
+  pend = strm_str_ptr(str) + strm_str_len(str);
+  sps[i++] = strm_str_new(t, pend-t);
+  *ret = strm_ary_value(ary);
+  return STRM_OK;
+}
+
 void
 strm_string_init(strm_state* state)
 {
   strm_string_ns = strm_ns_new(NULL);
   strm_var_def(strm_string_ns, "length", strm_cfunc_value(str_length));
+  strm_var_def(strm_string_ns, "split", strm_cfunc_value(str_split));
 }
