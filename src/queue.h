@@ -19,7 +19,6 @@
 struct strm_queue {
   struct strm_queue_node* head;
   struct strm_queue_node* tail;
-  volatile unsigned int size;
 };
 
 struct strm_queue* strm_queue_new();
