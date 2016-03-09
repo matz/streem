@@ -69,7 +69,7 @@ strm_stream_connect(strm_stream* src, strm_stream* dst)
   assert(dst->mode != strm_producer);
   assert(src->dst == NULL);
   src->dst = dst;
-  strm_atomic_add(dst->refcnt, 1);
+  strm_atomic_inc(dst->refcnt);
 
   if (src->mode == strm_producer) {
     task_init();
@@ -184,7 +184,7 @@ strm_stream_new(strm_stream_mode mode, strm_callback start_func, strm_callback c
   s->refcnt = 0;
   s->excl = 0;
   s->queue = strm_queue_new();
-  strm_atomic_add(stream_count, 1);
+  strm_atomic_inc(stream_count);
 
   return s;
 }
@@ -198,7 +198,7 @@ strm_stream_close(strm_stream* strm)
   if (!strm_atomic_cas(strm->mode, mode, strm_killed)) {
     return;
   }
-  strm_atomic_sub(strm->refcnt, 1);
+  strm_atomic_dec(strm->refcnt);
   if (strm->refcnt > 0) return;
   if (strm->close_func) {
     if ((*strm->close_func)(strm, strm_nil_value()) == STRM_NG)
@@ -209,5 +209,5 @@ strm_stream_close(strm_stream* strm)
   if (strm->dst) {
     strm_task_push(strm->dst, (strm_callback)strm_stream_close, strm_nil_value());
   }
-  strm_atomic_sub(stream_count, 1);
+  strm_atomic_dec(stream_count);
 }

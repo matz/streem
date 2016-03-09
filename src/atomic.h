@@ -1,5 +1,7 @@
 #define strm_atomic_cas(a,b,c) __sync_bool_compare_and_swap(&(a),(b),(c))
 #define strm_atomic_add(a,b) __sync_fetch_and_add(&(a),(b))
 #define strm_atomic_sub(a,b) __sync_fetch_and_sub(&(a),(b))
+#define strm_atomic_inc(a) __sync_fetch_and_add(&(a),1)
+#define strm_atomic_dec(a) __sync_fetch_and_sub(&(a),1)
 #define strm_atomic_or(a,b) __sync_fetch_and_or(&(a),(b))
 #define strm_atomic_and(a,b) __sync_fetch_and_and(&(a),(b))
