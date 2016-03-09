@@ -69,7 +69,7 @@ strm_stream_connect(strm_stream* src, strm_stream* dst)
   assert(dst->mode != strm_producer);
   assert(src->dst == NULL);
   src->dst = dst;
-  strm_atomic_add(&dst->refcnt, 1);
+  strm_atomic_add(dst->refcnt, 1);
 
   if (src->mode == strm_producer) {
     task_init();
@@ -120,13 +120,13 @@ task_loop(void *data)
       strm = strm_queue_get(prod_queue);
     }
     if (strm) {
-      if (strm_atomic_cas(&strm->excl, 0, 1)) {
+      if (strm_atomic_cas(strm->excl, 0, 1)) {
         struct strm_task* t;
 
         while ((t = strm_queue_get(strm->queue)) != NULL) {
           task_exec(strm, t);
         }
-        strm_atomic_cas(&strm->excl, 1, 0);
+        strm_atomic_cas(strm->excl, 1, 0);
       }
     }
     if (stream_count == 0) {
@@ -184,7 +184,7 @@ strm_stream_new(strm_stream_mode mode, strm_callback start_func, strm_callback c
   s->refcnt = 0;
   s->excl = 0;
   s->queue = strm_queue_new();
-  strm_atomic_add(&stream_count, 1);
+  strm_atomic_add(stream_count, 1);
 
   return s;
 }
@@ -195,10 +195,10 @@ strm_stream_close(strm_stream* strm)
   strm_stream_mode mode = strm->mode;
 
   if (mode == strm_killed) return;
-  if (!strm_atomic_cas(&strm->mode, mode, strm_killed)) {
+  if (!strm_atomic_cas(strm->mode, mode, strm_killed)) {
     return;
   }
-  strm_atomic_sub(&strm->refcnt, 1);
+  strm_atomic_sub(strm->refcnt, 1);
   if (strm->refcnt > 0) return;
   if (strm->close_func) {
     if ((*strm->close_func)(strm, strm_nil_value()) == STRM_NG)
@@ -209,5 +209,5 @@ strm_stream_close(strm_stream* strm)
   if (strm->dst) {
     strm_task_push(strm->dst, (strm_callback)strm_stream_close, strm_nil_value());
   }
-  strm_atomic_sub(&stream_count, 1);
+  strm_atomic_sub(stream_count, 1);
 }

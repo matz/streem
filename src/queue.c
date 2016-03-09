@@ -42,14 +42,14 @@ strm_queue_add(struct strm_queue* q, void* val)
   node->next = NULL;
   while (1) {
     n = q->tail;
-    if (strm_atomic_cas(&(n->next), NULL, node)) {
+    if (strm_atomic_cas(n->next, NULL, node)) {
       break;
     }
     else {
-      strm_atomic_cas(&(q->tail), n, n->next);
+      strm_atomic_cas(q->tail, n, n->next);
     }
   }
-  strm_atomic_cas(&(q->tail), n, node);
+  strm_atomic_cas(q->tail, n, node);
   return 1;
 }
 
@@ -64,7 +64,7 @@ strm_queue_get(struct strm_queue* q)
     if (n->next == NULL) {
       return NULL;
     }
-    if (strm_atomic_cas(&(q->head), n, n->next)) {
+    if (strm_atomic_cas(q->head, n, n->next)) {
       break;
     }
   }
