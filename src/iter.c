@@ -80,7 +80,7 @@ gen_rand(strm_stream* strm, strm_value data)
 static int
 fin_rand(strm_stream* strm, strm_value data)
 {
-  strm->data = NULL;
+  free(strm->data);
   return STRM_OK;
 }
 
@@ -230,6 +230,7 @@ count_finish(strm_stream* strm, strm_value data)
   struct count_data* d = strm->data;
 
   strm_emit(strm, strm_int_value(d->count), NULL);
+  free(d);
   return STRM_OK;
 }
 

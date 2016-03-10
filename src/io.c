@@ -229,6 +229,7 @@ read_close(strm_stream* strm, strm_value d)
   struct fd_read_buffer *b = strm->data;
 
   close(b->fd);
+  free(b);
   return STRM_OK;
 }
 
@@ -303,6 +304,7 @@ write_close(strm_stream* strm, strm_value data)
   if ((d->io->mode & STRM_IO_READING) == 0) {
     fclose(d->f);
   }
+  free(d);
   return STRM_OK;
 }
 

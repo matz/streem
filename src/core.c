@@ -203,7 +203,10 @@ strm_stream_close(strm_stream* strm)
   if (strm->close_func) {
     if ((*strm->close_func)(strm, strm_nil_value()) == STRM_NG)
       return;
+  }
+  else {
     free(strm->data);
+    strm->data = NULL;
   }
 
   if (strm->dst) {

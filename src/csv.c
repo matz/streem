@@ -314,6 +314,7 @@ csv_finish(strm_stream* strm, strm_value data)
     free(cd->types);
     cd->types = NULL;
   }
+  free(cd);
   return STRM_OK;
 }
 

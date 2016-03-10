@@ -57,6 +57,7 @@ server_close(strm_stream* task, strm_value d)
   struct socket_data *sd = task->data;
 
   closesocket(sd->sock);
+  free(sd);
   return STRM_OK;
 }
 
