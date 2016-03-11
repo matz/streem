@@ -238,12 +238,12 @@ void strm_io_start_read(strm_stream* strm, int fd, strm_callback cb);
 #define strm_io_p(v) strm_ptr_tag_p(v, STRM_PTR_IO)
 
 /* ----- lambda */
-typedef struct strm_lambda {
+struct strm_lambda {
   STRM_PTR_HEADER;
   struct node_lambda* body;
   struct strm_state* state;
-} *strm_lambda;
+};
 
-#define strm_value_lambda(v) (strm_lambda)strm_value_ptr(v, STRM_PTR_LAMBDA)
+#define strm_value_lambda(v) (struct strm_lambda*)strm_value_ptr(v, STRM_PTR_LAMBDA)
 #define strm_lambda_p(v) strm_ptr_tag_p(v, STRM_PTR_LAMBDA)
 #endif

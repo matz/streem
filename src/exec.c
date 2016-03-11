@@ -198,7 +198,7 @@ exec_bar(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   }
   /* lhs: lambda */
   else if (strm_lambda_p(lhs)) {
-    strm_lambda lmbd = strm_value_lambda(lhs);
+    struct strm_lambda* lmbd = strm_value_lambda(lhs);
     lhs = strm_stream_value(strm_stream_new(strm_filter, blk_exec, NULL, (void*)lmbd));
   }
   /* lhs: array */
@@ -217,7 +217,7 @@ exec_bar(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   }
   /* rhs: lambda */
   else if (strm_lambda_p(rhs)) {
-    strm_lambda lmbd = strm_value_lambda(rhs);
+    struct strm_lambda* lmbd = strm_value_lambda(rhs);
     rhs = strm_stream_value(strm_stream_new(strm_filter, blk_exec, NULL, (void*)lmbd));
   }
   /* rhs: cfunc */
@@ -302,7 +302,7 @@ ary_get(strm_stream* strm, strm_value ary, int argc, strm_value* argv, strm_valu
 static int
 lambda_call(strm_stream* strm, strm_value func, int argc, strm_value* argv, strm_value* ret)
 {
-  strm_lambda lambda = strm_value_lambda(func);
+  struct strm_lambda* lambda = strm_value_lambda(func);
   node_lambda* nlbd = lambda->body;
   node_args* args = (node_args*)nlbd->args;
   strm_state c = {0};
@@ -539,7 +539,7 @@ exec_expr(strm_stream* strm, strm_state* state, node* np, strm_value* val)
     break;
   case NODE_LAMBDA:
     {
-      strm_lambda lambda = malloc(sizeof(struct strm_lambda));
+      struct strm_lambda* lambda = malloc(sizeof(struct strm_lambda));
 
       if (!lambda) return STRM_NG;
       lambda->type = STRM_PTR_LAMBDA;
@@ -783,7 +783,7 @@ node_run(parser_state* p)
 static int
 blk_exec(strm_stream* strm, strm_value data)
 {
-  strm_lambda lambda = strm->data;
+  struct strm_lambda* lambda = strm->data;
   strm_value ret = strm_nil_value();
   node_args* args = (node_args*)lambda->body->args;
   node_error* exc;
