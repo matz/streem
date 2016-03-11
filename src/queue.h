@@ -24,5 +24,6 @@ struct strm_queue {
 struct strm_queue* strm_queue_new();
 int strm_queue_add(struct strm_queue* queue, void* val);
 void* strm_queue_get(struct strm_queue* queue);
+void strm_queue_free(struct strm_queue* queue);
 
 #endif /* !STRM_QUEUE_H */

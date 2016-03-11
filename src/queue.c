@@ -72,3 +72,16 @@ strm_queue_get(struct strm_queue* q)
   free(n);
   return val;
 }
+
+void
+strm_queue_free(struct strm_queue* q)
+{
+  struct strm_queue_node* n = q->head;
+
+  free(q);
+  while (n) {
+    struct strm_queue_node* tmp = n->next;
+    free(n);
+    n = tmp;
+  }
+}
