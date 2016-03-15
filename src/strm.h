@@ -178,6 +178,7 @@ strm_stream* strm_stream_new(strm_stream_mode mode, strm_callback start, strm_ca
 void strm_emit(strm_stream* strm, strm_value data, strm_callback cb);
 void strm_io_emit(strm_stream* strm, strm_value data, int fd, strm_callback cb);
 int strm_stream_connect(strm_stream* src, strm_stream* dst);
+int strm_connect(strm_stream* strm, strm_value src, strm_value dst, strm_value* ret);
 int strm_loop();
 void strm_stream_close(strm_stream* strm);
 #define strm_stream_p(v) strm_ptr_tag_p(v, STRM_PTR_STREAM)

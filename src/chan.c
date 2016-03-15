@@ -158,8 +158,9 @@ exec_zip(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   z->i = 0;
   z->len = argc;
   for (i=0; i<argc; i++) {
+    strm_value r;
     s = strm_chan_new();
-    strm_stream_connect(strm_value_stream(args[i]), s);
+    strm_connect(strm, args[i], strm_stream_value(s), &r);
     z->chan[i] = s;
   }
   *ret = strm_stream_value(strm_stream_new(strm_producer, zip_start, zip_close, z));

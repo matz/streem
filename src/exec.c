@@ -179,11 +179,62 @@ struct array_data {
 static int arr_exec(strm_stream* strm, strm_value data);
 static int cfunc_exec(strm_stream* strm, strm_value data);
 
+int
+strm_connect(strm_stream* strm, strm_value src, strm_value dst, strm_value* ret)
+{
+  /* src: io */
+  if (strm_io_p(src)) {
+    src = strm_stream_value(strm_io_stream(src, STRM_IO_READ));
+  }
+  /* src: lambda */
+  else if (strm_lambda_p(src)) {
+    struct strm_lambda* lmbd = strm_value_lambda(src);
+    src = strm_stream_value(strm_stream_new(strm_filter, blk_exec, NULL, (void*)lmbd));
+  }
+  /* src: array */
+  else if (strm_array_p(src)) {
+    struct array_data *arrd = malloc(sizeof(struct array_data));
+    arrd->arr = strm_value_ary(src);
+    arrd->n = 0;
+    src = strm_stream_value(strm_stream_new(strm_producer, arr_exec, NULL, (void*)arrd));
+  }
+  /* src: should be stream */
+
+  /* dst: io */
+  if (strm_io_p(dst)) {
+    dst = strm_stream_value(strm_io_stream(dst, STRM_IO_WRITE));
+  }
+  /* dst: lambda */
+  else if (strm_lambda_p(dst)) {
+    struct strm_lambda* lmbd = strm_value_lambda(dst);
+    dst = strm_stream_value(strm_stream_new(strm_filter, blk_exec, NULL, (void*)lmbd));
+  }
+  /* dst: cfunc */
+  else if (strm_cfunc_p(dst)) {
+    strm_cfunc func = strm_value_cfunc(dst);
+    dst = strm_stream_value(strm_stream_new(strm_filter, cfunc_exec, NULL, func));
+  }
+
+  /* stream x stream */
+  if (strm_stream_p(src) && strm_stream_p(dst)) {
+    strm_stream* lstrm = strm_value_stream(src);
+    strm_stream* rstrm = strm_value_stream(dst);
+    if (lstrm == NULL || rstrm == NULL ||
+        lstrm->mode == strm_consumer ||
+        rstrm->mode == strm_producer) {
+      strm_raise(strm, "stream error");
+      return STRM_NG;
+    }
+    strm_stream_connect(strm_value_stream(src), strm_value_stream(dst));
+    *ret = dst;
+    return STRM_OK;
+  }
+  return STRM_NG;
+}
+
 static int
 exec_bar(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
-  strm_value lhs, rhs;
-
   assert(argc == 2);
   /* int x int */
   if (strm_int_p(args[0]) && strm_int_p(args[1])) {
@@ -191,58 +242,7 @@ exec_bar(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
     return STRM_OK;
   }
 
-  lhs = args[0];
-  /* lhs: io */
-  if (strm_io_p(lhs)) {
-    lhs = strm_stream_value(strm_io_stream(lhs, STRM_IO_READ));
-  }
-  /* lhs: lambda */
-  else if (strm_lambda_p(lhs)) {
-    struct strm_lambda* lmbd = strm_value_lambda(lhs);
-    lhs = strm_stream_value(strm_stream_new(strm_filter, blk_exec, NULL, (void*)lmbd));
-  }
-  /* lhs: array */
-  else if (strm_array_p(lhs)) {
-    struct array_data *arrd = malloc(sizeof(struct array_data));
-    arrd->arr = strm_value_ary(lhs);
-    arrd->n = 0;
-    lhs = strm_stream_value(strm_stream_new(strm_producer, arr_exec, NULL, (void*)arrd));
-  }
-  /* lhs: should be stream */
-
-  rhs = args[1];
-  /* rhs: io */
-  if (strm_io_p(rhs)) {
-    rhs = strm_stream_value(strm_io_stream(rhs, STRM_IO_WRITE));
-  }
-  /* rhs: lambda */
-  else if (strm_lambda_p(rhs)) {
-    struct strm_lambda* lmbd = strm_value_lambda(rhs);
-    rhs = strm_stream_value(strm_stream_new(strm_filter, blk_exec, NULL, (void*)lmbd));
-  }
-  /* rhs: cfunc */
-  else if (strm_cfunc_p(rhs)) {
-    strm_cfunc func = strm_value_cfunc(rhs);
-    rhs = strm_stream_value(strm_stream_new(strm_filter, cfunc_exec, NULL, func));
-  }
-
-  /* stream x stream */
-  if (strm_stream_p(lhs) && strm_stream_p(rhs)) {
-    strm_stream* lstrm = strm_value_stream(lhs);
-    strm_stream* rstrm = strm_value_stream(rhs);
-    if (lstrm == NULL || rstrm == NULL ||
-        lstrm->mode == strm_consumer ||
-        rstrm->mode == strm_producer) {
-      strm_raise(strm, "stream error");
-      return STRM_NG;
-    }
-    strm_stream_connect(strm_value_stream(lhs), strm_value_stream(rhs));
-    *ret = rhs;
-    return STRM_OK;
-  }
-
-  strm_raise(strm, "type error");
-  return STRM_NG;
+  return strm_connect(strm, args[0], args[1], ret);
 }
 
 static int
