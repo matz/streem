@@ -167,8 +167,64 @@ exec_zip(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   return STRM_OK;
 }
 
+struct concat_data {
+  strm_int i;
+  strm_int len;
+  strm_stream* chan[0];
+};
+
+static int
+concat_iter(strm_stream* strm, strm_value data)
+{
+  struct concat_data* d = strm->data;
+
+  strm_emit(strm, data, NULL);
+  if (strm_chan_finish_p(d->chan[d->i])) {
+    strm_stream_close(d->chan[d->i]);
+    d->i++;
+  }
+  if (d->i < d->len) {
+    strm_chan_receive(d->chan[d->i], strm, concat_iter);
+  }
+  else {
+    strm_stream_close(strm);
+  }
+  return STRM_OK;
+}
+
+static int
+concat_start(strm_stream* strm, strm_value data)
+{
+  struct concat_data* d = strm->data;
+
+  if (d) {
+    strm_chan_receive(d->chan[d->i], strm, concat_iter);
+  }
+  return STRM_OK;
+}
+
+static int
+exec_concat(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  struct concat_data* d = malloc(sizeof(struct concat_data)+sizeof(strm_stream*)*argc);
+  strm_int i;
+  strm_stream* s;
+
+  d->i = 0;
+  d->len = argc;
+  for (i=0; i<argc; i++) {
+    strm_value r;
+    s = strm_chan_new();
+    strm_connect(strm, args[i], strm_stream_value(s), &r);
+    d->chan[i] = s;
+  }
+  *ret = strm_stream_value(strm_stream_new(strm_producer, concat_start, NULL, d));
+  return STRM_OK;
+}
+
 void
 strm_chan_init(strm_state* state)
 {
   strm_var_def(state, "zip", strm_cfunc_value(exec_zip));
+  strm_var_def(state, "concat", strm_cfunc_value(exec_concat));
 }
