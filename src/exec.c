@@ -722,7 +722,7 @@ strm_raise(strm_stream* strm, const char* msg)
 
 void strm_array_init(strm_state* state);
 void strm_string_init(strm_state* state);
-void strm_chan_init(strm_state* state);
+void strm_latch_init(strm_state* state);
 void strm_iter_init(strm_state* state);
 void strm_socket_init(strm_state* state);
 void strm_csv_init(strm_state* state);
@@ -752,7 +752,7 @@ node_init(strm_state* state)
 
   strm_array_init(state);
   strm_string_init(state);
-  strm_chan_init(state);
+  strm_latch_init(state);
   strm_iter_init(state);
   strm_socket_init(state);
   strm_csv_init(state);

@@ -8,26 +8,26 @@ struct recv_data {
   strm_callback func;
 };
 
-struct chan_data {
+struct latch_data {
   struct strm_queue* dq;        /* data queue */
   struct strm_queue* rq;        /* receiver queue */
 };
 
 int
-strm_chan_finish_p(strm_stream* chan)
+strm_latch_finish_p(strm_stream* latch)
 {
-  struct chan_data* c;
+  struct latch_data* c;
 
-  if (chan->mode == strm_consumer) return 0;
-  c = chan->data;
+  if (latch->mode == strm_consumer) return 0;
+  c = latch->data;
   if (c->dq->head == c->dq->tail) return 1;
   return 0;
 }
 
 static int
-chan_get(strm_stream* strm, strm_value data)
+latch_get(strm_stream* strm, strm_value data)
 {
-  struct chan_data* d = strm->data;
+  struct latch_data* d = strm->data;
   struct recv_data* r = strm_queue_get(d->rq);
 
   if (r) {
@@ -43,13 +43,13 @@ chan_get(strm_stream* strm, strm_value data)
 }
 
 void
-strm_chan_receive(strm_stream* chan, strm_stream* strm, strm_callback func)
+strm_latch_receive(strm_stream* latch, strm_stream* strm, strm_callback func)
 {
-  struct chan_data* d;
+  struct latch_data* d;
   strm_value* v;
 
-  assert(chan->start_func == chan_get);
-  d = chan->data;
+  assert(latch->start_func == latch_get);
+  d = latch->data;
   v = strm_queue_get(d->dq);
   if (v) {
     (*func)(strm, *v);
@@ -64,9 +64,9 @@ strm_chan_receive(strm_stream* chan, strm_stream* strm, strm_callback func)
 }
 
 static int
-chan_close(strm_stream* strm, strm_value data)
+latch_close(strm_stream* strm, strm_value data)
 {
-  struct chan_data* d = strm->data;
+  struct latch_data* d = strm->data;
   struct recv_data* r;
 
   for (;;) {
@@ -79,21 +79,21 @@ chan_close(strm_stream* strm, strm_value data)
 }
 
 strm_stream*
-strm_chan_new()
+strm_latch_new()
 {
-  struct chan_data* d = malloc(sizeof(struct chan_data));
+  struct latch_data* d = malloc(sizeof(struct latch_data));
 
   assert(d != NULL);
   d->dq = strm_queue_new();
   d->rq = strm_queue_new();
-  return strm_stream_new(strm_consumer, chan_get, chan_close, d);
+  return strm_stream_new(strm_consumer, latch_get, latch_close, d);
 }
 
 struct zip_data {
   strm_array a;
   strm_int i;
   strm_int len;
-  strm_stream* chan[0];
+  strm_stream* latch[0];
 };
 
 static int zip_start(strm_stream* strm, strm_value data);
@@ -105,19 +105,19 @@ zip_iter(strm_stream* strm, strm_value data)
 
   strm_ary_ptr(z->a)[z->i++] = data;
   if (z->i < z->len) {
-    strm_chan_receive(z->chan[z->i], strm, zip_iter);
+    strm_latch_receive(z->latch[z->i], strm, zip_iter);
   }
   else {
     strm_int i;
     strm_int done = 0;
 
     for (i=0; i<z->len; i++){
-      if (strm_chan_finish_p(z->chan[i]))
+      if (strm_latch_finish_p(z->latch[i]))
         done = 1;
     }
     if (done) {
       for (i=0; i<z->len; i++){
-        strm_stream_close(z->chan[i]);
+        strm_stream_close(z->latch[i]);
       }
       strm_stream_close(strm);
     }
@@ -136,7 +136,7 @@ zip_start(strm_stream* strm, strm_value data)
   if (z) {
     z->i = 0;
     z->a = strm_ary_new(NULL, z->len);
-    strm_chan_receive(z->chan[0], strm, zip_iter);
+    strm_latch_receive(z->latch[0], strm, zip_iter);
   }
   return STRM_OK;
 }
@@ -159,9 +159,9 @@ exec_zip(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   z->len = argc;
   for (i=0; i<argc; i++) {
     strm_value r;
-    s = strm_chan_new();
+    s = strm_latch_new();
     strm_connect(strm, args[i], strm_stream_value(s), &r);
-    z->chan[i] = s;
+    z->latch[i] = s;
   }
   *ret = strm_stream_value(strm_stream_new(strm_producer, zip_start, zip_close, z));
   return STRM_OK;
@@ -170,7 +170,7 @@ exec_zip(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 struct concat_data {
   strm_int i;
   strm_int len;
-  strm_stream* chan[0];
+  strm_stream* latch[0];
 };
 
 static int
@@ -179,12 +179,12 @@ concat_iter(strm_stream* strm, strm_value data)
   struct concat_data* d = strm->data;
 
   strm_emit(strm, data, NULL);
-  if (strm_chan_finish_p(d->chan[d->i])) {
-    strm_stream_close(d->chan[d->i]);
+  if (strm_latch_finish_p(d->latch[d->i])) {
+    strm_stream_close(d->latch[d->i]);
     d->i++;
   }
   if (d->i < d->len) {
-    strm_chan_receive(d->chan[d->i], strm, concat_iter);
+    strm_latch_receive(d->latch[d->i], strm, concat_iter);
   }
   else {
     strm_stream_close(strm);
@@ -198,7 +198,7 @@ concat_start(strm_stream* strm, strm_value data)
   struct concat_data* d = strm->data;
 
   if (d) {
-    strm_chan_receive(d->chan[d->i], strm, concat_iter);
+    strm_latch_receive(d->latch[d->i], strm, concat_iter);
   }
   return STRM_OK;
 }
@@ -214,16 +214,16 @@ exec_concat(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   d->len = argc;
   for (i=0; i<argc; i++) {
     strm_value r;
-    s = strm_chan_new();
+    s = strm_latch_new();
     strm_connect(strm, args[i], strm_stream_value(s), &r);
-    d->chan[i] = s;
+    d->latch[i] = s;
   }
   *ret = strm_stream_value(strm_stream_new(strm_producer, concat_start, NULL, d));
   return STRM_OK;
 }
 
 void
-strm_chan_init(strm_state* state)
+strm_latch_init(strm_state* state)
 {
   strm_var_def(state, "zip", strm_cfunc_value(exec_zip));
   strm_var_def(state, "concat", strm_cfunc_value(exec_concat));
