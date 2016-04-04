@@ -728,9 +728,13 @@ void strm_socket_init(strm_state* state);
 void strm_csv_init(strm_state* state);
 void strm_kvs_init(strm_state* state);
 
+void strm_init(strm_state*);
+
 static void
 node_init(strm_state* state)
 {
+  strm_init(state);
+
   strm_var_def(state, "stdin", strm_io_new(0, STRM_IO_READ));
   strm_var_def(state, "stdout", strm_io_new(1, STRM_IO_WRITE));
   strm_var_def(state, "stderr", strm_io_new(2, STRM_IO_WRITE));
@@ -749,14 +753,6 @@ node_init(strm_state* state)
   strm_var_def(state, "%", strm_cfunc_value(exec_mod));
   strm_var_def(state, "fread", strm_cfunc_value(exec_fread));
   strm_var_def(state, "fwrite", strm_cfunc_value(exec_fwrite));
-
-  strm_array_init(state);
-  strm_string_init(state);
-  strm_latch_init(state);
-  strm_iter_init(state);
-  strm_socket_init(state);
-  strm_csv_init(state);
-  strm_kvs_init(state);
 }
 
 int
