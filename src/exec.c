@@ -739,6 +739,7 @@ node_init(strm_state* state)
   strm_var_def(state, "stdout", strm_io_new(1, STRM_IO_WRITE));
   strm_var_def(state, "stderr", strm_io_new(2, STRM_IO_WRITE));
   strm_var_def(state, "puts", strm_cfunc_value(exec_puts));
+  strm_var_def(state, "print", strm_cfunc_value(exec_puts));
   strm_var_def(state, "+", strm_cfunc_value(exec_plus));
   strm_var_def(state, "-", strm_cfunc_value(exec_minus));
   strm_var_def(state, "*", strm_cfunc_value(exec_mult));
