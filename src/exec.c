@@ -624,7 +624,7 @@ exec_expr(strm_stream* strm, strm_state* state, node* np, strm_value* val)
     *val = strm_int_value(((node_int*)np)->value);
     return STRM_OK;
   case NODE_FLOAT:
-    *val = strm_int_value(((node_float*)np)->value);
+    *val = strm_flt_value(((node_float*)np)->value);
     return STRM_OK;
   case NODE_BOOL:
     *val = strm_bool_value(((node_bool*)np)->value);
