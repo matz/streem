@@ -386,7 +386,7 @@ strm_to_str(strm_value v)
   if (ns) {
     strm_value m;
 
-    n = strm_var_get(ns, strm_str_intern_lit("to_str"), &m);
+    n = strm_var_get(ns, strm_str_intern_lit("string"), &m);
     if (n == STRM_OK) {
       n = strm_funcall(NULL, m, 1, &v, &m);
       if (n == STRM_OK && strm_string_p(m)) return m;

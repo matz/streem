@@ -419,13 +419,13 @@ strm_kvs_init(strm_state* state)
   strm_var_def(kvs_ns, "update", strm_cfunc_value(kvs_update));
   strm_var_def(kvs_ns, "txn", strm_cfunc_value(kvs_txn));
   strm_var_def(kvs_ns, "close", strm_cfunc_value(kvs_close));
-  strm_var_def(kvs_ns, "to_str", strm_cfunc_value(kvs_str));
+  strm_var_def(kvs_ns, "string", strm_cfunc_value(kvs_str));
 
   txn_ns = strm_ns_new(NULL);
   strm_var_def(txn_ns, "get", strm_cfunc_value(txn_get));
   strm_var_def(txn_ns, "put", strm_cfunc_value(txn_put));
   strm_var_def(txn_ns, "update", strm_cfunc_value(txn_update));
-  strm_var_def(kvs_ns, "to_str", strm_cfunc_value(txn_str));
+  strm_var_def(kvs_ns, "string", strm_cfunc_value(txn_str));
 
   strm_var_def(state, "kvs", strm_cfunc_value(kvs_new));
 }
