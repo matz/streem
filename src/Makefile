@@ -5,7 +5,7 @@ TOP = ..
 TARGET = $(TOP)/bin/streem
 CDEFS =
 CFLAGS = -g -ggdb -Wall $(CDEFS)
-LIBS = -lpthread
+LIBS = -lpthread -lm
 
 ifeq (Windows_NT,$(OS))
 TARGET:=$(TARGET).exe
