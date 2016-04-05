@@ -341,6 +341,7 @@ strm_inspect(strm_value v)
     strm_int i, bi = 0, capa = 32;
     strm_array a = strm_value_ary(v);
 
+    buf[bi++] = '[';
     for (i=0; i<strm_ary_len(a); i++) {
       strm_string str = strm_inspect(strm_ary_ptr(a)[i]);
       strm_string key = (strm_ary_headers(a) &&
@@ -352,10 +353,7 @@ strm_inspect(strm_value v)
         capa *= 2;
         buf = realloc(buf, capa);
       }
-      if (bi == 0) {
-        buf[bi++] = '[';
-      }
-      else {
+      if (i > 0) {
         buf[bi++] = ',';
         buf[bi++] = ' ';
       }
