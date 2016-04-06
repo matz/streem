@@ -307,7 +307,12 @@ time_num(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
     return STRM_NG;
   }
   t = get_time(args[0]);
-  *ret = strm_flt_value(timeval_to_num(&t->tv));
+  if (t->tv.tv_usec == 0) {
+    *ret = strm_int_value(t->tv.tv_sec);
+  }
+  else {
+    *ret = strm_flt_value(timeval_to_num(&t->tv));
+  }
   return STRM_OK;
 }
 
