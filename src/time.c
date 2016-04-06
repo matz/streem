@@ -90,7 +90,7 @@ time_alloc(struct timeval* tv, int utc_offset, strm_value* ret)
     tv->tv_sec++;
     tv->tv_usec -= 1000000;
   }
-  memcpy(&t->tv, tv, sizeof(struct timeval));
+  t->tv = *tv;
   t->utc_offset = utc_offset;
   *ret = strm_ptr_value(t);
   return STRM_OK;
