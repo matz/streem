@@ -33,6 +33,7 @@ void node_stop();
 typedef enum {
   NODE_INT,
   NODE_FLOAT,
+  NODE_TIME,
   NODE_STR,
   NODE_NIL,
   NODE_BOOL,
@@ -72,6 +73,13 @@ typedef struct {
   NODE_HEADER;
   double value;
 } node_float;
+
+typedef struct {
+  NODE_HEADER;
+  long sec;
+  long usec;
+  int utc_offset;
+} node_time;
 
 typedef struct {
   NODE_HEADER;
@@ -190,6 +198,7 @@ extern node* node_method_new(node*, node*);
 extern node* node_call_new(node_string, node*, node*, node*);
 extern node* node_int_new(long);
 extern node* node_float_new(double);
+extern node* node_time_new(const char*, strm_int);
 extern node* node_string_new(const char*, strm_int);
 extern node* node_if_new(node*, node*, node*);
 extern node* node_emit_new(node*);

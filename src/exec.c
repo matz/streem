@@ -626,6 +626,13 @@ exec_expr(strm_stream* strm, strm_state* state, node* np, strm_value* val)
   case NODE_FLOAT:
     *val = strm_flt_value(((node_float*)np)->value);
     return STRM_OK;
+  case NODE_TIME:
+    {
+      node_time* nt = (node_time*)np;
+      *val = strm_time_new(nt->sec, nt->usec, nt->utc_offset);
+      if (strm_nil_p(*val)) return STRM_NG;
+    }
+    return STRM_OK;
   case NODE_BOOL:
     *val = strm_bool_value(((node_bool*)np)->value);
     return STRM_OK;

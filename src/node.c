@@ -2,6 +2,7 @@
 #include "node.h"
 #include <stdlib.h>
 #include <string.h>
+#include <sys/time.h>
 
 #define YYDEBUG 1
 
@@ -68,7 +69,7 @@ node_array_headers(node* np)
   v = (node_array*)np;
   for (i = 0; i < v->len; i++) {
     node_pair* npair = (node_pair*)v->data[i];
-    if (npair->type == NODE_PAIR) {
+    if (npair && npair->type == NODE_PAIR) {
       if (!headers) {
         headers = malloc(sizeof(node_string)*v->len);
       }
@@ -298,6 +299,24 @@ node_float_new(double d)
   nf->type = NODE_FLOAT;
   nf->value = d;
   return (node*)nf;
+}
+
+node*
+node_time_new(const char* s, strm_int len)
+{
+  long sec, usec;
+  int utc_offset;
+  node_time* ns;
+
+  if (strm_time_parse_time(s, len, &sec, &usec, &utc_offset) < 0) {
+    return NULL;
+  }
+  ns = malloc(sizeof(node_time));
+  ns->type = NODE_TIME;
+  ns->sec = sec;
+  ns->usec = usec;
+  ns->utc_offset = utc_offset;
+  return (node*)ns;
 }
 
 static strm_int

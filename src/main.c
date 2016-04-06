@@ -166,6 +166,12 @@ dump_node(node* np, int indent) {
   case NODE_FLOAT:
     printf("VALUE(NUMBER): %f\n", ((node_float*)np)->value);
     break;
+  case NODE_TIME:
+    {
+      node_time* nt = (node_time*)np;
+      printf("VALUE(TIME): %ld.%ld(%+05d)\n", nt->sec, nt->usec, nt->utc_offset);
+    }
+    break;
   case NODE_BOOL:
     printf("VALUE(BOOL): %s\n", ((node_bool*)np)->value ? "true" : "false");
     break;

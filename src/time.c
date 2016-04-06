@@ -1,3 +1,4 @@
+#define _XOPEN_SOURCE
 #include "strm.h"
 #include <time.h>
 #include <sys/time.h>
@@ -161,6 +162,100 @@ parse_tz(const char* s, strm_int len)
   }
 }
 
+int
+strm_time_parse_time(const char* p, strm_int len, long* sec, long* usec, int* offset)
+{
+  const char* s = p;
+  const char* t;
+  const char* tend;
+  struct tm tm;
+  int localoffset = time_localoffset();
+
+  if (s[len] != '\0') {
+    char* pp = malloc(len+1);
+    memcpy(pp, p, len);
+    pp[len] = '\0';
+    s = (const char*)pp;
+  }
+  tend = s + len;
+  *usec = 0;
+  memset(&tm, 0, sizeof(struct tm));
+  t = strptime(s, "%Y.%m.%dT%H:%M:%S", &tm);
+  if (t == NULL) {
+    t = strptime(s, "%Y-%m-%dT%H:%M:%S", &tm); /* ISO8601 */
+  }
+  if (t != NULL) {
+    time_t time = mktime(&tm);
+    if (t[0] == '.') {          /* frac */
+      t++;
+      long frac = scan_num(&t, tend);
+      if (frac < 0) goto bad;
+      if (frac > 0) {
+        double d = ceil(log10((double)frac));
+        d = ((double)frac / pow(10.0, d));
+        *usec = d * 1000000;
+      }
+    }
+    if (t[0] == 'Z') {          /* UTC zone */
+      time += localoffset*60;
+      *offset = 0;
+    }
+    else if (t == tend) {
+      *offset = localoffset;
+    }
+    else {
+      int n;
+
+      switch (t[0]) {           /* offset zone */
+      case '+':
+      case '-':
+        n = parse_tz(t, (strm_int)(tend-t));
+        if (n == TZ_FAIL) goto bad;
+        time += localoffset*60;
+        time -= n*60;
+        *offset = n;
+        break;
+      default:
+        goto bad;
+      }
+    }
+    *sec = time;
+    goto good;
+  }
+  memset(&tm, 0, sizeof(struct tm));
+  t = strptime(s, "%Y.%m.%d", &tm);
+  if (t == NULL) {
+    t = strptime(s, "%Y-%m-%d", &tm); /* ISO8601 */
+  }
+  if (t != NULL && t == tend) {
+    time_t time = mktime(&tm);
+    time += localoffset*60;
+    *sec = time;
+    *usec = 0;
+    *offset = TZ_NONE;
+  }
+ good:
+  if (s != p) free((char*)s);
+  return 0;
+ bad:
+  if (s != p) free((char*)s);
+  return -1;
+}
+
+strm_value
+strm_time_new(long sec, long usec, int offset)
+{
+  struct timeval tv;
+  strm_value v;
+
+  tv.tv_sec = sec;
+  tv.tv_usec = usec;
+  if (time_alloc(&tv, offset, &v) == STRM_NG) {
+    return strm_nil_value();
+  }
+  return v;
+}
+
 static int
 time_now(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
@@ -278,6 +373,15 @@ time_str(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   default:
     strm_raise(strm, "wrong # of arguments");
     return STRM_NG;
+  }
+  if (utc_offset == TZ_NONE) {
+    get_tm(t->tv.tv_sec, 0, &tm);
+    if (tm.tm_hour == 0 && tm.tm_min == 0 && tm.tm_sec == 0) {
+      n = strftime(buf, sizeof(buf), "%Y.%m.%d", &tm);
+      *ret = strm_str_new(buf, n);
+      return STRM_OK;
+    }
+    utc_offset = 0;
   }
   get_tm(t->tv.tv_sec, utc_offset, &tm);
   n = strftime(buf, sizeof(buf), "%Y.%m.%dT%H:%M:%S", &tm);

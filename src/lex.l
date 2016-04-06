@@ -29,6 +29,9 @@ TRAIL  ([\t \n]|"#"[^\n]*"\n")*
 CHAR   [a-zA-Z_]|[\302-\337][\200-\277]|[\340-\357][\200-\277][\200-\277]|[\360-\367][\200-\277][\200-\277]|[\370-\373][\200-\277][\200-\277][\200-\277][\200-\277]|[\374-\375][\200-\277][\200-\277][\200-\277][\200-\277][\200-\277]
 CHNUM  ({CHAR}|[0-9])
 WORD   {CHAR}{CHNUM}*
+DATE   [0-9]+\.[0-9]+\.[0-9]+
+TIME   [0-9]+":"[0-9]+":"[0-9]+(\.[0-9]+)?
+TZONE  "Z"|[+-][0-9]+(":"[0-9]+)?
 %%
 "+"{TRAIL}  LEX_RETURN(op_plus);
 "-"{TRAIL}  LEX_RETURN(op_minus);
@@ -94,6 +97,12 @@ false               LEX_RETURN(keyword_false);
   LEX_RETURN(lit_number);
 };
 
+{DATE}("T"{TIME}{TZONE}?)? {
+  lval->nd = node_time_new(yytext, yyleng);
+  if (lval->nd == NULL) yyerror(p, "bad time format");
+  LEX_RETURN(lit_string);
+};
+
 \"([^\\\"]|\\.)*\"      {
   lval->nd = node_string_new(yytext+1, yyleng-2);
   LEX_RETURN(lit_string);
@@ -109,7 +118,7 @@ false               LEX_RETURN(keyword_false);
   LEX_RETURN(label);
 };
 
-[ \t] ; 
+[ \t] ;
 
 . {
     char c = yytext[0];

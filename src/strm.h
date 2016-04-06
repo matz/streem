@@ -248,3 +248,7 @@ struct strm_lambda {
 #define strm_value_lambda(v) (struct strm_lambda*)strm_value_ptr(v, STRM_PTR_LAMBDA)
 #define strm_lambda_p(v) strm_ptr_tag_p(v, STRM_PTR_LAMBDA)
 #endif
+
+/* ----- time */
+strm_value strm_time_new(long sec, long usec, int offset);
+int strm_time_parse_time(const char* s, strm_int len, long* sec, long* usec, int* offset);
