@@ -82,14 +82,6 @@ time_alloc(struct timeval* tv, int utc_offset, strm_value* ret)
   if (!t) return STRM_NG;
   t->type = STRM_PTR_AUX;
   t->ns = time_ns;
-  while (tv->tv_usec < 0) {
-    tv->tv_sec--;
-    tv->tv_usec += 1000000;
-  }
-  while (tv->tv_usec >= 1000000) {
-    tv->tv_sec++;
-    tv->tv_usec -= 1000000;
-  }
   t->tv = *tv;
   t->utc_offset = utc_offset;
   *ret = strm_ptr_value(t);
