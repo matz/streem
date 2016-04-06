@@ -53,8 +53,8 @@ timeval_to_num(struct timeval* tv)
 
 enum time_tz {
   TZ_UTC = 0,
-  TZ_NONE = 2000,               /* no time, no timezone */
-  TZ_FAIL = 4000,               /* broken timezone */
+  TZ_NONE = 50000,              /* no time, no timezone */
+  TZ_FAIL = 60000,              /* broken timezone */
 };
 
 static int
@@ -65,12 +65,10 @@ time_localoffset(int force)
   if (force || localoffset == 1) {
     time_t now;
     struct tm gm;
-    double d;
 
     now = time(NULL);
     gmtime_r(&now, &gm);
-    d = difftime(now, mktime(&gm));
-    localoffset = d / 60;
+    localoffset = difftime(now, mktime(&gm));
   }
   return localoffset;
 }
@@ -149,7 +147,7 @@ parse_tz(const char* s, strm_int len)
     }
     if (h > 12) return TZ_FAIL;
     if (m > 59) return TZ_FAIL;
-    return (h*60+m) * (c == '-' ? -1 : 1);
+    return (h*60+m) * (c == '-' ? -1 : 1) * 60;
   default:
     return TZ_FAIL;
   }
@@ -196,7 +194,7 @@ strm_time_parse_time(const char* p, strm_int len, long* sec, long* usec, int* of
       }
     }
     if (t[0] == 'Z') {          /* UTC zone */
-      time += localoffset*60;
+      time += localoffset;
       *offset = 0;
     }
     else if (t == tend) {
@@ -210,8 +208,8 @@ strm_time_parse_time(const char* p, strm_int len, long* sec, long* usec, int* of
       case '-':
         n = parse_tz(t, (strm_int)(tend-t));
         if (n == TZ_FAIL) goto bad;
-        time += localoffset*60;
-        time -= n*60;
+        time += localoffset;
+        time -= n;
         *offset = n;
         break;
       default:
@@ -228,7 +226,7 @@ strm_time_parse_time(const char* p, strm_int len, long* sec, long* usec, int* of
   }
   if (t != NULL && t == tend) {
     time_t time = mktime(&tm);
-    time += localoffset*60;
+    time += localoffset;
     *sec = time;
     *usec = 0;
     *offset = TZ_NONE;
@@ -284,7 +282,7 @@ time_time(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
     tm.tm_mon = strm_value_int(args[1])-1;
     tm.tm_mday = strm_value_int(args[2]);
     tv.tv_sec = mktime(&tm);
-    tv.tv_sec += time_localoffset(1)*60;
+    tv.tv_sec += time_localoffset(1);
     utc_offset = TZ_NONE;
     return time_alloc(&tv, utc_offset, ret);
   case 8:                       /* date (YYYY,MM,DD,hh,mm,ss,usec,zone) */
@@ -310,8 +308,8 @@ time_time(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
     t = mktime(&tm);
     tv.tv_sec = t;
     if (argc == 8) {
-      tv.tv_sec += time_localoffset(1)*60;
-      tv.tv_sec -= utc_offset*60;
+      tv.tv_sec += time_localoffset(1);
+      tv.tv_sec -= utc_offset;
     }
     else {
       utc_offset = time_localoffset(0);
@@ -409,7 +407,7 @@ time_minus(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 static void
 get_tm(time_t t, int utc_offset, struct tm* tm)
 {
-  t += utc_offset * 60;
+  t += utc_offset;
   gmtime_r(&t, tm);
 }
 
@@ -472,7 +470,7 @@ time_str(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
     p[1] = '\0';
   }
   else {
-    int off = utc_offset;
+    int off = utc_offset / 60;
     char sign = off > 0 ? '+' : '-';
 
     if (off < 0) off = -off;
