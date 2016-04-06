@@ -3,6 +3,7 @@
 #include <time.h>
 #include <sys/time.h>
 #include <math.h>
+#include <string.h>
 
 #ifndef timeradd
 # define timeradd(a, b, res)                                               \
@@ -255,6 +256,76 @@ strm_time_new(long sec, long usec, int offset)
 }
 
 static int
+time_time(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  struct timeval tv = {0};
+  struct tm tm = {0};
+  time_t t;
+  int utc_offset = 0;
+
+  switch (argc) {
+  case 1:                       /* string */
+    {
+      strm_string str = strm_value_str(args[0]);
+      long sec, usec;
+
+      if (strm_time_parse_time(strm_str_ptr(str), strm_str_len(str),
+                               &sec, &usec, &utc_offset) < 0) {
+        strm_raise(strm, "bad time format");
+        return STRM_NG;
+      }
+      tv.tv_sec = sec;
+      tv.tv_usec = usec;
+      return time_alloc(&tv, utc_offset, ret);
+    }
+    break;
+  case 3:                       /* date (YYYY,MM,DD) */
+    tm.tm_year = strm_value_int(args[0]);
+    tm.tm_mon = strm_value_int(args[1])-1;
+    tm.tm_mday = strm_value_int(args[2]);
+    tv.tv_sec = mktime(&tm);
+    tv.tv_sec += time_localoffset()*60;
+    utc_offset = TZ_NONE;
+    return time_alloc(&tv, utc_offset, ret);
+  case 8:                       /* date (YYYY,MM,DD,hh,mm,ss,usec,zone) */
+    {
+      strm_string str = strm_value_str(args[7]);
+      utc_offset = parse_tz(strm_str_ptr(str), strm_str_len(str));
+      if (utc_offset == TZ_FAIL) {
+        strm_raise(strm, "wrong timezeone");
+        return STRM_NG;
+      }
+    }
+  case 7:                       /* date (YYYY,MM,DD,hh,mm,ss,usec) */
+    tv.tv_usec = strm_value_int(args[6]);
+  case 6:                       /* date (YYYY,MM,DD,hh,mm,ss) */
+    tm.tm_sec = strm_value_int(args[5]);
+  case 5:                       /* date (YYYY,MM,DD,hh,mm) */
+    tm.tm_min = strm_value_int(args[4]);
+  case 4:                       /* date (YYYY,MM,DD,hh) */
+    tm.tm_year = strm_value_int(args[0]);
+    tm.tm_mon = strm_value_int(args[1]);
+    tm.tm_mday = strm_value_int(args[2]);
+    tm.tm_hour = strm_value_int(args[3]);
+    t = mktime(&tm);
+    tv.tv_sec = t;
+    if (argc == 8) {
+      tv.tv_sec += time_localoffset()*60;
+      tv.tv_sec -= utc_offset*60;
+    }
+    else {
+      utc_offset = time_localoffset();
+    }
+    return time_alloc(&tv, utc_offset, ret);
+  default:
+    strm_raise(strm, "wrong # of arguments");
+    return STRM_NG;
+  }
+  gettimeofday(&tv, NULL);
+  return time_alloc(&tv, utc_offset, ret);
+}
+
+static int
 time_now(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   struct timeval tv;
@@ -434,6 +505,7 @@ void
 strm_time_init(strm_state* state)
 {
   strm_var_def(state, "now", strm_cfunc_value(time_now));
+  strm_var_def(state, "time", strm_cfunc_value(time_time));
 
   time_ns = strm_ns_new(NULL);
   strm_var_def(time_ns, "+", strm_cfunc_value(time_plus));
