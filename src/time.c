@@ -179,8 +179,7 @@ static int
 time_plus(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   struct strm_time* t1;
-  struct timeval tv;
-  double d;
+  struct timeval tv, tv2;
 
   if (argc != 2) {
     strm_raise(strm, "wrong # of arguments");
@@ -191,9 +190,9 @@ time_plus(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
     strm_raise(strm, "number required");
     return STRM_NG;
   }
-  d = timeval_to_num(&t1->tv);
-  num_to_timeval(d+strm_value_flt(args[1]), &tv);
-  return time_alloc(&tv, t1->utc_offset, ret);
+  num_to_timeval(strm_value_flt(args[1]), &tv);
+  timeradd(&t1->tv, &tv, &tv2);
+  return time_alloc(&tv2, t1->utc_offset, ret);
 }
 
 static int
@@ -201,8 +200,8 @@ time_minus(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   struct strm_time *t1;
   struct strm_time *t2;
+  struct timeval tv;
   double d;
-  long nsec;
 
   if (argc != 2) {
     strm_raise(strm, "wrong # of arguments");
@@ -215,17 +214,8 @@ time_minus(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   }
   t1 = get_time(args[0]);
   t2 = get_time(args[1]);
-  d = t1->tv.tv_sec - t2->tv.tv_sec;
-  nsec = t1->tv.tv_usec - t2->tv.tv_usec;
-  while (nsec < 0) {
-    d -= 1.0;
-    nsec += 1000000;
-  }
-  while (nsec > 1000000) {
-    d += 1.0;
-    nsec -= 1000000;
-  }
-  d += nsec / 1000000.0;
+  timersub(&t1->tv, &t2->tv, &tv);
+  d = timeval_to_num(&tv);
   *ret = strm_flt_value(d);
   return STRM_OK;
 }
