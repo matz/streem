@@ -174,7 +174,13 @@ strm_time_parse_time(const char* p, strm_int len, long* sec, long* usec, int* of
   memset(&tm, 0, sizeof(struct tm));
   t = strptime(s, "%Y.%m.%dT%H:%M:%S", &tm);
   if (t == NULL) {
+    t = strptime(s, "%Y.%m.%dT%H:%M", &tm);
+  }
+  if (t == NULL) {
     t = strptime(s, "%Y-%m-%dT%H:%M:%S", &tm); /* ISO8601 */
+  }
+  if (t == NULL) {
+    t = strptime(s, "%Y-%m-%dT%H:%M", &tm);
   }
   if (t != NULL) {
     time_t time = mktime(&tm);
