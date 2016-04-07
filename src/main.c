@@ -253,6 +253,7 @@ main(int argc, const char**argv)
       strm_var_def(NULL, "ARGV", strm_ary_value(av));
       node_run(&state);
       strm_loop();
+      node_stop();
     }
   }
   else if (check) {
