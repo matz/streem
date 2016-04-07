@@ -763,8 +763,8 @@ node_init(strm_state* state)
   strm_var_def(state, "fwrite", strm_cfunc_value(exec_fwrite));
 }
 
-static strm_state* top_state;
-static strm_stream* top_strm;
+static strm_state top_state = {0};
+static strm_stream top_strm = {0};
 
 int
 node_run(parser_state* p)
@@ -772,17 +772,15 @@ node_run(parser_state* p)
   strm_value v;
   node_error* exc;
 
-  top_state = calloc(sizeof(strm_state),1);
-  top_strm = calloc(sizeof(strm_stream),1);
-  node_init(top_state);
+  node_init(&top_state);
 
-  exec_expr(top_strm, top_state, (node*)p->lval, &v);
-  exc = top_strm->exc;
+  exec_expr(&top_strm, &top_state, (node*)p->lval, &v);
+  exc = top_strm.exc;
   if (exc != NULL) {
     if (exc->type != NODE_ERROR_RETURN) {
-      strm_eprint(top_strm);
+      strm_eprint(&top_strm);
     }
-    strm_clear_exc(top_strm);
+    strm_clear_exc(&top_strm);
   }
   return STRM_OK;
 }
@@ -790,8 +788,6 @@ node_run(parser_state* p)
 void
 node_stop()
 {
-  free(top_strm);
-  free(top_state);
 }
 
 static int
