@@ -53,7 +53,7 @@ strm_task_push(strm_stream* strm, strm_callback func, strm_value data)
 void
 strm_emit(strm_stream* strm, strm_value data, strm_callback func)
 {
-  if (!strm_nil_p(data)) {
+  if (strm->dst && !strm_nil_p(data)) {
     strm_task_push(strm->dst, strm->dst->start_func, data);
   }
   sched_yield();
