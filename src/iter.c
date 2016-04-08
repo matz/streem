@@ -114,7 +114,7 @@ iter_each(strm_stream* strm, strm_value data)
   struct map_data* d = strm->data;
   strm_value val;
 
-  if (strm_funcall(NULL, d->func, 1, &data, &val) == STRM_NG) {
+  if (strm_funcall(strm, d->func, 1, &data, &val) == STRM_NG) {
     return STRM_NG;
   }
   return STRM_OK;
@@ -192,7 +192,7 @@ iter_filter(strm_stream* strm, strm_value data)
   struct map_data* d = strm->data;
   strm_value val;
 
-  if (strm_funcall(NULL, d->func, 1, &data, &val) == STRM_NG) {
+  if (strm_funcall(strm, d->func, 1, &data, &val) == STRM_NG) {
     return STRM_NG;
   }
   if (strm_value_bool(val)) {
@@ -254,7 +254,7 @@ iter_sum(strm_stream* strm, strm_value data)
   struct sum_data* d = strm->data;
 
   if (!strm_nil_p(d->func)) {
-    if (strm_funcall(NULL, d->func, 1, &data, &data) == STRM_NG) {
+    if (strm_funcall(strm, d->func, 1, &data, &data) == STRM_NG) {
       return STRM_NG;
     }
   }
@@ -317,7 +317,7 @@ iter_reduce(strm_stream* strm, strm_value data)
 
   args[0] = d->acc;
   args[1] = data;
-  if (strm_funcall(NULL, d->func, 2, args, &data) == STRM_NG) {
+  if (strm_funcall(strm, d->func, 2, args, &data) == STRM_NG) {
     return STRM_NG;
   }
   d->acc = data;
@@ -399,7 +399,7 @@ iter_rbk(strm_stream* strm, strm_value data)
 
     args[0] = kh_value(d->tbl, i);
     args[1] = v;
-    if (strm_funcall(NULL, d->func, 2, args, &v) == STRM_NG) {
+    if (strm_funcall(strm, d->func, 2, args, &v) == STRM_NG) {
       return STRM_NG;
     }
     kh_value(d->tbl, i) = v;
