@@ -1,0 +1,7 @@
+# pick even numbers
+seq(100) | each{x -> if x % 2 == 0 {emit x}} | stdout
+# output:
+#  2
+#  4
+#  6
+#  :
