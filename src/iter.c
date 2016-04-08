@@ -126,7 +126,7 @@ exec_each(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   struct map_data* d = malloc(sizeof(struct map_data));
 
   d->func = args[0];
-  *ret = strm_stream_value(strm_stream_new(strm_consumer, iter_each, NULL, (void*)d));
+  *ret = strm_stream_value(strm_stream_new(strm_filter, iter_each, NULL, (void*)d));
   return STRM_OK;
 }
 
