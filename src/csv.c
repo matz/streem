@@ -49,6 +49,19 @@ enum csv_type {
   NUMBER_TYPE,
 };
 
+enum csv_vtype {
+  VTYPE_NONE,
+  VTYPE_STR,                    /* string */
+  VTYPE_INT,                    /* integer */
+  VTYPE_FLT,                    /* float */
+};
+
+enum csv_ftype {
+  FTYPE_UNSPC,                  /* unspecified */
+  FTYPE_STR,                    /* string */
+  FTYPE_ESC,                    /* escaped_string */
+};
+\
 static strm_value
 csv_string(const char* p, strm_int len, int ftype)
 {
@@ -94,15 +107,15 @@ csv_string(const char* p, strm_int len, int ftype)
 }
 
 static strm_value
-csv_value(const char* p, strm_int len, int ftype)
+csv_value(const char* p, strm_int len, enum csv_ftype ftype)
 {
   const char *s = p;
   const char *send = s+len;
   long i=0;
   double f, pow = 1;
-  int type = 0;                 /* 0: string, 1: int, 2: float */
+  enum csv_vtype type = VTYPE_STR;
 
-  if (ftype == 0) {
+  if (ftype == FTYPE_UNSPC) {
     /* skip preceding white spaces */
     while (isspace((int)*s)) s++;
 
@@ -111,12 +124,12 @@ csv_value(const char* p, strm_int len, int ftype)
       switch (*s) {
       case '0': case '1': case '2': case '3': case '4':
       case '5': case '6': case '7': case '8': case '9':
-        if (type == STRING_TYPE) type = 1;
+        if (type == VTYPE_STR) type = VTYPE_INT;
         i = i*10 + (*s - '0');
         pow *= 10;
         break;
       case '.':
-        type = 2;
+        type = VTYPE_FLT;
         f = i;
         i = 0;
         pow = 1;
@@ -129,9 +142,9 @@ csv_value(const char* p, strm_int len, int ftype)
   }
 
   switch (type) {
-  case 1:                       /* int */
+  case VTYPE_INT:
     return strm_int_value(i);
-  case 2:                       /* float */
+  case VTYPE_FLT:
     f += i / pow;
     return strm_flt_value(f);
   default:
@@ -165,7 +178,7 @@ csv_accept(strm_stream* strm, strm_value data)
   const char *pend;
   int fieldcnt;
   int in_quote = 0, all_str = 1;;
-  int ftype = 0;               /* 0: unspecified, 1: string, 2: escaped_string */
+  enum csv_ftype ftype = FTYPE_UNSPC;
   struct csv_data *cd = strm->data;
 
   if (cd->prev) {
@@ -198,7 +211,7 @@ csv_accept(strm_stream* strm, strm_value data)
       if (*ptr == '\"') {
         if (ptr[1] == '\"') {
           ptr++;
-          ftype = 2;            /* escaped_string */
+          ftype = FTYPE_ESC;
           continue;
         }
         in_quote = 0;
@@ -210,11 +223,11 @@ csv_accept(strm_stream* strm, strm_value data)
     case '\"':
       in_quote = 1;
       if (ptr == fbeg) {
-        ftype = 1;              /* string */
+        ftype = FTYPE_STR;
         fbeg = ptr+1;
       }
       else {
-        ftype = 2;              /* escaped_string */
+        ftype = FTYPE_ESC;
       }
       continue;
     case ',':
@@ -222,7 +235,7 @@ csv_accept(strm_stream* strm, strm_value data)
       if (!strm_string_p(*bp)) all_str = 0;
       bp++;
       fbeg = ptr+1;
-      ftype = 0;                /* unspecified */
+      ftype = FTYPE_UNSPC;
       break;
 
     default:
