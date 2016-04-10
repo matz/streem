@@ -120,11 +120,15 @@ csv_value(const char* p, strm_int len, enum csv_type ftype)
         pow *= 10;
         break;
       case '.':
+        if (type == TYPE_FLT) { /* second dot */
+          goto string;
+        }
         type = TYPE_FLT;
         f = i;
         i = 0;
         pow = 1;
         break;
+      string:
       default:
         return strm_str_value(strm_str_new(p, len));
       }
