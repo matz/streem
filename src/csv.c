@@ -45,23 +45,14 @@ count_fields(strm_string line)
 }
 
 enum csv_type {
-  STRING_TYPE,
-  NUMBER_TYPE,
+  TYPE_UNSPC,                  /* unspecified */
+  TYPE_STR,                    /* string */
+  TYPE_NUM,                    /* number */
+  TYPE_ESC,                    /* escaped_string */
+  TYPE_INT,                    /* integer */
+  TYPE_FLT,                    /* float */
 };
 
-enum csv_vtype {
-  VTYPE_NONE,
-  VTYPE_STR,                    /* string */
-  VTYPE_INT,                    /* integer */
-  VTYPE_FLT,                    /* float */
-};
-
-enum csv_ftype {
-  FTYPE_UNSPC,                  /* unspecified */
-  FTYPE_STR,                    /* string */
-  FTYPE_ESC,                    /* escaped_string */
-};
-\
 static strm_value
 csv_string(const char* p, strm_int len, int ftype)
 {
@@ -107,15 +98,15 @@ csv_string(const char* p, strm_int len, int ftype)
 }
 
 static strm_value
-csv_value(const char* p, strm_int len, enum csv_ftype ftype)
+csv_value(const char* p, strm_int len, enum csv_type ftype)
 {
   const char *s = p;
   const char *send = s+len;
   long i=0;
   double f, pow = 1;
-  enum csv_vtype type = VTYPE_STR;
+  enum csv_type type = TYPE_STR;
 
-  if (ftype == FTYPE_UNSPC) {
+  if (ftype == TYPE_UNSPC) {
     /* skip preceding white spaces */
     while (isspace((int)*s)) s++;
 
@@ -124,12 +115,12 @@ csv_value(const char* p, strm_int len, enum csv_ftype ftype)
       switch (*s) {
       case '0': case '1': case '2': case '3': case '4':
       case '5': case '6': case '7': case '8': case '9':
-        if (type == VTYPE_STR) type = VTYPE_INT;
+        if (type == TYPE_STR) type = TYPE_INT;
         i = i*10 + (*s - '0');
         pow *= 10;
         break;
       case '.':
-        type = VTYPE_FLT;
+        type = TYPE_FLT;
         f = i;
         i = 0;
         pow = 1;
@@ -142,9 +133,9 @@ csv_value(const char* p, strm_int len, enum csv_ftype ftype)
   }
 
   switch (type) {
-  case VTYPE_INT:
+  case TYPE_INT:
     return strm_int_value(i);
-  case VTYPE_FLT:
+  case TYPE_FLT:
     f += i / pow;
     return strm_flt_value(f);
   default:
@@ -163,8 +154,8 @@ struct csv_data {
 enum csv_type
 csv_type(strm_value v)
 {
-  if (strm_num_p(v)) return NUMBER_TYPE;
-  else return STRING_TYPE;
+  if (strm_num_p(v)) return TYPE_NUM;
+  else return TYPE_STR;
 }
 
 static int
@@ -178,7 +169,7 @@ csv_accept(strm_stream* strm, strm_value data)
   const char *pend;
   int fieldcnt;
   int in_quote = 0, all_str = 1;;
-  enum csv_ftype ftype = FTYPE_UNSPC;
+  enum csv_type ftype = TYPE_UNSPC;
   struct csv_data *cd = strm->data;
 
   if (cd->prev) {
@@ -211,7 +202,7 @@ csv_accept(strm_stream* strm, strm_value data)
       if (*ptr == '\"') {
         if (ptr[1] == '\"') {
           ptr++;
-          ftype = FTYPE_ESC;
+          ftype = TYPE_ESC;
           continue;
         }
         in_quote = 0;
@@ -223,11 +214,11 @@ csv_accept(strm_stream* strm, strm_value data)
     case '\"':
       in_quote = 1;
       if (ptr == fbeg) {
-        ftype = FTYPE_STR;
+        ftype = TYPE_STR;
         fbeg = ptr+1;
       }
       else {
-        ftype = FTYPE_ESC;
+        ftype = TYPE_ESC;
       }
       continue;
     case ',':
@@ -235,7 +226,7 @@ csv_accept(strm_stream* strm, strm_value data)
       if (!strm_string_p(*bp)) all_str = 0;
       bp++;
       fbeg = ptr+1;
-      ftype = FTYPE_UNSPC;
+      ftype = TYPE_UNSPC;
       break;
 
     default:
@@ -297,7 +288,7 @@ csv_accept(strm_stream* strm, strm_value data)
       /* type check */
       for (i=0; i<fieldcnt; i++) {
         if (cd->types[i] != csv_type(strm_ary_ptr(ary)[i])) {
-          if (cd->types[i] == STRING_TYPE) {
+          if (cd->types[i] == TYPE_STR) {
             /* convert value to string */
             ((strm_value*)strm_ary_ptr(ary))[i] = strm_str_value(strm_to_str(strm_ary_ptr(ary)[i]));
           }
