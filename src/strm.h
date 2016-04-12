@@ -250,5 +250,6 @@ struct strm_lambda {
 #endif
 
 /* ----- time */
+int strm_time_p(strm_value);
 strm_value strm_time_new(long sec, long usec, int offset);
 int strm_time_parse_time(const char* s, strm_int len, long* sec, long* usec, int* offset);

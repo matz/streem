@@ -35,6 +35,26 @@ struct strm_time {
 
 static strm_state* time_ns;
 
+int
+strm_time_p(strm_value val)
+{
+  if (strm_value_tag(val) != STRM_TAG_PTR)
+    return FALSE;
+  else {
+    struct strm_misc {
+      STRM_AUX_HEADER;
+    }* p = strm_value_vptr(val);
+
+    if (!p) return FALSE;
+    if (p->type != STRM_PTR_AUX)
+      return FALSE;
+    if (p->ns != time_ns)
+      return FALSE;
+  }
+  fprintf(stderr, "is a time\n");
+  return TRUE;
+}
+
 void
 num_to_timeval(double d, struct timeval* tv)
 {

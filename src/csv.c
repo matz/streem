@@ -48,6 +48,7 @@ enum csv_type {
   TYPE_UNSPC,                  /* unspecified */
   TYPE_STR,                    /* string */
   TYPE_NUM,                    /* number */
+  TYPE_TIME,                   /* time */
   TYPE_ESC,                    /* escaped_string */
   TYPE_INT,                    /* integer */
   TYPE_FLT,                    /* float */
@@ -58,41 +59,52 @@ csv_string(const char* p, strm_int len, enum csv_type ftype)
 {
   strm_string str;
 
-  if (ftype == TYPE_ESC) {      /* escaped_string */
-    const char *pend = p + len;
-    char *t, *s;
-    int in_quote = 0;
+  switch (ftype) {
+  case TYPE_ESC:                /* escaped_string */
+    {
+      const char *pend = p + len;
+      char *t, *s;
+      int in_quote = 0;
 
-    t = s = malloc(len+1);
-    while (p<pend) {
-      if (in_quote) {
-        if (*p == '\"') {
-          if (p[1] == '\"') {
-            p++;
-            *t++ = '"';
-            continue;
+      t = s = malloc(len+1);
+      while (p<pend) {
+        if (in_quote) {
+          if (*p == '\"') {
+            if (p[1] == '\"') {
+              p++;
+              *t++ = '"';
+              continue;
+            }
+            else {
+              in_quote = 0;
+            }
           }
           else {
-            in_quote = 0;
+            *t++ = *p;
           }
+        }
+        else if (*p == '"') {
+          in_quote = 1;
         }
         else {
           *t++ = *p;
         }
+        p++;
       }
-      else if (*p == '"') {
-        in_quote = 1;
-      }
-      else {
-        *t++ = *p;
-      }
-      p++;
+      str = strm_str_new(s, t - s);
+      free(s);
     }
-    str = strm_str_new(s, t - s);
-    free(s);
-  }
-  else {
+    break;
+  default:
+    if (isdigit((int)*p)) {
+      long sec, usec;
+      int offset;
+      if (strm_time_parse_time(p, len, &sec, &usec, &offset) == 0) {
+        return strm_time_new(sec, usec, offset);
+      }
+    }
     str = strm_str_new(p, len);
+    break;
   }
   return strm_str_value(str);
 }
@@ -106,7 +118,9 @@ csv_value(const char* p, strm_int len, enum csv_type ftype)
   double f, pow = 1;
   enum csv_type type = TYPE_STR;
 
-  if (ftype == TYPE_UNSPC || ftype == TYPE_NUM) {
+  switch (ftype) {
+  case TYPE_UNSPC:
+  case TYPE_NUM:
     /* skip preceding white spaces */
     while (isspace((int)*s)) s++;
 
@@ -121,19 +135,22 @@ csv_value(const char* p, strm_int len, enum csv_type ftype)
         break;
       case '.':
         if (type == TYPE_FLT) { /* second dot */
-          goto string;
+          type = TYPE_TIME;
+          break;
         }
         type = TYPE_FLT;
         f = i;
         i = 0;
         pow = 1;
         break;
-      string:
       default:
-        return strm_str_value(strm_str_new(p, len));
+        type = TYPE_UNSPC;
+        break;
       }
       s++;
     }
+  default:
+    break;
   }
 
   switch (type) {
@@ -159,6 +176,7 @@ enum csv_type
 csv_type(strm_value v)
 {
   if (strm_num_p(v)) return TYPE_NUM;
+  if (strm_time_p(v)) return TYPE_TIME;
   else return TYPE_STR;
 }
 
