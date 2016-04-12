@@ -158,9 +158,11 @@ strm_time_parse_time(const char* p, strm_int len, long* sec, long* usec, int* of
 {
   const char* s = p;
   const char* t;
+  const char* t2;
   const char* tend;
-  struct tm tm;
+  struct tm tm = {0};
   int localoffset = time_localoffset(1);
+  time_t time;
 
   if (s[len] != '\0') {
     char* pp = malloc(len+1);
@@ -170,59 +172,12 @@ strm_time_parse_time(const char* p, strm_int len, long* sec, long* usec, int* of
   }
   tend = s + len;
   *usec = 0;
-  memset(&tm, 0, sizeof(struct tm));
-  t = strptime(s, "%Y.%m.%dT%H:%M:%S", &tm);
-  if (t == NULL) {
-    t = strptime(s, "%Y.%m.%dT%H:%M", &tm);
-  }
-  if (t == NULL) {
-    t = strptime(s, "%Y-%m-%dT%H:%M:%S", &tm); /* ISO8601 */
-  }
-  if (t == NULL) {
-    t = strptime(s, "%Y-%m-%dT%H:%M", &tm);
-  }
-  if (t != NULL) {
-    time_t time = mktime(&tm);
-    if (t[0] == '.') {          /* frac */
-      t++;
-      long frac = scan_num(&t, tend);
-      if (frac < 0) goto bad;
-      if (frac > 0) {
-        double d = ceil(log10((double)frac));
-        d = ((double)frac / pow(10.0, d));
-        *usec = d * 1000000;
-      }
-    }
-    if (t[0] == 'Z') {          /* UTC zone */
-      time += localoffset;
-      *offset = 0;
-    }
-    else if (t == tend) {
-      *offset = localoffset;
-    }
-    else {
-      int n;
-
-      switch (t[0]) {           /* offset zone */
-      case '+':
-      case '-':
-        n = parse_tz(t, (strm_int)(tend-t));
-        if (n == TZ_FAIL) goto bad;
-        time += localoffset;
-        time -= n;
-        *offset = n;
-        break;
-      default:
-        goto bad;
-      }
-    }
-    *sec = time;
-    goto good;
-  }
-  memset(&tm, 0, sizeof(struct tm));
-  t = strptime(s, "%Y.%m.%d", &tm);
+  t = strptime(s, "%Y.%m.%d", &tm);   /* Streem time literal */
   if (t == NULL) {
     t = strptime(s, "%Y-%m-%d", &tm); /* ISO8601 */
+  }
+  if (t == NULL) {
+    t = strptime(s, "%Y/%m/%d", &tm);
   }
   if (t != NULL && t == tend) {
     time_t time = mktime(&tm);
@@ -230,7 +185,62 @@ strm_time_parse_time(const char* p, strm_int len, long* sec, long* usec, int* of
     *sec = time;
     *usec = 0;
     *offset = TZ_NONE;
+    goto good;
   }
+
+  switch (*t++) {
+  case 'T':
+    break;
+  case ' ':
+    while (*t == ' ')
+      t++;
+    break;
+  default:
+    goto bad;
+  }
+
+  t2 = strptime(t, "%H:%M:%S", &tm);
+  if (t2 == NULL) {
+    t2 = strptime(t, "%H:%M", &tm);
+    if (t2 == NULL)
+      goto bad;
+  }
+  t = t2;
+  time = mktime(&tm);
+  if (t[0] == '.') {          /* frac */
+    t++;
+    long frac = scan_num(&t, tend);
+    if (frac < 0) goto bad;
+    if (frac > 0) {
+      double d = ceil(log10((double)frac));
+      d = ((double)frac / pow(10.0, d));
+      *usec = d * 1000000;
+    }
+  }
+  if (t[0] == 'Z') {          /* UTC zone */
+    time += localoffset;
+    *offset = 0;
+  }
+  else if (t == tend) {
+    *offset = localoffset;
+  }
+  else {
+    int n;
+
+    switch (t[0]) {           /* offset zone */
+    case '+':
+    case '-':
+      n = parse_tz(t, (strm_int)(tend-t));
+      if (n == TZ_FAIL) goto bad;
+      time += localoffset;
+      time -= n;
+      *offset = n;
+      break;
+    default:
+      goto bad;
+    }
+  }
+  *sec = time;
  good:
   if (s != p) free((char*)s);
   return 0;
