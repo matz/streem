@@ -54,11 +54,11 @@ enum csv_type {
 };
 
 static strm_value
-csv_string(const char* p, strm_int len, int ftype)
+csv_string(const char* p, strm_int len, enum csv_type ftype)
 {
   strm_string str;
 
-  if (ftype == 2) {             /* escaped_string */
+  if (ftype == TYPE_ESC) {      /* escaped_string */
     const char *pend = p + len;
     char *t, *s;
     int in_quote = 0;
@@ -106,7 +106,7 @@ csv_value(const char* p, strm_int len, enum csv_type ftype)
   double f, pow = 1;
   enum csv_type type = TYPE_STR;
 
-  if (ftype == TYPE_UNSPC) {
+  if (ftype == TYPE_UNSPC || ftype == TYPE_NUM) {
     /* skip preceding white spaces */
     while (isspace((int)*s)) s++;
 
@@ -172,8 +172,10 @@ csv_accept(strm_stream* strm, strm_value data)
   const char *ptr;
   const char *pend;
   int fieldcnt;
-  int in_quote = 0, all_str = 1;;
-  enum csv_type ftype = TYPE_UNSPC;
+  int in_quote = 0, all_str = 1;
+  int i = 0;
+  enum csv_type ftype;
+  enum csv_type* types;
   struct csv_data *cd = strm->data;
 
   if (cd->prev) {
@@ -200,6 +202,8 @@ csv_accept(strm_stream* strm, strm_value data)
   ary = strm_ary_new(NULL, fieldcnt);
   if (!ary) return STRM_NG;
   bp = (strm_value*)strm_ary_ptr(ary);
+  types = cd->types;
+  ftype = types ? types[0] : TYPE_UNSPC;
 
   for (fbeg=ptr; ptr<pend; ptr++) {
     if (in_quote) {
@@ -230,7 +234,8 @@ csv_accept(strm_stream* strm, strm_value data)
       if (!strm_string_p(*bp)) all_str = 0;
       bp++;
       fbeg = ptr+1;
-      ftype = TYPE_UNSPC;
+      i++;
+      ftype = types ? types[i] : TYPE_UNSPC;
       break;
 
     default:
@@ -257,8 +262,6 @@ csv_accept(strm_stream* strm, strm_value data)
     cd->n = fieldcnt;
   }
   if (ary) {
-    int i;
-
     /* set headers if any */
     if (cd->headers)
       strm_ary_headers(ary) = cd->headers;
@@ -292,14 +295,9 @@ csv_accept(strm_stream* strm, strm_value data)
       /* type check */
       for (i=0; i<fieldcnt; i++) {
         if (cd->types[i] != csv_type(strm_ary_ptr(ary)[i])) {
-          if (cd->types[i] == TYPE_STR) {
-            /* convert value to string */
-            ((strm_value*)strm_ary_ptr(ary))[i] = strm_str_value(strm_to_str(strm_ary_ptr(ary)[i]));
-          }
-          else {
-            /* type mismatch (error); skip this line */
-            return STRM_NG;
-          }
+          /* type mismatch (error); skip this line */
+          strm_raise(strm, "csv type mismatch");
+          return STRM_NG;
         }
       }
     }
