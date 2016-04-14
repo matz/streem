@@ -518,6 +518,7 @@ node_parse_input(parser_state* p, FILE* f, const char* fname)
   int n;
 
   /* yydebug = 1; */
+  yydebug = 1;
   yyrestart(f);
   n = yyparse(p);
   if (n == 0 && p->nerr == 0) {

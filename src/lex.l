@@ -97,6 +97,21 @@ false               LEX_RETURN(keyword_false);
   LEX_RETURN(lit_number);
 };
 
+0x[0-9a-fA-F]+ {
+  unsigned long temp;
+  sscanf(yytext+2, "%lx", &temp);
+  lval->nd = node_int_new(temp);
+  LEX_RETURN(lit_number);
+};
+
+0o[0-7]+ {
+  unsigned long temp;
+  sscanf(yytext+2, "%lo", &temp);
+  fprintf(stderr, "octal:%ld='%s'\n", temp, yytext+2);
+  lval->nd = node_int_new(temp);
+  LEX_RETURN(lit_number);
+};
+
 {DATE}("T"{TIME}{TZONE}?)? {
   lval->nd = node_time_new(yytext, yyleng);
   if (lval->nd == NULL) yyerror(p, "bad time format");
