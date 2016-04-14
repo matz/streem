@@ -206,10 +206,78 @@ iter_flatmap(strm_stream* strm, strm_value data)
 }
 
 static int
+flatmap_len(strm_array ary)
+{
+  strm_value* v = strm_ary_ptr(ary);
+  strm_int i, len, n = 0;
+
+  len = strm_ary_len(ary);
+  v = strm_ary_ptr(ary);
+  for (i=0; i<len; i++) {
+    if (strm_array_p(v[i])) {
+      n += flatmap_len(v[i]);
+    }
+    else {
+      n++;
+    }
+  }
+  return n;
+}
+
+static int
+flatmap_push(strm_stream* strm, strm_array ary, strm_value func, strm_value** p)
+{
+  strm_value* v = strm_ary_ptr(ary);
+  strm_int i, len;
+
+  len = strm_ary_len(ary);
+  v = strm_ary_ptr(ary);
+  for (i=0; i<len; i++) {
+    if (strm_array_p(v[i])) {
+      if (flatmap_push(strm, v[i], func, p) == STRM_NG) {
+        return STRM_NG;
+      }
+    }
+    else {
+      if (strm_funcall(strm, func, 1, &v[i], *p) == STRM_NG) {
+        return STRM_NG;
+      }
+      *p += 1;
+    }
+  }
+  return STRM_OK;
+}
+
+static int
+flatmap_ary(strm_stream* strm, strm_array ary, strm_value func, strm_value* ret)
+{
+  strm_int len = flatmap_len(ary);
+  strm_array a2 = strm_ary_new(NULL, len);;
+  strm_value* v2 = strm_ary_ptr(a2);
+
+  if (flatmap_push(strm, ary, func, &v2) == STRM_NG) {
+    return STRM_NG;
+  }
+  *ret = strm_ary_value(a2);
+  return STRM_OK;
+}
+
+static int
 exec_flatmap(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
-  struct map_data* d = malloc(sizeof(struct map_data));
+  struct map_data* d;
 
+  switch (argc) {
+  case 1:                       /* flatmap(func) */
+    break;
+  case 2:                       /* flatmap(ary, func) */
+    return flatmap_ary(strm, strm_value_ary(args[0]), args[1], ret);
+  default:
+    strm_raise(strm, "wrong number of arguments");
+    return STRM_NG;
+  }
+  d = malloc(sizeof(struct map_data));
+  if (!d) return STRM_NG;
   d->func = args[0];
   *ret = strm_stream_value(strm_stream_new(strm_filter, iter_flatmap, NULL, (void*)d));
   return STRM_OK;
