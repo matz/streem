@@ -144,10 +144,39 @@ iter_map(strm_stream* strm, strm_value data)
 }
 
 static int
+map_ary(strm_stream* strm, strm_array ary, strm_value func, strm_value* ret)
+{
+  strm_int len = strm_ary_len(ary);
+  strm_value* v = strm_ary_ptr(ary);
+  strm_array a2 = strm_ary_new(NULL, len);
+  strm_value* v2 = strm_ary_ptr(a2);
+  strm_int i;
+
+  for (i=0; i<len; i++) {
+    if (strm_funcall(strm, func, 1, &v[i], &v2[i]) == STRM_NG) {
+      return STRM_NG;
+    }
+  }
+  *ret = strm_ary_value(a2);
+  return STRM_OK;
+}
+
+static int
 exec_map(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
-  struct map_data* d = malloc(sizeof(struct map_data));
+  struct map_data* d;
 
+  switch (argc) {
+  case 1:                       /* map(func) */
+    break;
+  case 2:                       /* map(ary, func) */
+    return map_ary(strm, strm_value_ary(args[0]), args[1], ret);
+  default:
+    strm_raise(strm, "wrong number of arguments");
+    return STRM_NG;
+  }
+  d = malloc(sizeof(struct map_data));
+  if (!d) return STRM_NG;
   d->func = args[0];
   *ret = strm_stream_value(strm_stream_new(strm_filter, iter_map, NULL, (void*)d));
   return STRM_OK;
