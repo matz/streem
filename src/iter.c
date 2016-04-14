@@ -246,7 +246,6 @@ exec_count(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 struct sum_data {
   double sum;
   strm_int num;
-  strm_value func;
 };
 
 static int
@@ -254,11 +253,6 @@ iter_sum(strm_stream* strm, strm_value data)
 {
   struct sum_data* d = strm->data;
 
-  if (!strm_nil_p(d->func)) {
-    if (strm_funcall(strm, d->func, 1, &data, &data) == STRM_NG) {
-      return STRM_NG;
-    }
-  }
   d->sum += strm_value_flt(data);
   d->num++;
   return STRM_OK;
@@ -286,23 +280,13 @@ static int
 exec_sum_avg(strm_stream* strm, int argc, strm_value* args, strm_value* ret, int avg)
 {
   struct sum_data* d;
-  strm_value func;
   strm_array values = strm_ary_null;
 
   switch (argc) {
   case 0:
-    func = strm_nil_value();
     break;
   case 1:
-    func = args[0];
-    if (strm_array_p(func)) {
-      values = func;
-      func = strm_nil_value();
-    }
-    break;
-  case 2:
-    values = strm_value_ary(args[0]);
-    func = args[1];
+    values = args[0];
     break;
   default:
     strm_raise(strm, "wrong number of arguments");
@@ -313,20 +297,8 @@ exec_sum_avg(strm_stream* strm, int argc, strm_value* args, strm_value* ret, int
     strm_value* v = strm_ary_ptr(values);
     double sum = 0;
 
-    if (strm_nil_p(func)) {
-      for (i=0; i<len; i++) {
-        sum += strm_value_flt(v[i]);
-      }
-    }
-    else {
-      for (i=0; i<len; i++) {
-        strm_value data = v[i];
-
-        if (strm_funcall(strm, func, 1, &data, &data) == STRM_NG) {
-          return STRM_NG;
-        }
-        sum += strm_value_flt(data);
-      }
+    for (i=0; i<len; i++) {
+      sum += strm_value_flt(v[i]);
     }
     if (avg) {
       *ret = strm_flt_value(sum/len);
@@ -340,7 +312,6 @@ exec_sum_avg(strm_stream* strm, int argc, strm_value* args, strm_value* ret, int
   if (!d) return STRM_NG;
   d->sum = 0;
   d->num = 0;
-  d->func = func;
   *ret = strm_stream_value(strm_stream_new(strm_filter, iter_sum,
                                            avg ? avg_finish : sum_finish, (void*)d));
   return STRM_OK;
