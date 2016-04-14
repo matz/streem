@@ -245,6 +245,7 @@ exec_count(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 
 struct sum_data {
   double sum;
+  strm_int num;
   strm_value func;
 };
 
@@ -259,6 +260,7 @@ iter_sum(strm_stream* strm, strm_value data)
     }
   }
   d->sum += strm_value_flt(data);
+  d->num++;
   return STRM_OK;
 }
 
@@ -272,7 +274,16 @@ sum_finish(strm_stream* strm, strm_value data)
 }
 
 static int
-exec_sum(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+avg_finish(strm_stream* strm, strm_value data)
+{
+  struct sum_data* d = strm->data;
+
+  strm_emit(strm, strm_flt_value(d->sum/d->num), NULL);
+  return STRM_OK;
+}
+
+static int
+exec_sum_avg(strm_stream* strm, int argc, strm_value* args, strm_value* ret, int avg)
 {
   struct sum_data* d;
   strm_value func;
@@ -317,15 +328,34 @@ exec_sum(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
         sum += strm_value_flt(data);
       }
     }
-    *ret = strm_flt_value(sum);
+    if (avg) {
+      *ret = strm_flt_value(sum/len);
+    }
+    else {
+      *ret = strm_flt_value(sum);
+    }
     return STRM_OK;
   }
   d = malloc(sizeof(struct sum_data));
   if (!d) return STRM_NG;
   d->sum = 0;
+  d->num = 0;
   d->func = func;
-  *ret = strm_stream_value(strm_stream_new(strm_filter, iter_sum, sum_finish, (void*)d));
+  *ret = strm_stream_value(strm_stream_new(strm_filter, iter_sum,
+                                           avg ? avg_finish : sum_finish, (void*)d));
   return STRM_OK;
+}
+
+static int
+exec_sum(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  return exec_sum_avg(strm, argc, args, ret, FALSE);
+}
+
+static int
+exec_avg(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  return exec_sum_avg(strm, argc, args, ret, TRUE);
 }
 
 struct reduce_data {
@@ -556,6 +586,7 @@ strm_iter_init(strm_state* state)
   strm_var_def(state, "filter", strm_cfunc_value(exec_filter));
   strm_var_def(state, "count", strm_cfunc_value(exec_count));
   strm_var_def(state, "sum", strm_cfunc_value(exec_sum));
+  strm_var_def(state, "average", strm_cfunc_value(exec_avg));
   strm_var_def(state, "reduce", strm_cfunc_value(exec_reduce));
   strm_var_def(state, "reduce_by_key", strm_cfunc_value(exec_rbk));
   strm_var_def(state, "split", strm_cfunc_value(exec_split));
