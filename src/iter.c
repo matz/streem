@@ -276,6 +276,7 @@ exec_sum(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   struct sum_data* d;
   strm_value func;
+  strm_array values = strm_ary_null;
 
   switch (argc) {
   case 0:
@@ -283,10 +284,41 @@ exec_sum(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
     break;
   case 1:
     func = args[0];
+    if (strm_array_p(func)) {
+      values = func;
+      func = strm_nil_value();
+    }
+    break;
+  case 2:
+    values = strm_value_ary(args[0]);
+    func = args[1];
     break;
   default:
     strm_raise(strm, "wrong number of arguments");
     return STRM_NG;
+  }
+  if (values) {
+    int i, len = strm_ary_len(values);
+    strm_value* v = strm_ary_ptr(values);
+    double sum = 0;
+
+    if (strm_nil_p(func)) {
+      for (i=0; i<len; i++) {
+        sum += strm_value_flt(v[i]);
+      }
+    }
+    else {
+      for (i=0; i<len; i++) {
+        strm_value data = v[i];
+
+        if (strm_funcall(strm, func, 1, &data, &data) == STRM_NG) {
+          return STRM_NG;
+        }
+        sum += strm_value_flt(data);
+      }
+    }
+    *ret = strm_flt_value(sum);
+    return STRM_OK;
   }
   d = malloc(sizeof(struct sum_data));
   if (!d) return STRM_NG;
