@@ -426,6 +426,110 @@ exec_avg(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   return exec_sum_avg(strm, argc, args, ret, TRUE);
 }
 
+struct minmax_data {
+  int start;
+  int min;
+  double num;
+};
+
+static int
+iter_minmax(strm_stream* strm, strm_value data)
+{
+  struct minmax_data* d = strm->data;
+  double num;
+
+  num = strm_value_flt(data);
+  if (d->start) {
+    d->start = FALSE;
+    d->num = num;
+  }
+  else if (d->min) {            /* min */
+    if (d->num > num) {
+      d->num = num;
+    }
+  }
+  else {                        /* max */
+    if (d->num < num) {
+      d->num = num;
+    }
+  }
+  return STRM_OK;
+}
+
+static int
+minmax_finish(strm_stream* strm, strm_value data)
+{
+  struct minmax_data* d = strm->data;
+
+  strm_emit(strm, strm_flt_value(d->num), NULL);
+  return STRM_OK;
+}
+
+static int
+exec_minmax(strm_stream* strm, int argc, strm_value* args, strm_value* ret, int min)
+{
+  struct minmax_data* d;
+  strm_array values = strm_ary_null;
+
+  switch (argc) {
+  case 0:                       /* min()/max() */
+    break;
+  case 1:                       /* min(ary)/max(ary) */
+    values = args[0];
+    break;
+  default:
+    strm_raise(strm, "wrong number of arguments");
+    return STRM_NG;
+  }
+  if (values) {
+    int i, len = strm_ary_len(values);
+    strm_value* v;
+    double num, f;
+
+    if (len == 0) {
+      *ret = strm_nil_value();
+      return STRM_OK;
+    }
+    v = strm_ary_ptr(values);
+    num = strm_value_flt(v[0]);
+    if (min) {
+      for (i=1; i<len; i++) {
+        f = strm_value_flt(v[i]);
+        if (num > f)
+          num = f;
+      }
+    }
+    else {
+      for (i=1; i<len; i++) {
+        f = strm_value_flt(v[i]);
+        if (num < f)
+          num = f;
+      }
+    }
+    *ret = strm_flt_value(num);
+    return STRM_OK;
+  }
+  d = malloc(sizeof(struct minmax_data));
+  if (!d) return STRM_NG;
+  d->start = TRUE;
+  d->min = min;
+  d->num = 0;
+  *ret = strm_stream_value(strm_stream_new(strm_filter, iter_minmax, minmax_finish, (void*)d));
+  return STRM_OK;
+}
+
+static int
+exec_min(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  return exec_minmax(strm, argc, args, ret, TRUE);
+}
+
+static int
+exec_max(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  return exec_minmax(strm, argc, args, ret, FALSE);
+}
+
 struct reduce_data {
   strm_int init;
   strm_value acc;
@@ -655,6 +759,8 @@ strm_iter_init(strm_state* state)
   strm_var_def(state, "count", strm_cfunc_value(exec_count));
   strm_var_def(state, "sum", strm_cfunc_value(exec_sum));
   strm_var_def(state, "average", strm_cfunc_value(exec_avg));
+  strm_var_def(state, "min", strm_cfunc_value(exec_min));
+  strm_var_def(state, "max", strm_cfunc_value(exec_max));
   strm_var_def(state, "reduce", strm_cfunc_value(exec_reduce));
   strm_var_def(state, "reduce_by_key", strm_cfunc_value(exec_rbk));
   strm_var_def(state, "split", strm_cfunc_value(exec_split));
