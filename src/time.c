@@ -182,7 +182,7 @@ strm_time_parse_time(const char* p, strm_int len, long* sec, long* usec, int* of
   const char* tend;
   struct tm tm = {0};
   int localoffset = time_localoffset(1);
-  time_t time;
+  time_t tt;
 
   if (s[len] != '\0') {
     char* pp = malloc(len+1);
@@ -199,10 +199,25 @@ strm_time_parse_time(const char* p, strm_int len, long* sec, long* usec, int* of
   if (t == NULL) {
     t = strptime(s, "%Y/%m/%d", &tm);
   }
-  if (t != NULL && t == tend) {
-    time_t time = mktime(&tm);
-    time += localoffset;
-    *sec = time;
+  if (t == NULL) {
+    t = strptime(s, "%b %d %Y", &tm);
+    /* check year and hour confusion (Apr 14 20:00 is not year 20 AD) */
+    if (t && t[0] == ':') {
+      t = NULL;
+    }
+  }
+  if (t == NULL) {
+    struct tm tm2;
+    tt = time(NULL);
+    localtime_r(&tt, &tm2);
+    tm.tm_year = tm2.tm_year;
+    t = strptime(s, "%b %d", &tm);
+  }
+  if (t == NULL) goto bad;
+  if (t == tend) {
+    tt = mktime(&tm);
+    tt += localoffset;
+    *sec = tt;
     *usec = 0;
     *offset = TZ_NONE;
     goto good;
@@ -226,7 +241,7 @@ strm_time_parse_time(const char* p, strm_int len, long* sec, long* usec, int* of
       goto bad;
   }
   t = t2;
-  time = mktime(&tm);
+  tt = mktime(&tm);
   if (t[0] == '.') {          /* frac */
     t++;
     long frac = scan_num(&t, tend);
@@ -238,7 +253,7 @@ strm_time_parse_time(const char* p, strm_int len, long* sec, long* usec, int* of
     }
   }
   if (t[0] == 'Z') {          /* UTC zone */
-    time += localoffset;
+    tt += localoffset;
     *offset = 0;
   }
   else if (t == tend) {
@@ -252,15 +267,15 @@ strm_time_parse_time(const char* p, strm_int len, long* sec, long* usec, int* of
     case '-':
       n = parse_tz(t, (strm_int)(tend-t));
       if (n == TZ_FAIL) goto bad;
-      time += localoffset;
-      time -= n;
+      tt += localoffset;
+      tt -= n;
       *offset = n;
       break;
     default:
       goto bad;
     }
   }
-  *sec = time;
+  *sec = tt;
  good:
   if (s != p) free((char*)s);
   return 0;
