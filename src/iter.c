@@ -342,6 +342,7 @@ exec_count(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 
 struct sum_data {
   double sum;
+  double c;
   strm_int num;
 };
 
@@ -349,8 +350,10 @@ static int
 iter_sum(strm_stream* strm, strm_value data)
 {
   struct sum_data* d = strm->data;
-
-  d->sum += strm_value_flt(data);
+  double y = strm_value_flt(data) - d->c;
+  double t = d->sum + y;
+  d->c = (t - d->sum) - y;
+  d->sum =  t;
   d->num++;
   return STRM_OK;
 }
@@ -393,9 +396,13 @@ exec_sum_avg(strm_stream* strm, int argc, strm_value* args, strm_value* ret, int
     int i, len = strm_ary_len(values);
     strm_value* v = strm_ary_ptr(values);
     double sum = 0;
+    double c = 0;
 
     for (i=0; i<len; i++) {
-      sum += strm_value_flt(v[i]);
+      double y = strm_value_flt(v[i]) - c;
+      double t = sum + y;
+      c = (t - sum) - y;
+      sum =  t;
     }
     if (avg) {
       *ret = strm_flt_value(sum/len);
@@ -408,6 +415,7 @@ exec_sum_avg(strm_stream* strm, int argc, strm_value* args, strm_value* ret, int
   d = malloc(sizeof(struct sum_data));
   if (!d) return STRM_NG;
   d->sum = 0;
+  d->c = 0;
   d->num = 0;
   *ret = strm_stream_value(strm_stream_new(strm_filter, iter_sum,
                                            avg ? avg_finish : sum_finish, (void*)d));
