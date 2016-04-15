@@ -437,28 +437,39 @@ exec_avg(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 struct minmax_data {
   int start;
   int min;
+  strm_value data;
   double num;
+  strm_value func;
 };
 
 static int
 iter_minmax(strm_stream* strm, strm_value data)
 {
   struct minmax_data* d = strm->data;
+  strm_value e;
   double num;
 
-  num = strm_value_flt(data);
+  if (!strm_nil_p(d->func)) {
+    if (strm_funcall(strm, d->func, 1, &data, &e) == STRM_NG) {
+      return STRM_NG;
+    }
+  }
+  num = strm_value_flt(e);
   if (d->start) {
     d->start = FALSE;
     d->num = num;
+    d->data = data;
   }
   else if (d->min) {            /* min */
     if (d->num > num) {
       d->num = num;
+      d->data = data;
     }
   }
   else {                        /* max */
     if (d->num < num) {
       d->num = num;
+      d->data = data;
     }
   }
   return STRM_OK;
@@ -469,7 +480,7 @@ minmax_finish(strm_stream* strm, strm_value data)
 {
   struct minmax_data* d = strm->data;
 
-  strm_emit(strm, strm_flt_value(d->num), NULL);
+  strm_emit(strm, d->data, NULL);
   return STRM_OK;
 }
 
@@ -478,12 +489,21 @@ exec_minmax(strm_stream* strm, int argc, strm_value* args, strm_value* ret, int 
 {
   struct minmax_data* d;
   strm_array values = strm_ary_null;
+  strm_value func = strm_nil_value();
 
   switch (argc) {
   case 0:                       /* min()/max() */
     break;
   case 1:                       /* min(ary)/max(ary) */
     values = args[0];
+    if (!strm_array_p(values)) {
+      values = strm_ary_null;   /* min(func)/max(func) */
+      func = args[0];
+    }
+    break;
+  case 2:                       /* min(ary,func)/max(ary,func) */
+    values = args[0];
+    func = args[1];
     break;
   default:
     strm_raise(strm, "wrong number of arguments");
@@ -492,6 +512,7 @@ exec_minmax(strm_stream* strm, int argc, strm_value* args, strm_value* ret, int 
   if (values) {
     int i, len = strm_ary_len(values);
     strm_value* v;
+    strm_value e, val;
     double num, f;
 
     if (len == 0) {
@@ -499,22 +520,40 @@ exec_minmax(strm_stream* strm, int argc, strm_value* args, strm_value* ret, int 
       return STRM_OK;
     }
     v = strm_ary_ptr(values);
-    num = strm_value_flt(v[0]);
-    if (min) {
-      for (i=1; i<len; i++) {
-        f = strm_value_flt(v[i]);
-        if (num > f)
-          num = f;
+    val = v[0];
+    if (!strm_nil_p(func)) {
+      if (strm_funcall(strm, func, 1, &v[0], &e) == STRM_NG) {
+        return STRM_NG;
       }
     }
     else {
-      for (i=1; i<len; i++) {
-        f = strm_value_flt(v[i]);
-        if (num < f)
+      e = v[0];
+    }
+    num = strm_value_flt(e);
+    for (i=1; i<len; i++) {
+      if (!strm_nil_p(func)) {
+        if (strm_funcall(strm, func, 1, &v[i], &e) == STRM_NG) {
+          return STRM_NG;
+        }
+      }
+      else {
+        e = v[0];
+      }
+      f = strm_value_flt(e);
+      if (min) {
+        if (num > f) {
           num = f;
+          val = v[i];
+        }
+      }
+      else {
+        if (num < f) {
+          num = f;
+          val = v[i];
+        }
       }
     }
-    *ret = strm_flt_value(num);
+    *ret = val;
     return STRM_OK;
   }
   d = malloc(sizeof(struct minmax_data));
@@ -522,6 +561,8 @@ exec_minmax(strm_stream* strm, int argc, strm_value* args, strm_value* ret, int 
   d->start = TRUE;
   d->min = min;
   d->num = 0;
+  d->data = strm_nil_value();
+  d->func = func;
   *ret = strm_stream_value(strm_stream_new(strm_filter, iter_minmax, minmax_finish, (void*)d));
   return STRM_OK;
 }
