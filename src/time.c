@@ -568,16 +568,6 @@ time_func(time_min, tm_min);
 time_func(time_sec, tm_sec);
 
 static int
-time_msec(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
-{
-  struct strm_time *t;
-
-  t = get_time(args[0]);
-  *ret = strm_int_value(t->tv.tv_usec/1000);
-  return STRM_OK;
-}
-
-static int
 time_nanosec(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   struct strm_time *t;
@@ -604,6 +594,5 @@ strm_time_init(strm_state* state)
   strm_var_def(time_ns, "hour", strm_cfunc_value(time_hour));
   strm_var_def(time_ns, "minute", strm_cfunc_value(time_min));
   strm_var_def(time_ns, "second", strm_cfunc_value(time_sec));
-  strm_var_def(time_ns, "msec", strm_cfunc_value(time_msec));
   strm_var_def(time_ns, "nsec", strm_cfunc_value(time_nanosec));
 }
