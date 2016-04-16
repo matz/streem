@@ -594,5 +594,5 @@ strm_time_init(strm_state* state)
   strm_var_def(time_ns, "hour", strm_cfunc_value(time_hour));
   strm_var_def(time_ns, "minute", strm_cfunc_value(time_min));
   strm_var_def(time_ns, "second", strm_cfunc_value(time_sec));
-  strm_var_def(time_ns, "nsec", strm_cfunc_value(time_nanosec));
+  strm_var_def(time_ns, "nanosecond", strm_cfunc_value(time_nanosec));
 }
