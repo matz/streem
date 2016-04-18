@@ -342,8 +342,8 @@ time_time(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
         return STRM_NG;
       }
     }
-  case 7:                       /* date (YYYY,MM,DD,hh,mm,ss,usec) */
-    tv.tv_usec = strm_value_int(args[6]);
+  case 7:                       /* date (YYYY,MM,DD,hh,mm,ss,nsec) */
+    tv.tv_usec = strm_value_int(args[6])/1000;
   case 6:                       /* date (YYYY,MM,DD,hh,mm,ss) */
     tm.tm_sec = strm_value_int(args[5]);
   case 5:                       /* date (YYYY,MM,DD,hh,mm) */
