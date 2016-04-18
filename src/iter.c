@@ -380,37 +380,10 @@ static int
 exec_sum_avg(strm_stream* strm, int argc, strm_value* args, strm_value* ret, int avg)
 {
   struct sum_data* d;
-  strm_array values = strm_ary_null;
 
-  switch (argc) {
-  case 0:
-    break;
-  case 1:
-    values = args[0];
-    break;
-  default:
+  if (argc != 0) {
     strm_raise(strm, "wrong number of arguments");
     return STRM_NG;
-  }
-  if (values) {
-    int i, len = strm_ary_len(values);
-    strm_value* v = strm_ary_ptr(values);
-    double sum = 0;
-    double c = 0;
-
-    for (i=0; i<len; i++) {
-      double y = strm_value_flt(v[i]) - c;
-      double t = sum + y;
-      c = (t - sum) - y;
-      sum =  t;
-    }
-    if (avg) {
-      *ret = strm_flt_value(sum/len);
-    }
-    else {
-      *ret = strm_flt_value(sum);
-    }
-    return STRM_OK;
   }
   d = malloc(sizeof(struct sum_data));
   if (!d) return STRM_NG;

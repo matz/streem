@@ -68,9 +68,53 @@ ary_length(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   return STRM_OK;
 }
 
+static int
+ary_sum_avg(strm_stream* strm, int argc, strm_value* args, strm_value* ret, int avg)
+{
+  if (argc != 1) {
+    strm_raise(strm, "wrong number of arguments");
+    return STRM_NG;
+  }
+  else {
+    strm_array values = args[0];
+    int i, len = strm_ary_len(values);
+    strm_value* v = strm_ary_ptr(values);
+    double sum = 0;
+    double c = 0;
+
+    for (i=0; i<len; i++) {
+      double y = strm_value_flt(v[i]) - c;
+      double t = sum + y;
+      c = (t - sum) - y;
+      sum =  t;
+    }
+    if (avg) {
+      *ret = strm_flt_value(sum/len);
+    }
+    else {
+      *ret = strm_flt_value(sum);
+    }
+    return STRM_OK;
+  }
+}
+
+static int
+ary_sum(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  return ary_sum_avg(strm, argc, args, ret, FALSE);
+}
+
+static int
+ary_avg(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  return ary_sum_avg(strm, argc, args, ret, TRUE);
+}
+
 void
 strm_array_init(strm_state* state)
 {
   strm_array_ns = strm_ns_new(NULL);
   strm_var_def(strm_array_ns, "length", strm_cfunc_value(ary_length));
+  strm_var_def(strm_array_ns, "sum", strm_cfunc_value(ary_sum));
+  strm_var_def(strm_array_ns, "average", strm_cfunc_value(ary_avg));
 }
