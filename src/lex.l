@@ -107,7 +107,6 @@ false               LEX_RETURN(keyword_false);
 0o[0-7]+ {
   unsigned long temp;
   sscanf(yytext+2, "%lo", &temp);
-  fprintf(stderr, "octal:%ld='%s'\n", temp, yytext+2);
   lval->nd = node_int_new(temp);
   LEX_RETURN(lit_number);
 };
