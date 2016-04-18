@@ -347,10 +347,6 @@ str_length(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   return STRM_OK;
 }
 
-struct split_data {
-  strm_value sep;
-};
-
 static int
 str_split(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
