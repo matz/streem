@@ -110,6 +110,83 @@ ary_avg(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   return ary_sum_avg(strm, argc, args, ret, TRUE);
 }
 
+static int
+ary_minmax(strm_stream* strm, int argc, strm_value* args, strm_value* ret, int min)
+{
+  strm_array values;
+  strm_value func = strm_nil_value();
+  int i, len;
+  strm_value* v;
+  strm_value e, val;
+  double num, f;
+
+  switch (argc) {
+  case 2:                       /* min(ary,func)/max(ary,func) */
+    func = args[1];
+    /* fall through */
+  case 1:                       /* min(ary)/max(ary) */
+    values = args[0];
+    break;
+  default:
+    strm_raise(strm, "wrong number of arguments");
+    return STRM_NG;
+  }
+
+  len = strm_ary_len(values);
+  if (len == 0) {
+    *ret = strm_nil_value();
+    return STRM_OK;
+  }
+  v = strm_ary_ptr(values);
+  val = v[0];
+  if (!strm_nil_p(func)) {
+    if (strm_funcall(strm, func, 1, &v[0], &e) == STRM_NG) {
+      return STRM_NG;
+    }
+  }
+  else {
+    e = v[0];
+  }
+  num = strm_value_flt(e);
+  for (i=1; i<len; i++) {
+    if (!strm_nil_p(func)) {
+      if (strm_funcall(strm, func, 1, &v[i], &e) == STRM_NG) {
+        return STRM_NG;
+      }
+    }
+    else {
+      e = v[0];
+    }
+    f = strm_value_flt(e);
+    if (min) {
+      if (num > f) {
+        num = f;
+        val = v[i];
+      }
+    }
+    else {
+      if (num < f) {
+        num = f;
+        val = v[i];
+      }
+    }
+  }
+  *ret = val;
+  return STRM_OK;
+}
+
+static int
+ary_min(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  return ary_minmax(strm, argc, args, ret, TRUE);
+}
+
+static int
+ary_max(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  return ary_minmax(strm, argc, args, ret, FALSE);
+}
+
 void
 strm_array_init(strm_state* state)
 {
@@ -117,4 +194,6 @@ strm_array_init(strm_state* state)
   strm_var_def(strm_array_ns, "length", strm_cfunc_value(ary_length));
   strm_var_def(strm_array_ns, "sum", strm_cfunc_value(ary_sum));
   strm_var_def(strm_array_ns, "average", strm_cfunc_value(ary_avg));
+  strm_var_def(strm_array_ns, "min", strm_cfunc_value(ary_min));
+  strm_var_def(strm_array_ns, "max", strm_cfunc_value(ary_max));
 }
