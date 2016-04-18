@@ -212,7 +212,6 @@ flatmap_len(strm_array ary)
   strm_int i, len, n = 0;
 
   len = strm_ary_len(ary);
-  v = strm_ary_ptr(ary);
   for (i=0; i<len; i++) {
     if (strm_array_p(v[i])) {
       n += flatmap_len(v[i]);
@@ -231,7 +230,6 @@ flatmap_push(strm_stream* strm, strm_array ary, strm_value func, strm_value** p)
   strm_int i, len;
 
   len = strm_ary_len(ary);
-  v = strm_ary_ptr(ary);
   for (i=0; i<len; i++) {
     if (strm_array_p(v[i])) {
       if (flatmap_push(strm, v[i], func, p) == STRM_NG) {
