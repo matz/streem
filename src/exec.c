@@ -559,9 +559,14 @@ exec_expr(strm_stream* strm, strm_state* state, node* np, strm_value* val)
 
       for (i = 0; i < v0->len; i++) {
         n = exec_expr(strm, state, v0->data[i], &args[i]);
-        if (n) return n;
+        if (n == STRM_NG) {
+          free(args);
+          return n;
+        }
       }
-      return exec_call(strm, state, node_to_sym(ncall->ident), i, args, val);
+      n = exec_call(strm, state, node_to_sym(ncall->ident), i, args, val);
+      free(args);
+      return n;
     }
     break;
   case NODE_RETURN:

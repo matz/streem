@@ -689,27 +689,30 @@ iter_split(strm_stream* strm, strm_value data)
 static int
 exec_split(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
-  struct split_data* d = malloc(sizeof(struct split_data));
+  struct split_data* d;
+  strm_value sep;
 
   switch (argc) {
   case 0:
-    d->sep = strm_str_lit(" ");
+    sep = strm_str_lit(" ");
     break;
   case 1:
     if (!strm_string_p(args[0])) {
       strm_raise(strm, "need string separator");
       return STRM_NG;
     }
-    d->sep = args[0];
+    sep = args[0];
     break;
   default:
     strm_raise(strm, "wrong number of arguments");
     return STRM_NG;
   }
-  if (strm_str_len(d->sep) < 1) {
+  if (strm_str_len(sep) < 1) {
     strm_raise(strm, "separator string too short");
     return STRM_NG;
   }
+  d = malloc(sizeof(struct split_data));
+  d->sep = sep;
   *ret = strm_stream_value(strm_stream_new(strm_filter, iter_split, NULL, (void*)d));
   return STRM_OK;
 }
