@@ -186,7 +186,6 @@ epoll_wait(int epfd, struct epoll_event* events, int maxevents, int timeout)
       } else {
         HANDLE h = (HANDLE) _get_osfhandle(ee->fds[i]);
         if (h != INVALID_HANDLE_VALUE && WaitForSingleObject(h, 0) == WAIT_OBJECT_0) {
-          memcpy(&events[e++], ee, sizeof(struct epoll_event));
           events[e++] = *ee;
           if (ee->events & EPOLLONESHOT)
             ee->fds[i] = -1;

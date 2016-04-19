@@ -149,8 +149,10 @@ tcp_socket(strm_stream* task, int argc, strm_value* args, strm_value* ret)
   strm_string host;
 
 #ifdef _WIN32
+  int sockopt = SO_SYNCHRONOUS_NONALERT;
   WSADATA wsa;
   WSAStartup(MAKEWORD(2, 0), &wsa);
+  setsockopt(INVALID_SOCKET, SOL_SOCKET, SO_OPENTYPE, (char *)&sockopt, sizeof(sockopt));
 #endif
 
   if (argc != 2) {
