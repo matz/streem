@@ -5,6 +5,10 @@
 #include <math.h>
 #include <string.h>
 
+#ifdef _WIN32
+char* strptime(const char *buf, char *fmt, struct tm *tm);
+#endif
+
 #ifndef timeradd
 # define timeradd(a, b, res)                                               \
   do {                                                                     \

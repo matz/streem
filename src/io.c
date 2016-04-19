@@ -31,6 +31,18 @@ static int epoll_fd;
 
 #define MAX_EVENTS 10
 
+#ifdef _WIN32
+ssize_t
+strm_read(int fd, void *buf, size_t count) {
+  WSANETWORKEVENTS wev;
+  if (WSAEnumNetworkEvents((SOCKET) fd, NULL, &wev) == 0)
+    return recv(fd, buf, count, 0);
+  return read(fd, buf, count);
+}
+#else
+#define strm_read(fd,buf,n) read(fd,buf,n)
+#endif
+
 static struct strm_task*
 io_task(strm_stream* strm, strm_callback func)
 {
@@ -153,7 +165,7 @@ read_cb(strm_stream* strm, strm_value data)
   strm_int n;
 
   count = BUFSIZ-(b->end-b->buf);
-  n = read(b->fd, b->end, count);
+  n = strm_read(b->fd, b->end, count);
   if (n <= 0) {
     if (b->buf < b->end) {
       strm_value s = read_str(b->beg, b->end-b->beg);
@@ -319,7 +331,15 @@ strm_writeio(strm_io io)
   else {
     d = malloc(sizeof(struct write_data));
 
+#ifdef _WIN32
+    WSANETWORKEVENTS wev;
+    if (WSAEnumNetworkEvents((SOCKET) io->fd, NULL, &wev) == 0) {
+      d->f = fdopen(_open_osfhandle(io->fd, 0), "w");
+    } else
+      d->f = fdopen(io->fd, "w");
+#else
     d->f = fdopen(io->fd, "w");
+#endif
     d->io = io;
     io->write_stream = strm_stream_new(strm_consumer, write_cb, write_close, (void*)d);
   }

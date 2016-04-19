@@ -26,6 +26,7 @@ accept_cb(strm_stream* task, strm_value data)
   socklen_t writer_len;
   int sock;
 
+  memset(&writer_addr, 0, sizeof(writer_addr));
   writer_len = sizeof(writer_addr);
   sock = accept(sd->sock, (struct sockaddr *)&writer_addr, &writer_len);
   if (sock < 0) {
@@ -34,9 +35,6 @@ accept_cb(strm_stream* task, strm_value data)
     return STRM_NG;
   }
 
-#ifdef _WIN32
-  sock = _open_osfhandle(sock, 0);
-#endif
   strm_io_emit(task, strm_io_new(sock, STRM_IO_READ|STRM_IO_WRITE|STRM_IO_FLUSH),
                sd->sock, accept_cb);
   return STRM_OK;
@@ -93,7 +91,11 @@ tcp_server(strm_stream* task, int argc, strm_value* args, strm_value* ret)
   }
 
   memset(&hints, 0, sizeof(struct addrinfo));
+#ifdef _WIN32
+  hints.ai_family = AF_INET;      /* TODO: IPv6 doesn't work on windows */
+#else
   hints.ai_family = AF_UNSPEC;    /* Allow IPv4 or IPv6 */
+#endif
   hints.ai_socktype = SOCK_STREAM;/* Datagram socket */
   hints.ai_flags = AI_PASSIVE;    /* For wildcard IP address */
   hints.ai_protocol = 0;          /* Any protocol */
@@ -129,9 +131,6 @@ tcp_server(strm_stream* task, int argc, strm_value* args, strm_value* ret)
     return STRM_NG;
   }
 
-#ifdef _WIN32
-  sock = _open_osfhandle(sock, 0);
-#endif
   sd = malloc(sizeof(struct socket_data));
   sd->sock = sock;
   t = strm_stream_new(strm_producer, server_accept, server_close, (void*)sd);
@@ -150,10 +149,8 @@ tcp_socket(strm_stream* task, int argc, strm_value* args, strm_value* ret)
   strm_string host;
 
 #ifdef _WIN32
-  int sockopt = SO_SYNCHRONOUS_NONALERT;
   WSADATA wsa;
   WSAStartup(MAKEWORD(2, 0), &wsa);
-  setsockopt(INVALID_SOCKET, SOL_SOCKET, SO_OPENTYPE, (char *)&sockopt, sizeof(sockopt));
 #endif
 
   if (argc != 2) {
@@ -171,7 +168,11 @@ tcp_socket(strm_stream* task, int argc, strm_value* args, strm_value* ret)
   }
 
   memset(&hints, 0, sizeof(struct addrinfo));
+#ifdef _WIN32
+  hints.ai_family = AF_INET;      /* TODO: IPv6 doesn't work on windows */
+#else
   hints.ai_family = AF_UNSPEC;    /* Allow IPv4 or IPv6 */
+#endif
   hints.ai_socktype = SOCK_STREAM;
   hints.ai_protocol = 0;          /* Any protocol */
   s = getaddrinfo(strm_str_cstr(host, hbuf), service, &hints, &result);
@@ -195,10 +196,8 @@ tcp_socket(strm_stream* task, int argc, strm_value* args, strm_value* ret)
     strm_raise(task, "socket error: connect");
     return STRM_NG;
   }
-#ifdef _WIN32
-  sock = _open_osfhandle(sock, 0);
-#endif
-  *ret = strm_io_new(sock, STRM_IO_READ|STRM_IO_WRITE|STRM_IO_FLUSH);
+  *ret = strm_ptr_value((void*)strm_io_new(sock,
+		STRM_IO_READ|STRM_IO_WRITE|STRM_IO_FLUSH));
   return STRM_OK;
 }
 
