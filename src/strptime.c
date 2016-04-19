@@ -30,6 +30,7 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifdef _WIN32
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -37,10 +38,6 @@
 #include <time.h>
 #include <ctype.h>
 #include <string.h>
-
-#if !defined(OS2) && !defined(WIN32)
-#  include "common/config.h"
-#endif
 
 #ifndef HAVE_STRPTIME
 
@@ -359,3 +356,4 @@ strptime(char *buf, char *fmt, struct tm *tm)
         return buf;
 }
 #endif  /* HAVE_STRPTIME */
+#endif	/* _WIN32 */
