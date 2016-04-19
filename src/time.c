@@ -197,10 +197,16 @@ strm_time_parse_time(const char* p, strm_int len, long* sec, long* usec, int* of
   *usec = 0;
   t = strptime(s, "%Y.%m.%d", &tm);   /* Streem time literal */
   if (t == NULL) {
-    t = strptime(s, "%Y-%m-%d", &tm); /* ISO8601 */
+    t = strptime(s, "%Y-%m-%d", &tm); /* ISO8601 extended */
   }
   if (t == NULL) {
     t = strptime(s, "%Y/%m/%d", &tm);
+  }
+  if (t == NULL) {
+    t = strptime(s, "%Y%m%d", &tm);   /* ISO8601 basic */
+    if (t && !(t[0] == 'T' || t[0] == ' ')) {
+      t = NULL;
+    }
   }
   if (t == NULL) {
     t = strptime(s, "%b %d %Y", &tm);
@@ -238,6 +244,9 @@ strm_time_parse_time(const char* p, strm_int len, long* sec, long* usec, int* of
   }
 
   t2 = strptime(t, "%H:%M:%S", &tm);
+  if (t2 == NULL) {
+    t2 = strptime(t, "%H%M%S", &tm);
+  }
   if (t2 == NULL) {
     t2 = strptime(t, "%H:%M", &tm);
     if (t2 == NULL)
