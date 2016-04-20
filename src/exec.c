@@ -724,6 +724,27 @@ exec_fwrite(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   return STRM_OK;
 }
 
+static int
+exec_exit(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  strm_int estatus;
+
+  switch (argc) {
+  case 0:
+    estatus = EXIT_SUCCESS;
+    break;
+  case 1:
+    estatus = strm_value_int(args[0]);
+    break;
+  default:
+    strm_raise(strm, "wrong # of arguments");
+    return STRM_NG;
+  }
+  exit(estatus);
+  *ret = strm_int_value(estatus);
+  return STRM_OK;
+}
+
 void
 strm_raise(strm_stream* strm, const char* msg)
 {
@@ -766,6 +787,7 @@ node_init(strm_state* state)
   strm_var_def(state, "%", strm_cfunc_value(exec_mod));
   strm_var_def(state, "fread", strm_cfunc_value(exec_fread));
   strm_var_def(state, "fwrite", strm_cfunc_value(exec_fwrite));
+  strm_var_def(state, "exit", strm_cfunc_value(exec_exit));
 }
 
 static strm_state top_state = {0};
