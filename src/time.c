@@ -1,4 +1,4 @@
-#define _XOPEN_SOURCE
+#define _XOPEN_SOURCE 700
 #include "strm.h"
 #include <time.h>
 #include <sys/time.h>
