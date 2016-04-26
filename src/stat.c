@@ -1,4 +1,5 @@
 #include "strm.h"
+#include <math.h>
 
 struct sum_data {
   double sum;
@@ -67,9 +68,54 @@ exec_avg(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   return exec_sum_avg(strm, argc, args, ret, TRUE);
 }
 
+struct stdev_data {
+  strm_int num;
+  double s1, s2;
+};
+
+static int
+iter_stdev(strm_stream* strm, strm_value data)
+{
+  struct stdev_data* d = strm->data;
+  double x = strm_value_flt(data);
+
+  d->num++;
+  x -= d->s1;
+  d->s1 += x/d->num;
+  d->s2 += (d->num-1) * x * x / d->num;
+  return STRM_OK;
+}
+
+static int
+stdev_finish(strm_stream* strm, strm_value data)
+{
+  struct stdev_data* d = strm->data;
+  double s = sqrt(d->s2 / (d->num-1));
+  strm_emit(strm, strm_flt_value(s), NULL);
+  return STRM_OK;
+}
+
+static int
+exec_stdev(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  struct stdev_data* d;
+
+  if (argc != 0) {
+    strm_raise(strm, "wrong number of arguments");
+    return STRM_NG;
+  }
+  d = malloc(sizeof(struct stdev_data));
+  if (!d) return STRM_NG;
+  d->num = 0;
+  d->s1 = d->s2 = 0.0;
+  *ret = strm_stream_value(strm_stream_new(strm_filter, iter_stdev, stdev_finish, (void*)d));
+  return STRM_OK;
+}
+
 void
 strm_stat_init(strm_state* state)
 {
   strm_var_def(state, "sum", strm_cfunc_value(exec_sum));
   strm_var_def(state, "average", strm_cfunc_value(exec_avg));
+  strm_var_def(state, "stdev", strm_cfunc_value(exec_stdev));
 }
