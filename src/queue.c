@@ -35,42 +35,42 @@ strm_queue_new()
 int
 strm_queue_add(struct strm_queue* q, void* val)
 {
-  struct strm_queue_node *n;
   struct strm_queue_node *node = (struct strm_queue_node*)malloc(sizeof(struct strm_queue_node));
 
   node->n = val; 
   node->next = NULL;
   while (1) {
-    n = q->tail;
-    if (strm_atomic_cas(n->next, NULL, node)) {
-      break;
+    struct strm_queue_node *n = q->tail;
+    struct strm_queue_node *next = n->next;
+    if (n != q->tail) continue;
+    if (next == NULL) {
+      if (strm_atomic_cas(n->next, next, node)) {
+        strm_atomic_cas(q->tail, n, node);
+        return 1;
+      }
     }
     else {
-      strm_atomic_cas(q->tail, n, n->next);
+      strm_atomic_cas(q->tail, n, next);
     }
   }
-  strm_atomic_cas(q->tail, n, node);
-  return 1;
 }
 
 void*
 strm_queue_get(struct strm_queue* q)
 {
-  struct strm_queue_node *n;
-  void *val;
-
   while (1) {
-    n = q->head;
-    if (n->next == NULL) {
+    struct strm_queue_node *n = q->head;
+    struct strm_queue_node *next = n->next;
+    if (n != q->head) continue;
+    if (next == NULL) {
       return NULL;
     }
-    if (strm_atomic_cas(q->head, n, n->next)) {
-      break;
+    if (strm_atomic_cas(q->head, n, next)) {
+      void *val = (void*)next->n;
+      free(n);                  /* may cause ABA problem; use GC */
+      return val;
     }
   }
-  val = (void *) n->next->n;
-  free(n);
-  return val;
 }
 
 void
