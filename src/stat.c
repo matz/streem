@@ -96,7 +96,16 @@ stdev_finish(strm_stream* strm, strm_value data)
 }
 
 static int
-exec_stdev(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+var_finish(strm_stream* strm, strm_value data)
+{
+  struct stdev_data* d = strm->data;
+  double s = d->s2 / (d->num-1);
+  strm_emit(strm, strm_flt_value(s), NULL);
+  return STRM_OK;
+}
+
+static int
+exec_var_stdev(strm_stream* strm, int argc, strm_value* args, strm_value* ret, int stdev)
 {
   struct stdev_data* d;
 
@@ -108,8 +117,21 @@ exec_stdev(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   if (!d) return STRM_NG;
   d->num = 0;
   d->s1 = d->s2 = 0.0;
-  *ret = strm_stream_value(strm_stream_new(strm_filter, iter_stdev, stdev_finish, (void*)d));
+  *ret = strm_stream_value(strm_stream_new(strm_filter, iter_stdev,
+                                           stdev ? stdev_finish : var_finish, (void*)d));
   return STRM_OK;
+}
+
+static int
+exec_stdev(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  return exec_var_stdev(strm, argc, args, ret, TRUE);
+}
+
+static int
+exec_variance(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  return exec_var_stdev(strm, argc, args, ret, FALSE);
 }
 
 void
@@ -118,4 +140,5 @@ strm_stat_init(strm_state* state)
   strm_var_def(state, "sum", strm_cfunc_value(exec_sum));
   strm_var_def(state, "average", strm_cfunc_value(exec_avg));
   strm_var_def(state, "stdev", strm_cfunc_value(exec_stdev));
+  strm_var_def(state, "variance", strm_cfunc_value(exec_variance));
 }
