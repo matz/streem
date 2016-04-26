@@ -55,7 +55,6 @@ strm_time_p(strm_value val)
     if (p->ns != time_ns)
       return FALSE;
   }
-  fprintf(stderr, "is a time\n");
   return TRUE;
 }
 
