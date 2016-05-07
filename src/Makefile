@@ -3,7 +3,7 @@ LEX = flex
 CC = gcc
 TOP = ..
 TARGET = $(TOP)/bin/streem
-CDEFS =
+CDEFS = -DNO_LOCKFREE_QUEUE
 CFLAGS = -g -ggdb -Wall $(CDEFS)
 LIBS = -lpthread -lm
 
