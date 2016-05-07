@@ -11,10 +11,11 @@ static int
 iter_sum(strm_stream* strm, strm_value data)
 {
   struct sum_data* d = strm->data;
+
   double y = strm_value_flt(data) - d->c;
   double t = d->sum + y;
   d->c = (t - d->sum) - y;
-  d->sum =  t;
+  d->sum = t;
   d->num++;
   return STRM_OK;
 }
