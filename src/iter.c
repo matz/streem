@@ -108,6 +108,60 @@ exec_rand(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   return STRM_OK;
 }
 
+struct repeat_data {
+  strm_value v;
+  strm_int count;
+};
+
+static int
+gen_repeat(strm_stream* strm, strm_value data)
+{
+  struct repeat_data *d = strm->data;
+
+  strm_emit(strm, d->v, gen_repeat);
+  d->count--;
+  if (d->count == 0) {
+    strm_stream_close(strm);
+  }
+  return STRM_OK;
+}
+
+static int
+fin_repeat(strm_stream* strm, strm_value data)
+{
+  free(strm->data);
+  return STRM_OK;
+}
+
+static int
+exec_repeat(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  strm_value v;
+  strm_int n = -1;
+  struct repeat_data *d;
+
+  switch (argc) {
+  case 2:
+    n = strm_value_int(args[1]);
+    if (n <= 0) {
+      strm_raise(strm, "invalid count number");
+      return STRM_NG;
+    }
+    /* fall through */
+  case 1:
+    v = args[0];
+    break;
+  default:
+    strm_raise(strm, "wrong number of arguments");
+    return STRM_NG;
+  }
+  d = malloc(sizeof(struct repeat_data));
+  d->v = v;
+  d->count = n;
+  *ret = strm_stream_value(strm_stream_new(strm_producer, gen_repeat, fin_repeat, (void*)d));
+  return STRM_OK;
+}
+
 struct map_data {
   strm_value func;
 };
@@ -661,6 +715,7 @@ strm_iter_init(strm_state* state)
 {
   strm_var_def(state, "seq", strm_cfunc_value(exec_seq));
   strm_var_def(state, "rand", strm_cfunc_value(exec_rand));
+  strm_var_def(state, "repeat", strm_cfunc_value(exec_repeat));
   strm_var_def(state, "each", strm_cfunc_value(exec_each));
   strm_var_def(state, "map", strm_cfunc_value(exec_map));
   strm_var_def(state, "flatmap", strm_cfunc_value(exec_flatmap));
