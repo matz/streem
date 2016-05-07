@@ -20,8 +20,7 @@ strm_latch_finish_p(strm_stream* latch)
 
   if (latch->mode == strm_consumer) return 0;
   c = latch->data;
-  if (c->dq->head == c->dq->tail) return 1;
-  return 0;
+  return strm_queue_empty_p(c->dq);
 }
 
 static int

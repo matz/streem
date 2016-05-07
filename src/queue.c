@@ -12,6 +12,11 @@
 #include "queue.h"
 #include "atomic.h"
 
+struct strm_queue {
+  struct strm_queue_node* head;
+  struct strm_queue_node* tail;
+};
+
 struct strm_queue_node {
   struct strm_queue_node *next;
   void *n;
@@ -84,4 +89,11 @@ strm_queue_free(struct strm_queue* q)
     free(n);
     n = tmp;
   }
+}
+
+int
+strm_queue_empty_p(struct strm_queue* q)
+{
+  if (q->head == q->tail) return 1;
+  return 0;
 }
