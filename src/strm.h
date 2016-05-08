@@ -218,6 +218,9 @@ strm_state* strm_ns_find(strm_state*, strm_string);
 strm_state* strm_ns_get(strm_string);
 strm_state* strm_value_ns(strm_value);
 
+extern strm_state* strm_array_ns;
+extern strm_state* strm_string_ns;
+
 /* ----- I/O */
 #define STRM_IO_READ  1
 #define STRM_IO_WRITE 2

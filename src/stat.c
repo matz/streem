@@ -218,8 +218,6 @@ ary_var(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   return ary_var_stdev(strm, argc, args, ret, FALSE);
 }
 
-extern strm_state* strm_array_ns;
-
 void
 strm_stat_init(strm_state* state)
 {

@@ -478,9 +478,6 @@ struct strm_misc {
   STRM_AUX_HEADER;
 };
 
-extern strm_state* strm_array_ns;
-extern strm_state* strm_string_ns;
-
 strm_state*
 strm_value_ns(strm_value val)
 {
