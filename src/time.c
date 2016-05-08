@@ -168,7 +168,7 @@ parse_tz(const char* s, strm_int len)
     else {
       m = 0;
     }
-    if (h > 12) return TZ_FAIL;
+    if (h > 14) return TZ_FAIL;
     if (m > 59) return TZ_FAIL;
     return (h*60+m) * (c == '-' ? -1 : 1) * 60;
   default:
