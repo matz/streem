@@ -118,10 +118,13 @@ gen_repeat(strm_stream* strm, strm_value data)
 {
   struct repeat_data *d = strm->data;
 
-  strm_emit(strm, d->v, gen_repeat);
   d->count--;
   if (d->count == 0) {
+    strm_emit(strm, d->v, NULL);
     strm_stream_close(strm);
+  }
+  else {
+    strm_emit(strm, d->v, gen_repeat);
   }
   return STRM_OK;
 }
@@ -174,14 +177,20 @@ gen_cycle(strm_stream* strm, strm_value data)
   strm_value* p;
   strm_int i, len;
 
+  d->count--;
   p = strm_ary_ptr(d->ary);
   len = strm_ary_len(d->ary);
-  for (i=0; i<len; i++) {
-    strm_emit(strm, p[i], gen_cycle);
+  if (d->count != 0) {
+    len--;
   }
-  d->count--;
+  for (i=0; i<len; i++) {
+    strm_emit(strm, p[i], NULL);
+  }
   if (d->count == 0) {
     strm_stream_close(strm);
+  }
+  else {
+    strm_emit(strm, p[i], gen_cycle);
   }
   return STRM_OK;
 }
