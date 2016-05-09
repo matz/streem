@@ -114,8 +114,10 @@ zip_iter(strm_stream* strm, strm_value data)
     strm_int done = 0;
 
     for (i=0; i<z->len; i++){
-      if (strm_latch_finish_p(z->latch[i]))
+      if (strm_latch_finish_p(z->latch[i])) {
         done = 1;
+        break;
+      }
     }
     if (done) {
       for (i=0; i<z->len; i++){
