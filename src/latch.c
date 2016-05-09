@@ -69,12 +69,11 @@ static int
 latch_close(strm_stream* strm, strm_value data)
 {
   struct latch_data* d = strm->data;
-  struct recv_data* r;
 
   for (;;) {
-    r = strm_queue_get(d->rq);
+    struct recv_data* r = strm_queue_get(d->rq);
     if (!r) break;
-    (*r->func)(r->strm, strm_nil_value());
+    (*r->func)(r->strm, data);
     free(r);
   }
   return STRM_OK;
