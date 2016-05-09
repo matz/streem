@@ -120,6 +120,7 @@ zip_iter(strm_stream* strm, strm_value data)
       }
     }
     if (done) {
+      strm_emit(strm, z->a, NULL);
       for (i=0; i<z->len; i++){
         strm_stream_close(z->latch[i]);
       }
