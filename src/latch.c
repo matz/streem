@@ -24,7 +24,7 @@ strm_latch_finish_p(strm_stream* latch)
 }
 
 static int
-latch_get(strm_stream* strm, strm_value data)
+latch_push(strm_stream* strm, strm_value data)
 {
   struct latch_data* d = strm->data;
   struct recv_data* r = strm_queue_get(d->rq);
@@ -50,7 +50,7 @@ strm_latch_receive(strm_stream* latch, strm_stream* strm, strm_callback func)
   struct latch_data* d;
   strm_value* v;
 
-  assert(latch->start_func == latch_get);
+  assert(latch->start_func == latch_push);
   d = latch->data;
   v = strm_queue_get(d->dq);
   if (v) {
@@ -88,7 +88,7 @@ strm_latch_new()
   assert(d != NULL);
   d->dq = strm_queue_new();
   d->rq = strm_queue_new();
-  return strm_stream_new(strm_consumer, latch_get, latch_close, d);
+  return strm_stream_new(strm_consumer, latch_push, latch_close, d);
 }
 
 struct zip_data {
