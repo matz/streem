@@ -29,6 +29,9 @@ latch_get(strm_stream* strm, strm_value data)
   struct latch_data* d = strm->data;
   struct recv_data* r = strm_queue_get(d->rq);
 
+  if (strm->mode != strm_consumer) {
+    return STRM_NG;
+  }
   if (r) {
     (*r->func)(r->strm, data);
     free(r);
