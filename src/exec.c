@@ -667,8 +667,11 @@ exec_cputs(strm_stream* strm, FILE* out, int argc, strm_value* args, strm_value*
   for (i = 0; i < argc; i++) {
     strm_string s;
 
-    if (i != 0)
-      fputs(", ", out);
+    if (i != 0) {
+      if (!strm_string_p(args[i-1])) {
+        fputs(" ", out);
+      }
+    }
     s = strm_to_str(args[i]);
     fwrite(strm_str_ptr(s), strm_str_len(s), 1, out);
   }
