@@ -364,8 +364,28 @@ csv(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   return STRM_OK;
 }
 
+static int
+str_number(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  strm_value s;
+
+  if (argc != 1) {
+    strm_raise(strm, "wrong number of arguments");
+    return STRM_NG;
+  }
+  s = args[0];
+  s = csv_value(strm_str_ptr(s), strm_str_len(s), TYPE_NUM);
+  if (!strm_num_p(s)) {
+    return STRM_NG;
+  }
+  *ret = s;
+  return STRM_OK;
+}
+
 void
 strm_csv_init(strm_state* state)
 {
   strm_var_def(state, "csv", strm_cfunc_value(csv));
+
+  strm_var_def(strm_string_ns, "number", strm_cfunc_value(str_number));
 }
