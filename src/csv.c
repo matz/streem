@@ -346,8 +346,13 @@ static int
 csv(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   strm_stream *t;
-  struct csv_data *cd = malloc(sizeof(struct csv_data));
+  struct csv_data *cd;
 
+  if (argc != 0) {
+    strm_raise(strm, "wrong number of arguments");
+    return STRM_NG;
+  }
+  cd = malloc(sizeof(struct csv_data));
   if (!cd) return STRM_NG;
   cd->headers = strm_ary_null;
   cd->types = NULL;
