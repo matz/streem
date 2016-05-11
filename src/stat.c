@@ -283,6 +283,8 @@ exec_sample(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   return STRM_OK;
 }
 
+void strm_sort_init(strm_state* state);
+
 void
 strm_stat_init(strm_state* state)
 {
@@ -296,4 +298,6 @@ strm_stat_init(strm_state* state)
   strm_var_def(strm_array_ns, "average", strm_cfunc_value(ary_avg));
   strm_var_def(strm_array_ns, "stdev", strm_cfunc_value(ary_stdev));
   strm_var_def(strm_array_ns, "variance", strm_cfunc_value(ary_var));
+
+  strm_sort_init(state);
 }
