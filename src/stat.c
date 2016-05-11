@@ -218,6 +218,71 @@ ary_var(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   return ary_var_stdev(strm, argc, args, ret, FALSE);
 }
 
+void xorshift64init(void);
+uint64_t xorshift64star(void);
+
+struct sample_data {
+  strm_int i;
+  strm_int len;
+  strm_value samples[0];
+};
+
+static int
+iter_sample(strm_stream* strm, strm_value data)
+{
+  struct sample_data* d = strm->data;
+  uint64_t r;
+
+  if (d->i < d->len) {
+    d->samples[d->i++] = data;
+    return STRM_OK;
+  }
+  xorshift64init();
+  r = xorshift64star()%(d->i);
+  if (r < d->len) {
+    d->samples[r] = data;
+  }
+  d->i++;
+  return STRM_OK;
+}
+
+static int
+finish_sample(strm_stream* strm, strm_value data)
+{
+  struct sample_data* d = strm->data;
+  strm_int i, len=d->len;
+
+  for (i=0; i<len; i++) {
+    strm_emit(strm, d->samples[i], NULL);
+  }
+  free(d);
+  return STRM_OK;
+}
+
+static int
+exec_sample(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  struct sample_data* d;
+  strm_int len;
+
+  if (argc != 1) {
+    strm_raise(strm, "wrong number of arguments");
+    return STRM_NG;
+  }
+  if (!strm_num_p(args[0])) {
+    strm_raise(strm, "require number of samples");
+    return STRM_NG;
+  }
+  len = strm_value_int(args[0]);
+  d = malloc(sizeof(struct sample_data)+sizeof(strm_value)*len);
+  if (!d) return STRM_NG;
+  d->len = len;
+  d->i = 0;
+  *ret = strm_stream_value(strm_stream_new(strm_filter, iter_sample,
+                                           finish_sample, (void*)d));
+  return STRM_OK;
+}
+
 void
 strm_stat_init(strm_state* state)
 {
@@ -225,6 +290,7 @@ strm_stat_init(strm_state* state)
   strm_var_def(state, "average", strm_cfunc_value(exec_avg));
   strm_var_def(state, "stdev", strm_cfunc_value(exec_stdev));
   strm_var_def(state, "variance", strm_cfunc_value(exec_variance));
+  strm_var_def(state, "sample", strm_cfunc_value(exec_sample));
 
   strm_var_def(strm_array_ns, "sum", strm_cfunc_value(ary_sum));
   strm_var_def(strm_array_ns, "average", strm_cfunc_value(ary_avg));

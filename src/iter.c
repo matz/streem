@@ -62,7 +62,22 @@ exec_seq(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 
 static uint64_t x; /* the state must be seeded with a nonzero value. */
 
-static uint64_t
+void
+xorshift64init(void)
+{
+  struct timeval tv;
+  static int init = 0;
+
+  if (init == 0) {
+    init = 1;
+    gettimeofday(&tv, NULL);
+    x ^= (uint32_t)tv.tv_usec;
+    x ^= x >> 11; x ^= x << 17; x ^= x >> 4;
+    x *= 2685821657736338717LL;
+  }
+}
+
+uint64_t
 xorshift64star(void)
 {
   x ^= x >> 12; /* a */
@@ -91,7 +106,6 @@ fin_rand(strm_stream* strm, strm_value data)
 static int
 exec_rand(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
-  struct timeval tv;
   strm_int n;
 
   if (argc != 1) {
@@ -99,10 +113,7 @@ exec_rand(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
     return STRM_NG;
   }
   n = strm_value_int(args[0]);
-  gettimeofday(&tv, NULL);
-  x ^= (uint32_t)tv.tv_usec;
-  x ^= x >> 11; x ^= x << 17; x ^= x >> 4;
-  x *= 2685821657736338717LL;
+  xorshift64init();
   *ret = strm_stream_value(strm_stream_new(strm_producer, gen_rand, fin_rand,
                                        (void*)(intptr_t)n));
   return STRM_OK;
