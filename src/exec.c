@@ -327,6 +327,7 @@ lambda_call(strm_stream* strm, strm_value func, int argc, strm_value* argv, strm
     exc = strm->exc;
     if (exc && exc->type == NODE_ERROR_RETURN) {
       *ret = exc->arg;
+      return STRM_OK;
     }
   }
   return n;
@@ -596,12 +597,13 @@ exec_expr(strm_stream* strm, strm_state* state, node* np, strm_value* val)
               n = exec_expr(strm, state, args->data[i], (strm_value*)&strm_ary_ptr(ary)[i]);
               if (n) return n;
             }
+            arg = strm_ary_value(ary);
           }
           break;
         }
       }
       strm_set_exc(strm, NODE_ERROR_RETURN, arg);
-      return STRM_OK;
+      return STRM_NG;
     }
     break;
   case NODE_NODES:
