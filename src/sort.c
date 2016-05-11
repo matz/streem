@@ -69,14 +69,25 @@ sort_cmpf cmp_args(const void* a_p, const void* b_p, void* arg)
   return 0;
 }
 
+static void
+mem_sort(strm_value* p, strm_int len, struct sort_arg *arg)
+{
+  if (arg) {                    /* sort(ary, func) */
+    qsort_arg(p, len, sizeof(strm_value), sort_cmpf, arg);
+  }
+  else {                        /* sort(ary) */
+    qsort(p, len, sizeof(strm_value), sort_cmp);
+  }
+}
+
 static int
 ary_sort(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   strm_array ary;
 
   switch (argc) {
-  case 1:
   case 2:
+  case 1:
     {
       strm_value* p;
       strm_int len;
@@ -85,14 +96,14 @@ ary_sort(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
       p = strm_ary_ptr(ary);
       len = strm_ary_len(ary);
       if (argc == 1) {
-        qsort(p, len, sizeof(strm_value), sort_cmp);
+        mem_sort(p, len, NULL);
       }
       else {
         struct sort_arg arg;
 
         arg.strm = strm;
         arg.func = args[1];
-        qsort_arg(p, len, sizeof(strm_value), sort_cmpf, &arg);
+        mem_sort(p, len, &arg);
       }
       *ret = strm_ary_value(ary);
       return STRM_OK;
