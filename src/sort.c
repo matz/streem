@@ -2,33 +2,71 @@
 #include "strm.h"
 #include <stdlib.h>
 
-int
-sort_cmp(const void* a_p, const void* b_p)
+static int
+num_cmp(strm_value x, strm_value y)
 {
-  strm_value av = *(strm_value*)a_p;
-  strm_value bv = *(strm_value*)b_p;
-  double a, b;
-
-  if (strm_num_p(av)) {
-    a = strm_value_flt(av);
-  }
-  else {
-    if (strm_num_p(bv)) {
-      return 1;
-    }
-    return 0;
-  }
-  if (strm_num_p(bv)) {
-    b = strm_value_flt(bv);
-  }
-  else {
-    return -1;
-  }
+  double a = strm_value_flt(x);
+  double b = strm_value_flt(y);
   if(a > b)
     return 1;
   else if(a < b)
     return -1;
   return 0;
+}
+
+static int
+str_cmp(strm_value x, strm_value y)
+{
+  strm_string a = strm_value_str(x);
+  strm_string b = strm_value_str(y);
+  strm_int alen = strm_str_len(a);
+  strm_int blen = strm_str_len(b);
+  strm_int len, cmp;
+
+  if (alen > blen) {
+    len = blen;
+  }
+  else {
+    len = alen;
+  }
+  cmp = memcmp(strm_str_ptr(a), strm_str_ptr(b), len);
+  if (cmp == 0) {
+    if (alen > len) return 1;
+    if (blen > len) return -1;
+  }
+  return cmp;
+}
+
+/* compare function */
+/* num < str < other */
+static int
+strm_cmp(strm_value a, strm_value b)
+{
+  if (strm_num_p(a)) {
+    if (strm_num_p(b)) {
+      return num_cmp(a,b);
+    }
+    return -1;
+  }
+  if (strm_string_p(a)) {
+    if (strm_string_p(b)) {
+      return str_cmp(a,b);
+    }
+    if (strm_num_p(b)) {
+      return 1;
+    }
+    return 1;
+  }
+  return 1;
+}
+
+static int
+sort_cmp(const void* a_p, const void* b_p)
+{
+  strm_value a = *(strm_value*)a_p;
+  strm_value b = *(strm_value*)b_p;
+
+  return strm_cmp(a, b);
 }
 
 #if defined(__APPLE__) || defined(__FreeBSD__)
@@ -44,7 +82,7 @@ struct sort_arg {
   strm_value func;
 };
 
-int
+static int
 sort_cmpf cmp_args(const void* a_p, const void* b_p, void* arg)
 {
   strm_value args[2];
@@ -194,27 +232,15 @@ ary_sort(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 }
 
 static int
-num_cmp(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+exec_cmp(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
-  double a, b;
   strm_int cmp;
 
   if (argc != 2) {
     strm_raise(strm, "wrong number of arguments");
     return STRM_NG;
   }
-  if (!strm_num_p(args[0]) || !strm_num_p(args[1])) {
-    strm_raise(strm, "non number comparison");
-    return STRM_NG;
-  }
-  a = strm_value_flt(args[0]);
-  b = strm_value_flt(args[1]);
-  if(a > b)
-    cmp = 1;
-  else if(a < b)
-    cmp = -1;
-  else
-    cmp = 0;
+  cmp = strm_cmp(args[0], args[1]);
   *ret = strm_int_value(cmp);
   return STRM_OK;
 }
@@ -223,6 +249,6 @@ void
 strm_sort_init(strm_state* state)
 {
   strm_var_def(strm_array_ns, "sort", strm_cfunc_value(ary_sort));
-  strm_var_def(state, "cmp", strm_cfunc_value(num_cmp));
+  strm_var_def(state, "cmp", strm_cfunc_value(exec_cmp));
   strm_var_def(state, "sort", strm_cfunc_value(exec_sort));
 }
