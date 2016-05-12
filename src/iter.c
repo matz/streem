@@ -41,6 +41,10 @@ exec_seq(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
     start = strm_value_flt(args[0]);
     inc = strm_value_flt(args[1]);
     end = strm_value_flt(args[2]);
+    if (inc <= 0) {
+      strm_raise(strm, "invalid increment value");
+      return STRM_NG;
+    }
     break;
   default:
     strm_raise(strm, "wrong number of arguments");
