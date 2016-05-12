@@ -368,6 +368,81 @@ ary_sortby(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 }
 
 static int
+ary_median(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  strm_value* buf;
+  strm_value* p;
+  strm_int len;
+  strm_int i;
+
+  switch (argc) {
+  case 1:
+  case 2:
+    break;
+  default:
+    strm_raise(strm, "wrong number of arguments");
+    return STRM_NG;
+  }
+
+  p = strm_ary_ptr(args[0]);
+  len = strm_ary_len(args[0]);
+  if (len == 0) {
+    strm_raise(strm, "empty array");
+    return STRM_NG;
+  }
+  buf = malloc(sizeof(strm_value)*len);
+  if (!buf) return STRM_NG;
+  if (argc == 1) {              /* median(ary) */
+    memcpy(buf, p, sizeof(strm_value)*len);
+  }
+  else {                        /* median(ary,func) */
+    strm_value func = args[1];
+
+    for (i=0; i<len; i++) {
+      if (strm_funcall(strm, func, 1, &p[i], &buf[i]) == STRM_NG) {
+        goto error;
+      }
+    }
+  }
+  qsort(buf, len, sizeof(strm_value), sort_cmp);
+  if (len % 2 == 1) {
+    *ret = buf[len/2];
+    goto good;
+  }
+  else {
+    strm_value a = buf[len/2-1];
+    strm_value b = buf[len/2];
+
+    if (strm_num_p(a) && strm_num_p(b)) {
+      double x = strm_value_flt(a);
+      double y = strm_value_flt(b);
+
+      x = (x + y)/2;
+      *ret = strm_flt_value(x);
+      goto good;
+    }
+    if (a == b) {
+      *ret = a;
+      goto good;
+    }
+    if (strm_string_p(a) && strm_string_p(b) && str_cmp(a,b) == 0) {
+      *ret = a;
+      goto good;
+    }
+    strm_raise(strm, "no median value");
+    goto error;
+  }
+
+ good:
+  free(buf);
+  return STRM_OK;
+
+ error:
+  free(buf);
+  return STRM_NG;
+}
+
+static int
 exec_cmp(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   strm_int cmp;
@@ -386,6 +461,7 @@ strm_sort_init(strm_state* state)
 {
   strm_var_def(strm_array_ns, "sort", strm_cfunc_value(ary_sort));
   strm_var_def(strm_array_ns, "sort_by", strm_cfunc_value(ary_sortby));
+  strm_var_def(strm_array_ns, "median", strm_cfunc_value(ary_median));
   strm_var_def(state, "cmp", strm_cfunc_value(exec_cmp));
   strm_var_def(state, "sort", strm_cfunc_value(exec_sort));
   strm_var_def(state, "sort_by", strm_cfunc_value(exec_sortby));
