@@ -231,6 +231,142 @@ ary_sort(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   return STRM_OK;
 }
 
+struct sortby_value {
+  strm_value v;
+  strm_value o;
+};
+
+struct sortby_data {
+  strm_int len;
+  strm_int capa;
+  struct sortby_value* buf;
+  strm_stream* strm;
+  strm_value func;
+};
+
+static int
+sortby_cmp(const void* a_p, const void* b_p)
+{
+  struct sortby_value* av = (struct sortby_value*)a_p;
+  struct sortby_value* bv = (struct sortby_value*)b_p;
+  double a, b;
+
+  if (strm_num_p(av->v)) {
+    a = strm_value_flt(av->v);
+  }
+  else {
+    if (strm_num_p(bv->v)) {
+      return 1;
+    }
+    return 0;
+  }
+  if (strm_num_p(bv->v)) {
+    b = strm_value_flt(bv->v);
+  }
+  else {
+    return -1;
+  }
+  if(a > b)
+    return 1;
+  else if(a < b)
+    return -1;
+  return 0;
+}
+
+static int
+iter_sortby(strm_stream* strm, strm_value data)
+{
+  struct sortby_data* d = strm->data;
+
+  if (d->len >= d->capa) {
+    d->capa *= 2;
+    d->buf = realloc(d->buf, sizeof(struct sortby_value)*d->capa);
+  }
+  d->buf[d->len].o = data;
+  if (strm_funcall(d->strm, d->func, 1, &data, &d->buf[d->len].v) == STRM_NG) {
+    return STRM_NG;;
+  }
+  d->len++;
+  return STRM_OK;
+}
+
+static int
+finish_sortby(strm_stream* strm, strm_value data)
+{
+  struct sortby_data* d = strm->data;
+  strm_int i, len;
+
+  qsort(d->buf, d->len, sizeof(struct sortby_value), sortby_cmp);
+  for (i=0,len=d->len; i<len; i++) {
+    strm_emit(strm, d->buf[i].o, NULL);
+  }
+  free(d->buf);
+  free(d);
+  return STRM_OK;
+}
+
+static int
+exec_sortby(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  struct sortby_data* d;
+
+  if (argc != 1) {
+    strm_raise(strm, "wrong number of arguments");
+    return STRM_NG;
+  }
+
+  d = malloc(sizeof(struct sortby_data));
+  if (!d) return STRM_NG;
+  d->strm = strm;
+  d->func = args[0];
+  d->len = 0;
+  d->capa = SORT_FIRST_CAPA;
+  d->buf = malloc(sizeof(struct sortby_value)*SORT_FIRST_CAPA);
+  if (!d->buf) {
+    free(d);
+    return STRM_NG;
+  }
+  *ret = strm_stream_value(strm_stream_new(strm_filter, iter_sortby,
+                                           finish_sortby, (void*)d));
+  return STRM_OK;
+}
+
+static int
+ary_sortby(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  struct sortby_value* buf;
+  strm_array ary;
+  strm_value* p;
+  strm_int len;
+  strm_int i;
+
+  if (argc != 2) {
+    strm_raise(strm, "wrong number of arguments");
+    return STRM_NG;
+  }
+
+  p = strm_ary_ptr(args[0]);
+  len = strm_ary_len(args[0]);
+  buf = malloc(sizeof(struct sortby_value)*len);
+  if (!buf) return STRM_NG;
+  for (i=0; i<len; i++) {
+    buf[i].o = p[i];
+    if (strm_funcall(strm, args[1], 1, &p[i], &buf[i].v) == STRM_NG) {
+      free(buf);
+      return STRM_NG;;
+    }
+  }
+  qsort(buf, len, sizeof(struct sortby_value), sortby_cmp);
+  ary = strm_ary_new(NULL, len);
+  p = strm_ary_ptr(ary);
+  for (i=0; i<len; i++) {
+    p[i] = buf[i].o;
+  }
+  free(buf);
+  *ret = strm_ary_value(ary);
+  return STRM_OK;
+}
+
 static int
 exec_cmp(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
@@ -249,6 +385,8 @@ void
 strm_sort_init(strm_state* state)
 {
   strm_var_def(strm_array_ns, "sort", strm_cfunc_value(ary_sort));
+  strm_var_def(strm_array_ns, "sort_by", strm_cfunc_value(ary_sortby));
   strm_var_def(state, "cmp", strm_cfunc_value(exec_cmp));
   strm_var_def(state, "sort", strm_cfunc_value(exec_sort));
+  strm_var_def(state, "sort_by", strm_cfunc_value(exec_sortby));
 }
