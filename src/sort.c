@@ -368,43 +368,8 @@ ary_sortby(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 }
 
 static int
-ary_median(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+mem_median(strm_stream* strm, strm_value* buf, strm_int len, strm_value* ret)
 {
-  strm_value* buf;
-  strm_value* p;
-  strm_int len;
-  strm_int i;
-
-  switch (argc) {
-  case 1:
-  case 2:
-    break;
-  default:
-    strm_raise(strm, "wrong number of arguments");
-    return STRM_NG;
-  }
-
-  p = strm_ary_ptr(args[0]);
-  len = strm_ary_len(args[0]);
-  if (len == 0) {
-    strm_raise(strm, "empty array");
-    return STRM_NG;
-  }
-  buf = malloc(sizeof(strm_value)*len);
-  if (!buf) return STRM_NG;
-  if (argc == 1) {              /* median(ary) */
-    memcpy(buf, p, sizeof(strm_value)*len);
-  }
-  else {                        /* median(ary,func) */
-    strm_value func = args[1];
-
-    for (i=0; i<len; i++) {
-      if (strm_funcall(strm, func, 1, &p[i], &buf[i]) == STRM_NG) {
-        goto error;
-      }
-    }
-  }
-  qsort(buf, len, sizeof(strm_value), sort_cmp);
   if (len % 2 == 1) {
     *ret = buf[len/2];
     goto good;
@@ -443,6 +408,113 @@ ary_median(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 }
 
 static int
+iter_median(strm_stream* strm, strm_value data)
+{
+  struct sort_data* d = strm->data;
+
+  if (d->len >= d->capa) {
+    d->capa *= 2;
+    d->buf = realloc(d->buf, sizeof(strm_value)*d->capa);
+  }
+  if (strm_nil_p(d->func)) {
+    d->buf[d->len++] = data;
+  }
+  else if (strm_funcall(strm, d->func, 1, &data, &d->buf[d->len++]) == STRM_NG) {
+    return STRM_NG;
+  }
+  return STRM_OK;
+}
+
+static int
+finish_median(strm_stream* strm, strm_value data)
+{
+  struct sort_data* d = strm->data;
+  strm_int n;
+  strm_value v;
+
+  qsort(d->buf, d->len, sizeof(strm_value), sort_cmp);
+  n = mem_median(strm, d->buf, d->len, &v);
+  strm_emit(strm, v, NULL);
+  free(d);
+  return n;
+}
+
+static int
+exec_median(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  struct sort_data* d;
+  strm_value func;
+
+  switch (argc) {
+  case 0:
+    func = strm_nil_value();
+    break;
+  case 1:
+    func = args[0];
+    break;
+  default:
+    strm_raise(strm, "wrong number of arguments");
+    return STRM_NG;
+  }
+
+  d = malloc(sizeof(struct sort_data));
+  if (!d) return STRM_NG;
+  d->func = func;
+  d->len = 0;
+  d->capa = SORT_FIRST_CAPA;
+  d->buf = malloc(sizeof(strm_value)*SORT_FIRST_CAPA);
+  if (!d->buf) {
+    free(d);
+    return STRM_NG;
+  }
+  *ret = strm_stream_value(strm_stream_new(strm_filter, iter_median,
+                                           finish_median, (void*)d));
+  return STRM_OK;
+}
+
+static int
+ary_median(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  strm_value* buf;
+  strm_value* p;
+  strm_int len;
+  strm_int i;
+
+  switch (argc) {
+  case 1:
+  case 2:
+    break;
+  default:
+    strm_raise(strm, "wrong number of arguments");
+    return STRM_NG;
+  }
+
+  p = strm_ary_ptr(args[0]);
+  len = strm_ary_len(args[0]);
+  if (len == 0) {
+    strm_raise(strm, "empty array");
+    return STRM_NG;
+  }
+  buf = malloc(sizeof(strm_value)*len);
+  if (!buf) return STRM_NG;
+  if (argc == 1) {              /* median(ary) */
+    memcpy(buf, p, sizeof(strm_value)*len);
+  }
+  else {                        /* median(ary,func) */
+    strm_value func = args[1];
+
+    for (i=0; i<len; i++) {
+      if (strm_funcall(strm, func, 1, &p[i], &buf[i]) == STRM_NG) {
+        free(buf);
+        return STRM_NG;
+      }
+    }
+  }
+  qsort(buf, len, sizeof(strm_value), sort_cmp);
+  return mem_median(strm, buf, len, ret);
+}
+
+static int
 exec_cmp(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   strm_int cmp;
@@ -465,4 +537,5 @@ strm_sort_init(strm_state* state)
   strm_var_def(state, "cmp", strm_cfunc_value(exec_cmp));
   strm_var_def(state, "sort", strm_cfunc_value(exec_sort));
   strm_var_def(state, "sort_by", strm_cfunc_value(exec_sortby));
+  strm_var_def(state, "median", strm_cfunc_value(exec_median));
 }
