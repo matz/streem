@@ -367,44 +367,84 @@ ary_sortby(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   return STRM_OK;
 }
 
-static int
-mem_median(strm_stream* strm, strm_value* buf, strm_int len, strm_value* ret)
+/*
+ *  This Quickselect routine is based on the algorithm described in
+ *  "Numerical recipes in C", Second Edition,
+ *  Cambridge University Press, 1992, Section 8.5, ISBN 0-521-43108-5
+ *  This code by Nicolas Devillard - 1998. Public domain.
+ */
+
+#define ELEM_SWAP(a,b) { strm_value t=(a);(a)=(b);(b)=t; }
+#define ELEM_GT(a,b) (strm_cmp((a),(b))>0)
+
+static strm_value
+quick_select(strm_value arr[], int n)
 {
-  if (len % 2 == 1) {
-    *ret = buf[len/2];
-    goto good;
+  int low, high;
+  int median;
+  int middle, ll, hh;
+
+  low = 0; high = n-1; median = (low + high) / 2;
+  for (;;) {
+    if (high <= low) /* One element only */
+      return arr[median];
+
+    if (high == low + 1) {  /* Two elements only */
+      if (ELEM_GT(arr[low],arr[high]))
+        ELEM_SWAP(arr[low], arr[high]);
+      return arr[median];
+    }
+
+    /* Find median of low, middle and high items; swap into position low */
+    middle = (low + high) / 2;
+    if (ELEM_GT(arr[middle], arr[high])) ELEM_SWAP(arr[middle], arr[high]);
+    if (ELEM_GT(arr[low], arr[high]))    ELEM_SWAP(arr[low], arr[high]);
+    if (ELEM_GT(arr[middle], arr[low]))  ELEM_SWAP(arr[middle], arr[low]);
+
+    /* Swap low item (now in position middle) into position (low+1) */
+    ELEM_SWAP(arr[middle], arr[low+1]);
+
+    /* Nibble from each end towards middle, swapping items when stuck */
+    ll = low + 1;
+    hh = high;
+    for (;;) {
+      do ll++; while (ELEM_GT(arr[low], arr[ll]));
+      do hh--; while (ELEM_GT(arr[hh], arr[low]));
+
+      if (hh < ll)
+        break;
+
+      ELEM_SWAP(arr[ll], arr[hh]);
+    }
+
+    /* Swap middle item (in position low) back into correct position */
+    ELEM_SWAP(arr[low], arr[hh]);
+
+    /* Re-set active partition */
+    if (hh <= median)
+      low = ll;
+    if (hh >= median)
+      high = hh - 1;
   }
-  else {
-    strm_value a = buf[len/2-1];
-    strm_value b = buf[len/2];
+}
 
-    if (strm_num_p(a) && strm_num_p(b)) {
-      double x = strm_value_flt(a);
-      double y = strm_value_flt(b);
+#undef ELEM_SWAP
 
-      x = (x + y)/2;
-      *ret = strm_flt_value(x);
-      goto good;
+static strm_value
+quick_median(strm_value *p, int len)
+{
+  strm_value v = quick_select(p, len);
+
+  if (len%2 == 0 && strm_num_p(v)) {
+    strm_int next = len/2;
+    if (strm_num_p(p[next])) {
+       double x = strm_value_flt(v);
+       double y = strm_value_flt(p[next]);
+
+       return strm_flt_value((x + y)/2);
     }
-    if (a == b) {
-      *ret = a;
-      goto good;
-    }
-    if (strm_string_p(a) && strm_string_p(b) && str_cmp(a,b) == 0) {
-      *ret = a;
-      goto good;
-    }
-    strm_raise(strm, "no median value");
-    goto error;
   }
-
- good:
-  free(buf);
-  return STRM_OK;
-
- error:
-  free(buf);
-  return STRM_NG;
+  return v;
 }
 
 static int
@@ -429,14 +469,13 @@ static int
 finish_median(strm_stream* strm, strm_value data)
 {
   struct sort_data* d = strm->data;
-  strm_int n;
   strm_value v;
 
-  qsort(d->buf, d->len, sizeof(strm_value), sort_cmp);
-  n = mem_median(strm, d->buf, d->len, &v);
+  v = quick_median(d->buf, d->len);
+  free(d->buf);
   strm_emit(strm, v, NULL);
   free(d);
-  return n;
+  return STRM_OK;
 }
 
 static int
@@ -510,8 +549,9 @@ ary_median(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
       }
     }
   }
-  qsort(buf, len, sizeof(strm_value), sort_cmp);
-  return mem_median(strm, buf, len, ret);
+  *ret = quick_median(buf, len);
+  free(buf);
+  return STRM_OK;
 }
 
 static int
