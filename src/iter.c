@@ -2,9 +2,9 @@
 #include "khash.h"
 
 struct seq_data {
-  strm_int n;
-  strm_int end;
-  strm_int inc;
+  double n;
+  double end;
+  double inc;
 };
 
 static int
@@ -16,7 +16,7 @@ gen_seq(strm_stream* strm, strm_value data)
     strm_stream_close(strm);
     return STRM_OK;
   }
-  strm_emit(strm, strm_int_value(d->n), gen_seq);
+  strm_emit(strm, strm_flt_value(d->n), gen_seq);
   d->n += d->inc;
   return STRM_OK;
 }
@@ -24,23 +24,23 @@ gen_seq(strm_stream* strm, strm_value data)
 static int
 exec_seq(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
-  strm_int start=1, end=-1, inc=1;
+  double start=1, end=-1, inc=1;
   struct seq_data* d;
 
   switch (argc) {
   case 0:
     break;
   case 1:
-    end = strm_value_int(args[0]);
+    end = strm_value_flt(args[0]);
     break;
   case 2:
-    start = strm_value_int(args[0]);
-    end = strm_value_int(args[1]);
+    start = strm_value_flt(args[0]);
+    end = strm_value_flt(args[1]);
     break;
   case 3:
-    start = strm_value_int(args[0]);
-    inc = strm_value_int(args[1]);
-    end = strm_value_int(args[2]);
+    start = strm_value_flt(args[0]);
+    inc = strm_value_flt(args[1]);
+    end = strm_value_flt(args[2]);
     break;
   default:
     strm_raise(strm, "wrong number of arguments");
