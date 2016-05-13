@@ -236,6 +236,26 @@ exec_each(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 }
 
 static int
+ary_each(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  strm_value* v;
+  strm_int len;
+  strm_value func;
+  strm_int i;
+  strm_value r;
+
+  strm_get_args(strm, argc, args, "av", &v, &len, &func);
+
+  for (i=0; i<len; i++) {
+    if (strm_funcall(strm, func, 1, &v[i], &r) == STRM_NG) {
+      return STRM_NG;
+    }
+  }
+  *ret = strm_ary_value(args[0]);
+  return STRM_OK;
+}
+
+static int
 iter_map(strm_stream* strm, strm_value data)
 {
   struct map_data* d = strm->data;
@@ -249,13 +269,32 @@ iter_map(strm_stream* strm, strm_value data)
 }
 
 static int
-map_ary(strm_stream* strm, strm_array ary, strm_value func, strm_value* ret)
+exec_map(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
-  strm_int len = strm_ary_len(ary);
-  strm_value* v = strm_ary_ptr(ary);
-  strm_array a2 = strm_ary_new(NULL, len);
-  strm_value* v2 = strm_ary_ptr(a2);
+  struct map_data* d;
+  strm_value func;
+
+  strm_get_args(strm, argc, args, "v", &func);
+  d = malloc(sizeof(struct map_data));
+  if (!d) return STRM_NG;
+  d->func = func;
+  *ret = strm_stream_value(strm_stream_new(strm_filter, iter_map, NULL, (void*)d));
+  return STRM_OK;
+}
+
+static int
+ary_map(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  strm_value* v;
+  strm_int len;
+  strm_value func;
   strm_int i;
+  strm_array a2;
+  strm_value* v2;
+
+  strm_get_args(strm, argc, args, "av", &v, &len, &func);
+  a2 = strm_ary_new(NULL, len);
+  v2 = strm_ary_ptr(a2);
 
   for (i=0; i<len; i++) {
     if (strm_funcall(strm, func, 1, &v[i], &v2[i]) == STRM_NG) {
@@ -263,23 +302,6 @@ map_ary(strm_stream* strm, strm_array ary, strm_value func, strm_value* ret)
     }
   }
   *ret = strm_ary_value(a2);
-  return STRM_OK;
-}
-
-static int
-exec_map(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
-{
-  struct map_data* d;
-  strm_value v1, v2;
-
-  strm_get_args(strm, argc, args, "v|v", &v1, &v2);
-  if (argc == 2) {
-    return map_ary(strm, strm_value_ary(v1), v2, ret);
-  }
-  d = malloc(sizeof(struct map_data));
-  if (!d) return STRM_NG;
-  d->func = v1;
-  *ret = strm_stream_value(strm_stream_new(strm_filter, iter_map, NULL, (void*)d));
   return STRM_OK;
 }
 
@@ -348,33 +370,34 @@ flatmap_push(strm_stream* strm, strm_array ary, strm_value func, strm_value** p)
 }
 
 static int
-flatmap_ary(strm_stream* strm, strm_array ary, strm_value func, strm_value* ret)
+exec_flatmap(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
-  strm_int len = flatmap_len(ary);
-  strm_array a2 = strm_ary_new(NULL, len);;
-  strm_value* v2 = strm_ary_ptr(a2);
+  struct map_data* d;
+  strm_value func;
 
-  if (flatmap_push(strm, ary, func, &v2) == STRM_NG) {
-    return STRM_NG;
-  }
-  *ret = strm_ary_value(a2);
+  strm_get_args(strm, argc, args, "v", &func);
+  d = malloc(sizeof(struct map_data));
+  if (!d) return STRM_NG;
+  d->func = func;
+  *ret = strm_stream_value(strm_stream_new(strm_filter, iter_flatmap, NULL, (void*)d));
   return STRM_OK;
 }
 
 static int
-exec_flatmap(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+ary_flatmap(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
-  struct map_data* d;
-  strm_value v1, v2;
+  strm_value ary;
+  strm_value func;
+  strm_array a2;
+  strm_value* v2;
 
-  strm_get_args(strm, argc, args, "v|v", &v1, &v2);
-  if (argc == 2) {
-    return flatmap_ary(strm, strm_value_ary(v1), v2, ret);
+  strm_get_args(strm, argc, args, "Av", &ary, &func);
+  a2 = strm_ary_new(NULL, flatmap_len(ary));
+  v2 = strm_ary_ptr(a2);
+  if (flatmap_push(strm, ary, func, &v2) == STRM_NG) {
+    return STRM_NG;
   }
-  d = malloc(sizeof(struct map_data));
-  if (!d) return STRM_NG;
-  d->func = v1;
-  *ret = strm_stream_value(strm_stream_new(strm_filter, iter_flatmap, NULL, (void*)d));
+  *ret = strm_ary_value(a2);
   return STRM_OK;
 }
 
@@ -739,5 +762,8 @@ strm_iter_init(strm_state* state)
   strm_var_def(state, "reduce_by_key", strm_cfunc_value(exec_rbk));
   strm_var_def(state, "split", strm_cfunc_value(exec_split));
 
+  strm_var_def(strm_array_ns, "each", strm_cfunc_value(ary_each));
+  strm_var_def(strm_array_ns, "map", strm_cfunc_value(ary_map));
+  strm_var_def(strm_array_ns, "flatmap", strm_cfunc_value(ary_flatmap));
   strm_stat_init(state);
 }
