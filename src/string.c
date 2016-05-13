@@ -339,10 +339,10 @@ strm_state* strm_string_ns;
 static int
 str_length(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
+  char* p;
   strm_int len;
 
-  if (argc != 1) return STRM_NG;
-  len = strm_str_len(strm_value_str(args[0]));
+  strm_get_args(strm, argc, args, "s", &p, &len);
   *ret = strm_int_value(len);
   return STRM_OK;
 }
@@ -351,11 +351,11 @@ static int
 str_split(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   strm_string str;
-  strm_string sep;
   const char* s;
   strm_int slen;
   const char* t;
   const char* p;
+  strm_int plen;
   const char* pend;
   char c;
   strm_int n = 0;
@@ -363,30 +363,16 @@ str_split(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   strm_value* sps;
   strm_int i;
 
-  switch (argc) {
-  case 1:
-    str = args[0];
-    sep = strm_str_lit(" ");
-    break;
-  case 2:
-    str = args[0];
-    if (!strm_string_p(args[1])) {
-      strm_raise(strm, "need string separator");
-      return STRM_NG;
-    }
-    sep = strm_value_str(args[1]);
-    break;
-  default:
-    strm_raise(strm, "wrong number of arguments");
-    return STRM_NG;
+  strm_get_args(strm, argc, args, "s|s", &p, &plen, &s, &slen);
+  if (argc == 1) {
+    s = " ";
+    slen = 1;
   }
 
   /* count number of split strings */
-  s = strm_str_ptr(sep);
-  slen = strm_str_len(sep);
   c = s[0];
-  t = p = strm_str_ptr(str);
-  pend = p + strm_str_len(str) - slen;
+  t = p;
+  pend = p + plen - slen;
   n = 0;
   while (p<pend) {
     if (*p == c) {
@@ -404,8 +390,6 @@ str_split(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   /* actual split */
   ary = strm_ary_new(NULL, n);
   sps = strm_ary_ptr(ary);
-  s = strm_str_ptr(sep);
-  slen = strm_str_len(sep);
   c = s[0];
   t = p = strm_str_ptr(str);
   pend = p + strm_str_len(str) - slen;

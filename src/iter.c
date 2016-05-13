@@ -24,31 +24,21 @@ gen_seq(strm_stream* strm, strm_value data)
 static int
 exec_seq(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
-  double start=1, end=-1, inc=1;
+  double start=1, end=-1, inc=1, tmp;
   struct seq_data* d;
 
+  strm_get_args(strm, argc, args, "|fff", &start, &end, &tmp);
   switch (argc) {
-  case 0:
-    break;
   case 1:
-    end = strm_value_flt(args[0]);
-    break;
-  case 2:
-    start = strm_value_flt(args[0]);
-    end = strm_value_flt(args[1]);
+    end = start;
+    start = 1;
     break;
   case 3:
-    start = strm_value_flt(args[0]);
-    inc = strm_value_flt(args[1]);
-    end = strm_value_flt(args[2]);
-    if (inc <= 0) {
-      strm_raise(strm, "invalid increment value");
-      return STRM_NG;
-    }
+    inc = end;
+    end = tmp;
     break;
   default:
-    strm_raise(strm, "wrong number of arguments");
-    return STRM_NG;
+    break;
   }
   d = malloc(sizeof(struct seq_data));
   d->n = start;
@@ -108,11 +98,7 @@ exec_rand(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   strm_int n;
 
-  if (argc != 1) {
-    strm_raise(strm, "wrong number of arguments");
-    return STRM_NG;
-  }
-  n = strm_value_int(args[0]);
+  strm_get_args(strm, argc, args, "i", &n);
   xorshift64init();
   *ret = strm_stream_value(strm_stream_new(strm_producer, gen_rand, fin_rand,
                                        (void*)(intptr_t)n));
@@ -154,19 +140,9 @@ exec_repeat(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   strm_int n = -1;
   struct repeat_data *d;
 
-  switch (argc) {
-  case 2:
-    n = strm_value_int(args[1]);
-    if (n <= 0) {
-      strm_raise(strm, "invalid count number");
-      return STRM_NG;
-    }
-    /* fall through */
-  case 1:
-    v = args[0];
-    break;
-  default:
-    strm_raise(strm, "wrong number of arguments");
+  strm_get_args(strm, argc, args, "v|i", &v, &n);
+  if (argc == 2 && n <= 0) {
+    strm_raise(strm, "invalid count number");
     return STRM_NG;
   }
   d = malloc(sizeof(struct repeat_data));
@@ -220,23 +196,9 @@ exec_cycle(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   strm_int n = -1;
   struct cycle_data *d;
 
-  switch (argc) {
-  case 2:
-    n = strm_value_int(args[1]);
-    if (n <= 0) {
-      strm_raise(strm, "invalid count number");
-      return STRM_NG;
-    }
-    /* fall through */
-  case 1:
-    v = args[0];
-    if (!strm_array_p(v)) {
-      strm_raise(strm, "array required");
-      return STRM_NG;
-    }
-    break;
-  default:
-    strm_raise(strm, "wrong number of arguments");
+  strm_get_args(strm, argc, args, "A|i", &v, &n);
+  if (argc == 2 && n <= 0) {
+    strm_raise(strm, "invalid count number");
     return STRM_NG;
   }
   d = malloc(sizeof(struct cycle_data));
@@ -266,8 +228,9 @@ static int
 exec_each(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   struct map_data* d = malloc(sizeof(struct map_data));
+  strm_value func;
 
-  d->func = args[0];
+  strm_get_args(strm, argc, args, "v", &func);
   *ret = strm_stream_value(strm_stream_new(strm_filter, iter_each, NULL, (void*)d));
   return STRM_OK;
 }
@@ -307,19 +270,15 @@ static int
 exec_map(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   struct map_data* d;
+  strm_value v1, v2;
 
-  switch (argc) {
-  case 1:                       /* map(func) */
-    break;
-  case 2:                       /* map(ary, func) */
-    return map_ary(strm, strm_value_ary(args[0]), args[1], ret);
-  default:
-    strm_raise(strm, "wrong number of arguments");
-    return STRM_NG;
+  strm_get_args(strm, argc, args, "v|v", &v1, &v2);
+  if (argc == 2) {
+    return map_ary(strm, strm_value_ary(v1), v2, ret);
   }
   d = malloc(sizeof(struct map_data));
   if (!d) return STRM_NG;
-  d->func = args[0];
+  d->func = v1;
   *ret = strm_stream_value(strm_stream_new(strm_filter, iter_map, NULL, (void*)d));
   return STRM_OK;
 }
@@ -406,19 +365,15 @@ static int
 exec_flatmap(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   struct map_data* d;
+  strm_value v1, v2;
 
-  switch (argc) {
-  case 1:                       /* flatmap(func) */
-    break;
-  case 2:                       /* flatmap(ary, func) */
-    return flatmap_ary(strm, strm_value_ary(args[0]), args[1], ret);
-  default:
-    strm_raise(strm, "wrong number of arguments");
-    return STRM_NG;
+  strm_get_args(strm, argc, args, "v|v", &v1, &v2);
+  if (argc == 2) {
+    return flatmap_ary(strm, strm_value_ary(v1), v2, ret);
   }
   d = malloc(sizeof(struct map_data));
   if (!d) return STRM_NG;
-  d->func = args[0];
+  d->func = v1;
   *ret = strm_stream_value(strm_stream_new(strm_filter, iter_flatmap, NULL, (void*)d));
   return STRM_OK;
 }
@@ -443,7 +398,7 @@ exec_filter(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   struct map_data* d = malloc(sizeof(struct map_data));
 
-  d->func = args[0];
+  strm_get_args(strm, argc, args, "v", &d->func);
   *ret = strm_stream_value(strm_stream_new(strm_filter, iter_filter, NULL, (void*)d));
   return STRM_OK;
 }
@@ -474,7 +429,10 @@ count_finish(strm_stream* strm, strm_value data)
 static int
 exec_count(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
-  struct count_data* d = malloc(sizeof(struct count_data));
+  struct count_data* d;
+
+  strm_get_args(strm, argc, args, "");
+  d = malloc(sizeof(struct count_data));
   d->count = 0;
   *ret = strm_stream_value(strm_stream_new(strm_filter, iter_count, count_finish, (void*)d));
   return STRM_OK;
@@ -539,16 +497,7 @@ exec_minmax(strm_stream* strm, int argc, strm_value* args, strm_value* ret, int 
   struct minmax_data* d;
   strm_value func = strm_nil_value();
 
-  switch (argc) {
-  case 0:                       /* min()/max() */
-    break;
-  case 1:                       /* min(func)/max(func) */
-    func = args[0];
-    break;
-  default:
-    strm_raise(strm, "wrong number of arguments");
-    return STRM_NG;
-  }
+  strm_get_args(strm, argc, args, "|v", &func);
   d = malloc(sizeof(struct minmax_data));
   if (!d) return STRM_NG;
   d->start = TRUE;
@@ -614,28 +563,21 @@ static int
 exec_reduce(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   struct reduce_data* d;
-  strm_int init = 0;
-  strm_value acc;
-  strm_value func;
+  strm_value v1, v2;
 
-  switch (argc) {
-  case 1:
-    func = args[0];
-    break;
-  case 2:
-    init = 1;
-    acc = args[0];
-    func = args[1];
-    break;
-  default:
-    strm_raise(strm, "wrong number of arguments");
-    return STRM_NG;
-  }
+  strm_get_args(strm, argc, args, "v|v", &v1, &v2);
   d = malloc(sizeof(struct reduce_data));
   if (!d) return STRM_NG;
-  d->init = init;
-  d->acc = (init) ? acc : strm_nil_value();
-  d->func = func;
+  if (argc == 2) {
+    d->init = TRUE;
+    d->acc = v1;
+    d->func = v2;
+  }
+  else {
+    d->init = FALSE;
+    d->acc = strm_nil_value();
+    d->func = v1;
+  }
   *ret = strm_stream_value(strm_stream_new(strm_filter, iter_reduce, reduce_finish, (void*)d));
   return STRM_OK;
 }
@@ -708,11 +650,7 @@ exec_rbk(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   khash_t(rbk) *t;
   strm_value func;
 
-  if (argc != 1) {
-    strm_raise(strm, "wrong number of arguments");
-    return STRM_NG;
-  }
-  func = args[0];
+  strm_get_args(strm, argc, args, "v", &func);
   t = kh_init(rbk);
   if (!t) return STRM_NG;
   d = malloc(sizeof(struct rbk_data));
@@ -765,22 +703,11 @@ static int
 exec_split(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   struct split_data* d;
-  strm_value sep;
+  strm_string sep;
 
-  switch (argc) {
-  case 0:
+  strm_get_args(strm, argc, args, "|S", &sep);
+  if (argc == 0) {
     sep = strm_str_lit(" ");
-    break;
-  case 1:
-    if (!strm_string_p(args[0])) {
-      strm_raise(strm, "need string separator");
-      return STRM_NG;
-    }
-    sep = args[0];
-    break;
-  default:
-    strm_raise(strm, "wrong number of arguments");
-    return STRM_NG;
   }
   if (strm_str_len(sep) < 1) {
     strm_raise(strm, "separator string too short");

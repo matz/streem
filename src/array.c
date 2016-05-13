@@ -60,10 +60,10 @@ strm_state* strm_array_ns;
 static int
 ary_length(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
+  strm_value* v;
   strm_int len;
 
-  if (argc != 1) return STRM_NG;
-  len = strm_ary_len(strm_value_ary(args[0]));
+  strm_get_args(strm, argc, args, "a", &v, &len);
   *ret = strm_int_value(len);
   return STRM_OK;
 }
@@ -71,33 +71,19 @@ ary_length(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 static int
 ary_minmax(strm_stream* strm, int argc, strm_value* args, strm_value* ret, int min)
 {
-  strm_array values;
   strm_value func = strm_nil_value();
   int i, len;
   strm_value* v;
   strm_value e, val;
   double num, f;
 
-  switch (argc) {
-  case 2:                       /* min(ary,func)/max(ary,func) */
-    func = args[1];
-    /* fall through */
-  case 1:                       /* min(ary)/max(ary) */
-    values = args[0];
-    break;
-  default:
-    strm_raise(strm, "wrong number of arguments");
-    return STRM_NG;
-  }
-
-  len = strm_ary_len(values);
+  strm_get_args(strm, argc, args, "a|v", &v, &len, &func);
   if (len == 0) {
     *ret = strm_nil_value();
     return STRM_OK;
   }
-  v = strm_ary_ptr(values);
   val = v[0];
-  if (!strm_nil_p(func)) {
+  if (argc == 2) {
     if (strm_funcall(strm, func, 1, &v[0], &e) == STRM_NG) {
       return STRM_NG;
     }
@@ -107,7 +93,7 @@ ary_minmax(strm_stream* strm, int argc, strm_value* args, strm_value* ret, int m
   }
   num = strm_value_flt(e);
   for (i=1; i<len; i++) {
-    if (!strm_nil_p(func)) {
+    if (argc == 2) {
       if (strm_funcall(strm, func, 1, &v[i], &e) == STRM_NG) {
         return STRM_NG;
       }

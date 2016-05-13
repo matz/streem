@@ -16,10 +16,7 @@ math_sin(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   double f;
 
-  if (argc != 1) {
-    strm_raise(strm, "wrong number of arguments");
-    return STRM_NG;
-  }
+  strm_get_args(strm, argc, args, "f", &f);
   f = strm_value_flt(args[0]);
   *ret = strm_flt_value(sin(f));
   return STRM_OK;
@@ -30,10 +27,7 @@ math_cos(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   double f;
 
-  if (argc != 1) {
-    strm_raise(strm, "wrong number of arguments");
-    return STRM_NG;
-  }
+  strm_get_args(strm, argc, args, "f", &f);
   f = strm_value_flt(args[0]);
   *ret = strm_flt_value(cos(f));
   return STRM_OK;
@@ -44,11 +38,7 @@ math_tan(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   double f;
 
-  if (argc != 1) {
-    strm_raise(strm, "wrong number of arguments");
-    return STRM_NG;
-  }
-  f = strm_value_flt(args[0]);
+  strm_get_args(strm, argc, args, "f", &f);
   *ret = strm_flt_value(tan(f));
   return STRM_OK;
 }
@@ -58,12 +48,7 @@ math_pow(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   double x, y;
 
-  if (argc != 2) {
-    strm_raise(strm, "wrong number of arguments");
-    return STRM_NG;
-  }
-  x = strm_value_flt(args[0]);
-  y = strm_value_flt(args[1]);
+  strm_get_args(strm, argc, args, "ff", &x, &y);
   *ret = strm_flt_value(pow(x, y));
   return STRM_OK;
 }

@@ -43,10 +43,7 @@ exec_sum_avg(strm_stream* strm, int argc, strm_value* args, strm_value* ret, int
 {
   struct sum_data* d;
 
-  if (argc != 0) {
-    strm_raise(strm, "wrong number of arguments");
-    return STRM_NG;
-  }
+  strm_get_args(strm, argc, args, "");
   d = malloc(sizeof(struct sum_data));
   if (!d) return STRM_NG;
   d->sum = 0;
@@ -72,31 +69,26 @@ exec_avg(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 static int
 ary_sum_avg(strm_stream* strm, int argc, strm_value* args, strm_value* ret, int avg)
 {
-  if (argc != 1) {
-    strm_raise(strm, "wrong number of arguments");
-    return STRM_NG;
+  int i, len;
+  strm_value* v;
+  double sum = 0;
+  double c = 0;
+
+  strm_get_args(strm, argc, args, "a", &v, &len);
+
+  for (i=0; i<len; i++) {
+    double y = strm_value_flt(v[i]) - c;
+    double t = sum + y;
+    c = (t - sum) - y;
+    sum =  t;
+  }
+  if (avg) {
+    *ret = strm_flt_value(sum/len);
   }
   else {
-    strm_array values = strm_value_ary(args[0]);
-    int i, len = strm_ary_len(values);
-    strm_value* v = strm_ary_ptr(values);
-    double sum = 0;
-    double c = 0;
-
-    for (i=0; i<len; i++) {
-      double y = strm_value_flt(v[i]) - c;
-      double t = sum + y;
-      c = (t - sum) - y;
-      sum =  t;
-    }
-    if (avg) {
-      *ret = strm_flt_value(sum/len);
-    }
-    else {
-      *ret = strm_flt_value(sum);
-    }
-    return STRM_OK;
+    *ret = strm_flt_value(sum);
   }
+  return STRM_OK;
 }
 
 static int
@@ -152,10 +144,7 @@ exec_var_stdev(strm_stream* strm, int argc, strm_value* args, strm_value* ret, i
 {
   struct stdev_data* d;
 
-  if (argc != 0) {
-    strm_raise(strm, "wrong number of arguments");
-    return STRM_NG;
-  }
+  strm_get_args(strm, argc, args, "");
   d = malloc(sizeof(struct stdev_data));
   if (!d) return STRM_NG;
   d->num = 0;
@@ -180,30 +169,25 @@ exec_variance(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 static int
 ary_var_stdev(strm_stream* strm, int argc, strm_value* args, strm_value* ret, int stdev)
 {
-  if (argc != 1) {
-    strm_raise(strm, "wrong number of arguments");
-    return STRM_NG;
-  }
-  else {
-    strm_array values = strm_value_ary(args[0]);
-    int i, len = strm_ary_len(values);
-    strm_value* v = strm_ary_ptr(values);
-    double s1, s2;
+  strm_value* v;
+  int i, len;
+  double s1, s2;
 
-    s1 = s2 = 0.0;
-    for (i=0; i<len; i++) {
-      double x = strm_value_flt(v[i]);
-      x -= s1;
-      s1 += x/(i+1);
-      s2 += i * x * x / (i+1);
-    }
-    s2 = s2 / (i-1);
-    if (stdev) {
-      s2 = sqrt(s2);
-    }
-    *ret = strm_flt_value(s2);
-    return STRM_OK;
+  strm_get_args(strm, argc, args, "a", &v, &len);
+
+  s1 = s2 = 0.0;
+  for (i=0; i<len; i++) {
+    double x = strm_value_flt(v[i]);
+    x -= s1;
+    s1 += x/(i+1);
+    s2 += i * x * x / (i+1);
   }
+  s2 = s2 / (i-1);
+  if (stdev) {
+    s2 = sqrt(s2);
+  }
+  *ret = strm_flt_value(s2);
+  return STRM_OK;
 }
 
 static int
@@ -265,15 +249,7 @@ exec_sample(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   struct sample_data* d;
   strm_int len;
 
-  if (argc != 1) {
-    strm_raise(strm, "wrong number of arguments");
-    return STRM_NG;
-  }
-  if (!strm_num_p(args[0])) {
-    strm_raise(strm, "require number of samples");
-    return STRM_NG;
-  }
-  len = strm_value_int(args[0]);
+  strm_get_args(strm, argc, args, "i", &len);
   d = malloc(sizeof(struct sample_data)+sizeof(strm_value)*len);
   if (!d) return STRM_NG;
   d->len = len;

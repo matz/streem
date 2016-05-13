@@ -47,10 +47,12 @@ node_to_str(node_string s)
 static int
 exec_plus(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
-  assert(argc == 2);
-  if (strm_string_p(*args)) {
-    strm_string str1 = strm_value_str(args[0]);
-    strm_string str2 = strm_value_str(args[1]);
+  strm_value x, y;
+
+  strm_get_args(strm, argc, args, "vv", &x, &y);
+  if (strm_string_p(x) && strm_string_p(y)) {
+    strm_string str1 = strm_value_str(x);
+    strm_string str2 = strm_value_str(y);
     strm_string str3 = strm_str_new(NULL, strm_str_len(str1) + strm_str_len(str2));
     char *p;
 
@@ -61,12 +63,12 @@ exec_plus(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
     *ret = strm_str_value(str3);
     return STRM_OK;
   }
-  if (strm_int_p(args[0]) && strm_int_p(args[1])) {
-    *ret = strm_int_value(strm_value_int(args[0])+strm_value_int(args[1]));
+  if (strm_int_p(x) && strm_int_p(y)) {
+    *ret = strm_int_value(strm_value_int(x)+strm_value_int(y));
     return STRM_OK;
   }
-  if (strm_num_p(args[0])) {
-    *ret = strm_flt_value(strm_value_flt(args[0])+strm_value_flt(args[1]));
+  if (strm_flt_p(x) && strm_flt_p(y)) {
+    *ret = strm_flt_value(strm_value_flt(x)+strm_value_flt(y));
     return STRM_OK;
   }
   return STRM_NG;
@@ -86,14 +88,18 @@ exec_minus(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
     }
     return STRM_NG;
   }
-  assert(argc == 2);
-  if (strm_int_p(args[0]) && strm_int_p(args[1])) {
-    *ret = strm_int_value(strm_value_int(args[0])-strm_value_int(args[1]));
-    return STRM_OK;
-  }
-  if (strm_num_p(args[0])) {
-    *ret = strm_flt_value(strm_value_flt(args[0])-strm_value_flt(args[1]));
-    return STRM_OK;
+  else {
+    strm_value x, y;
+
+    strm_get_args(strm, argc, args, "vv", &x, &y);
+    if (strm_int_p(x) && strm_int_p(y)) {
+      *ret = strm_int_value(strm_value_int(args[0])-strm_value_int(args[1]));
+      return STRM_OK;
+    }
+    if (strm_flt_p(x) && strm_flt_p(y)) {
+      *ret = strm_flt_value(strm_value_flt(args[0])-strm_value_flt(args[1]));
+      return STRM_OK;
+    }
   }
   return STRM_NG;
 }
@@ -101,12 +107,14 @@ exec_minus(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 static int
 exec_mult(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
-  assert(argc == 2);
-  if (strm_int_p(args[0]) && strm_int_p(args[1])) {
+  strm_value x, y;
+
+  strm_get_args(strm, argc, args, "vv", &x, &y);
+  if (strm_int_p(x) && strm_int_p(y)) {
     *ret = strm_int_value(strm_value_int(args[0])*strm_value_int(args[1]));
     return STRM_OK;
   }
-  if (strm_num_p(args[0])) {
+  if (strm_flt_p(x) && strm_flt_p(y)) {
     *ret = strm_flt_value(strm_value_flt(args[0])*strm_value_flt(args[1]));
     return STRM_OK;
   }
@@ -116,56 +124,70 @@ exec_mult(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 static int
 exec_div(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
-  assert(argc == 2);
-  *ret = strm_flt_value(strm_value_flt(args[0])/strm_value_flt(args[1]));
+  double x, y;
+
+  strm_get_args(strm, argc, args, "ff", &x, &y);
+  *ret = strm_flt_value(x/y);
   return STRM_OK;
 }
 
 static int
 exec_gt(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
-  assert(argc == 2);
-  *ret = strm_bool_value(strm_value_flt(args[0])>strm_value_flt(args[1]));
+  double x, y;
+
+  strm_get_args(strm, argc, args, "ff", &x, &y);
+  *ret = strm_flt_value(x>y);
   return STRM_OK;
 }
 
 static int
 exec_ge(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
-  assert(argc == 2);
-  *ret = strm_bool_value(strm_value_flt(args[0])>=strm_value_flt(args[1]));
+  double x, y;
+
+  strm_get_args(strm, argc, args, "ff", &x, &y);
+  *ret = strm_flt_value(x>=y);
   return STRM_OK;
 }
 
 static int
 exec_lt(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
-  assert(argc == 2);
-  *ret = strm_bool_value(strm_value_flt(args[0])<strm_value_flt(args[1]));
+  double x, y;
+
+  strm_get_args(strm, argc, args, "ff", &x, &y);
+  *ret = strm_flt_value(x<y);
   return STRM_OK;
 }
 
 static int
 exec_le(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
-  assert(argc == 2);
-  *ret = strm_bool_value(strm_value_flt(args[0])<=strm_value_flt(args[1]));
+  double x, y;
+
+  strm_get_args(strm, argc, args, "ff", &x, &y);
+  *ret = strm_flt_value(x<=y);
   return STRM_OK;
 }
 
 static int
 exec_eq(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
-  assert(argc == 2);
-  *ret = strm_bool_value(strm_value_eq(args[0], args[1]));
+  strm_value x, y;
+
+  strm_get_args(strm, argc, args, "vv", &x, &y);
+  *ret = strm_bool_value(strm_value_eq(x, y));
   return STRM_OK;
 }
 
 static int
 exec_neq(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
-  assert(argc == 2);
-  *ret = strm_bool_value(!strm_value_eq(args[0], args[1]));
+  strm_value x, y;
+
+  strm_get_args(strm, argc, args, "vv", &x, &y);
+  *ret = strm_bool_value(!strm_value_eq(x, y));
   return STRM_OK;
 }
 
@@ -235,26 +257,25 @@ strm_connect(strm_stream* strm, strm_value src, strm_value dst, strm_value* ret)
 static int
 exec_bar(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
-  assert(argc == 2);
-  /* int x int */
-  if (strm_int_p(args[0]) && strm_int_p(args[1])) {
-    *ret = strm_int_value(strm_value_int(args[0])|strm_value_int(args[1]));
+  strm_value x, y;
+
+  strm_get_args(strm, argc, args, "vv", &x, &y);
+  if (strm_num_p(x) && strm_num_p(y)) {
+    *ret = strm_int_value(strm_value_int(x)|strm_value_int(y));
     return STRM_OK;
   }
 
-  return strm_connect(strm, args[0], args[1], ret);
+  return strm_connect(strm, x, y, ret);
 }
 
 static int
 exec_mod(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
-  assert(argc == 2);
-  if (strm_int_p(args[0]) && strm_int_p(args[1])) {
-    *ret = strm_int_value(strm_value_int(args[0])%strm_value_int(args[1]));
-    return STRM_OK;
-  }
-  if (strm_num_p(args[0])) {
-    *ret = strm_flt_value((int)strm_value_flt(args[0])%(int)strm_value_flt(args[1]));
+  strm_value x, y;
+
+  strm_get_args(strm, argc, args, "vv", &x, &y);
+  if (strm_num_p(x) && strm_num_p(y)) {
+    *ret = strm_int_value(strm_value_int(x)%strm_value_int(y));
     return STRM_OK;
   }
   return STRM_NG;
@@ -708,9 +729,7 @@ exec_fread(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   strm_string path;
   char buf[7];
 
-  assert(argc == 1);
-  assert(strm_string_p(args[0]));
-  path = strm_value_str(args[0]);
+  strm_get_args(strm, argc, args, "S", &path);
   fd = open(strm_str_cstr(path, buf), O_RDONLY);
   if (fd < 0) return STRM_NG;
   *ret = strm_io_new(fd, STRM_IO_READ);
@@ -724,9 +743,7 @@ exec_fwrite(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   strm_string path;
   char buf[7];
 
-  assert(argc == 1);
-  assert(strm_string_p(args[0]));
-  path = strm_value_str(args[0]);
+  strm_get_args(strm, argc, args, "S", &path);
   fd = open(strm_str_cstr(path, buf), O_WRONLY|O_CREAT, 0644);
   if (fd < 0) return STRM_NG;
   *ret = strm_io_new(fd, STRM_IO_WRITE);
@@ -736,20 +753,11 @@ exec_fwrite(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 static int
 exec_exit(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
-  strm_int estatus;
+  strm_int estatus = EXIT_SUCCESS;
 
-  switch (argc) {
-  case 0:
-    estatus = EXIT_SUCCESS;
-    break;
-  case 1:
-    estatus = strm_value_int(args[0]);
-    break;
-  default:
-    strm_raise(strm, "wrong # of arguments");
-    return STRM_NG;
-  }
+  strm_get_args(strm, argc, args, "|i", &estatus);
   exit(estatus);
+  /* not reached */
   *ret = strm_int_value(estatus);
   return STRM_OK;
 }

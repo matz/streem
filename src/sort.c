@@ -169,20 +169,9 @@ static int
 exec_sort(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   struct sort_data* d;
-  strm_value func;
+  strm_value func = strm_nil_value();
 
-  switch (argc) {
-  case 0:
-    func = strm_nil_value();
-    break;
-  case 1:
-    func = args[0];
-    break;
-  default:
-    strm_raise(strm, "wrong number of arguments");
-    return STRM_NG;
-  }
-
+  strm_get_args(strm, argc, args, "|v", &func);
   d = malloc(sizeof(struct sort_data));
   if (!d) return STRM_NG;
   d->func = func;
@@ -204,19 +193,12 @@ ary_sort(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   strm_array ary;
   strm_value* p;
   strm_int len;
+  strm_value func;
 
-  switch (argc) {
-  case 1:
-  case 2:
-    break;
-  default:
-    strm_raise(strm, "wrong number of arguments");
-    return STRM_NG;
-  }
+  strm_get_args(strm, argc, args, "a|v", &p, &len, &func);
 
-  ary = strm_ary_new(strm_ary_ptr(args[0]), strm_ary_len(args[0]));
+  ary = strm_ary_new(p, len);
   p = strm_ary_ptr(ary);
-  len = strm_ary_len(ary);
   if (argc == 1) {
     mem_sort(p, len, NULL);
   }
@@ -224,7 +206,7 @@ ary_sort(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
     struct sort_arg arg;
 
     arg.strm = strm;
-    arg.func = args[1];
+    arg.func = func;
     mem_sort(p, len, &arg);
   }
   *ret = strm_ary_value(ary);
@@ -309,16 +291,14 @@ static int
 exec_sortby(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   struct sortby_data* d;
+  strm_value func;
 
-  if (argc != 1) {
-    strm_raise(strm, "wrong number of arguments");
-    return STRM_NG;
-  }
+  strm_get_args(strm, argc, args, "v", &func);
 
   d = malloc(sizeof(struct sortby_data));
   if (!d) return STRM_NG;
   d->strm = strm;
-  d->func = args[0];
+  d->func = func;
   d->len = 0;
   d->capa = SORT_FIRST_CAPA;
   d->buf = malloc(sizeof(struct sortby_value)*SORT_FIRST_CAPA);
@@ -335,23 +315,19 @@ static int
 ary_sortby(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   struct sortby_value* buf;
-  strm_array ary;
   strm_value* p;
   strm_int len;
+  strm_value func;
+  strm_array ary;
   strm_int i;
 
-  if (argc != 2) {
-    strm_raise(strm, "wrong number of arguments");
-    return STRM_NG;
-  }
+  strm_get_args(strm, argc, args, "av", &p, &len, &func);
 
-  p = strm_ary_ptr(args[0]);
-  len = strm_ary_len(args[0]);
   buf = malloc(sizeof(struct sortby_value)*len);
   if (!buf) return STRM_NG;
   for (i=0; i<len; i++) {
     buf[i].o = p[i];
-    if (strm_funcall(strm, args[1], 1, &p[i], &buf[i].v) == STRM_NG) {
+    if (strm_funcall(strm, func, 1, &p[i], &buf[i].v) == STRM_NG) {
       free(buf);
       return STRM_NG;;
     }
@@ -484,21 +460,11 @@ exec_median(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   struct sort_data* d;
   strm_value func;
 
-  switch (argc) {
-  case 0:
-    func = strm_nil_value();
-    break;
-  case 1:
-    func = args[0];
-    break;
-  default:
-    strm_raise(strm, "wrong number of arguments");
-    return STRM_NG;
-  }
+  strm_get_args(strm, argc, args, "|v", &func);
 
   d = malloc(sizeof(struct sort_data));
   if (!d) return STRM_NG;
-  d->func = func;
+  d->func = (argc == 0) ? strm_nil_value() : func;
   d->len = 0;
   d->capa = SORT_FIRST_CAPA;
   d->buf = malloc(sizeof(strm_value)*SORT_FIRST_CAPA);
@@ -517,19 +483,11 @@ ary_median(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   strm_value* buf;
   strm_value* p;
   strm_int len;
+  strm_value func;
   strm_int i;
 
-  switch (argc) {
-  case 1:
-  case 2:
-    break;
-  default:
-    strm_raise(strm, "wrong number of arguments");
-    return STRM_NG;
-  }
+  strm_get_args(strm, argc, args, "a|v", &p, &len, &func);
 
-  p = strm_ary_ptr(args[0]);
-  len = strm_ary_len(args[0]);
   if (len == 0) {
     strm_raise(strm, "empty array");
     return STRM_NG;
@@ -558,12 +516,10 @@ static int
 exec_cmp(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   strm_int cmp;
+  strm_value x, y;
 
-  if (argc != 2) {
-    strm_raise(strm, "wrong number of arguments");
-    return STRM_NG;
-  }
-  cmp = strm_cmp(args[0], args[1]);
+  strm_get_args(strm, argc, args, "vv", &x, &y);
+  cmp = strm_cmp(x, y);
   *ret = strm_int_value(cmp);
   return STRM_OK;
 }

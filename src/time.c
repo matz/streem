@@ -321,11 +321,12 @@ time_time(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   switch (argc) {
   case 1:                       /* string */
     {
-      strm_string str = strm_value_str(args[0]);
+      char* s;
+      int slen;
       long sec, usec;
 
-      if (strm_time_parse_time(strm_str_ptr(str), strm_str_len(str),
-                               &sec, &usec, &utc_offset) < 0) {
+      strm_get_args(strm, argc, args, "s", &s, &slen);
+      if (strm_time_parse_time(s, slen, &sec, &usec, &utc_offset) < 0) {
         strm_raise(strm, "bad time format");
         return STRM_NG;
       }
@@ -386,23 +387,19 @@ time_now(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   struct timeval tv;
   int utc_offset;
 
-  switch (argc) {
-  case 0:
+  if (argc == 0) {
     utc_offset = time_localoffset(0);
-   break;
-  case 1:                       /* timezone */
-    {
-      strm_string str = strm_value_str(args[0]);
-      utc_offset = parse_tz(strm_str_ptr(str), strm_str_len(str));
-      if (utc_offset == TZ_FAIL) {
-        strm_raise(strm, "wrong timezeone");
-        return STRM_NG;
-      }
+  }
+  else {
+    char *s;
+    strm_int slen;
+
+    strm_get_args(strm, argc, args, "s", &s, &slen);
+    utc_offset = parse_tz(s, slen);
+    if (utc_offset == TZ_FAIL) {
+      strm_raise(strm, "wrong timezeone");
+      return STRM_NG;
     }
-    break;
-  default:
-    strm_raise(strm, "wrong # of arguments");
-    return STRM_NG;
   }
   gettimeofday(&tv, NULL);
   return time_alloc(&tv, utc_offset, ret);
@@ -478,25 +475,22 @@ time_str(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   char *p;
   size_t n;
 
-  switch (argc) {
-  case 2:                       /* timezone */
-    t = get_time(args[0]);
-    {
-      strm_string str = strm_value_str(args[1]);
-      utc_offset = parse_tz(strm_str_ptr(str), strm_str_len(str));
-      if (utc_offset == TZ_FAIL) {
-        strm_raise(strm, "wrong timezeone");
-        return STRM_NG;
-      }
-    }
-    break;
-  case 1:
+  if (argc == 1) {
     t = get_time(args[0]);
     utc_offset = t->utc_offset;
-    break;
-  default:
-    strm_raise(strm, "wrong # of arguments");
-    return STRM_NG;
+  }
+  else {
+    strm_value time;
+    char* s;
+    strm_int slen;
+
+    strm_get_args(strm, argc, args, "v|s", &time, &s, &slen);
+    t = get_time(time);
+    utc_offset = parse_tz(s, slen);
+    if (utc_offset == TZ_FAIL) {
+      strm_raise(strm, "wrong timezeone");
+      return STRM_NG;
+    }
   }
   if (utc_offset == TZ_NONE) {
     get_tm(t->tv.tv_sec, 0, &tm);
@@ -540,13 +534,11 @@ time_str(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 static int
 time_num(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
+  strm_value time;
   struct strm_time *t;
 
-  if (argc != 1) {
-    strm_raise(strm, "wrong # of arguments");
-    return STRM_NG;
-  }
-  t = get_time(args[0]);
+  strm_get_args(strm, argc, args, "v", &time);
+  t = get_time(time);
   if (t->tv.tv_usec == 0) {
     *ret = strm_int_value(t->tv.tv_sec);
   }
@@ -560,10 +552,12 @@ time_num(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 static int \
 attr(strm_stream* strm, int argc, strm_value* args, strm_value* ret)\
 {\
+  strm_value time;\
   struct strm_time *t;\
   struct tm tm;\
 \
-  t = get_time(args[0]);\
+  strm_get_args(strm, argc, args, "v", &time);\
+  t = get_time(time);\
   get_tm(t->tv.tv_sec, t->utc_offset, &tm);\
   *ret = strm_int_value(tm.value);\
   return STRM_OK;\
@@ -579,9 +573,11 @@ time_func(time_sec, tm_sec);
 static int
 time_nanosec(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
+  strm_value time;
   struct strm_time *t;
 
-  t = get_time(args[0]);
+  strm_get_args(strm, argc, args, "v", &time);
+  t = get_time(time);
   *ret = strm_int_value(t->tv.tv_usec*1000);
   return STRM_OK;
 }
