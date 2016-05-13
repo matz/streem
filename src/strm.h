@@ -189,6 +189,11 @@ extern int strm_event_loop_started;
 void strm_raise(strm_stream*, const char*);
 int strm_funcall(strm_stream*, strm_value, int, strm_value*, strm_value*);
 void strm_eprint(strm_stream*);
+int strm_parse_args(strm_stream*, int, strm_value*, const char*,...);
+#define strm_get_args(strm,argc,argv,...) do {\
+  if (strm_parse_args(strm,argc,argv,__VA_ARGS__) == STRM_NG)\
+    return STRM_NG;\
+} while(0)
 
 /* ----- queue */
 struct strm_task {

@@ -4,10 +4,9 @@
 static int
 math_sqrt(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
-  if (argc != 1) {
-    strm_raise(strm, "wrong number of arguments");
-    return STRM_NG;
-  }
+  double f;
+
+  strm_get_args(strm, argc, args, "f", &f);
   *ret = strm_flt_value(sqrt(strm_value_flt(args[0])));
   return STRM_OK;
 }
