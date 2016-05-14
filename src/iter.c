@@ -81,7 +81,7 @@ gen_rand(strm_stream* strm, strm_value data)
 {
   strm_int n = (strm_int)(intptr_t)strm->data;
   uint64_t r = xorshift64star();
-  
+
   strm_emit(strm, strm_int_value(r % n), gen_rand);
   return STRM_OK;
 }
