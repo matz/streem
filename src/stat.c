@@ -202,6 +202,97 @@ ary_var(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   return ary_var_stdev(strm, argc, args, ret, FALSE);
 }
 
+struct correl_data {
+  strm_int n;
+  double sx, sy, sxx, syy, sxy;
+};
+
+static int
+iter_correl(strm_stream* strm, strm_value data)
+{
+  struct correl_data* d = strm->data;
+  strm_value *v;
+  double dx, dy;
+
+  if (!strm_array_p(data) || strm_ary_len(data) != 2) {
+    strm_raise(strm, "invalid data");
+    return STRM_NG;
+  }
+
+  v = strm_ary_ptr(data);
+  if (!strm_num_p(v[0]) || !strm_num_p(v[1])) {
+    strm_raise(strm, "correl() requires [num, num]");
+    return STRM_NG;
+  }
+  d->n++;
+  dx = strm_value_flt(v[0]) - d->sx; d->sx += dx / d->n;
+  dy = strm_value_flt(v[1]) - d->sy; d->sy += dy / d->n;
+  d->sxx += (d->n-1) * dx * dx / d->n;
+  d->syy += (d->n-1) * dy * dy / d->n;
+  d->sxy += (d->n-1) * dx * dy / d->n;
+  return STRM_OK;
+}
+
+static int
+correl_finish(strm_stream* strm, strm_value data)
+{
+  struct correl_data* d = strm->data;
+
+  d->n--;
+  double sxx = sqrt(d->sxx / d->n);
+  double syy = sqrt(d->syy / d->n);
+  double sxy = d->sxy / (d->n * sxx * syy);
+  strm_emit(strm, strm_flt_value(sxy), NULL);
+  return STRM_OK;
+}
+
+static int
+exec_correl(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  struct correl_data* d;
+
+  strm_get_args(strm, argc, args, "");
+  d = malloc(sizeof(struct correl_data));
+  if (!d) return STRM_NG;
+  d->n = 0;
+  d->sx = d->sy = d->sxx = d->syy = d->sxy = 0;
+  *ret = strm_stream_value(strm_stream_new(strm_filter, iter_correl,
+                                           correl_finish, (void*)d));
+  return STRM_OK;
+}
+
+static int
+ary_correl(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  strm_value* v;
+  int i, len;
+  double sx, sy, sxx, syy, sxy;
+
+  strm_get_args(strm, argc, args, "a", &v, &len);
+  sx = sy = sxx = syy = sxy = 0;
+  for (i=0; i<len; i++) {
+    strm_value data = v[i];
+    strm_value* dv;
+    double dx, dy;
+
+    if (!strm_array_p(data) || strm_ary_len(data) != 2) {
+      /* skip invalid data */
+      continue;
+    }
+    dv = strm_ary_ptr(data);
+    dx = strm_value_flt(dv[0]) - sx; sx += dx / (i+1);
+    dy = strm_value_flt(dv[1]) - sy; sy += dy / (i+1);
+    sxx += i * dx * dx / (i+1);
+    syy += i * dy * dy / (i+1);
+    sxy += i * dx * dy / (i+1);
+  }
+  sxx = sqrt(sxx / (len-1));
+  syy = sqrt(syy / (len-1));
+  sxy /= (len-1) * sxx * syy;
+  *ret = strm_flt_value(sxy);
+  return STRM_OK;
+}
+
 void xorshift64init(void);
 uint64_t xorshift64star(void);
 
@@ -268,12 +359,14 @@ strm_stat_init(strm_state* state)
   strm_var_def(state, "average", strm_cfunc_value(exec_avg));
   strm_var_def(state, "stdev", strm_cfunc_value(exec_stdev));
   strm_var_def(state, "variance", strm_cfunc_value(exec_variance));
+  strm_var_def(state, "correl", strm_cfunc_value(exec_correl));
   strm_var_def(state, "sample", strm_cfunc_value(exec_sample));
 
   strm_var_def(strm_array_ns, "sum", strm_cfunc_value(ary_sum));
   strm_var_def(strm_array_ns, "average", strm_cfunc_value(ary_avg));
   strm_var_def(strm_array_ns, "stdev", strm_cfunc_value(ary_stdev));
   strm_var_def(strm_array_ns, "variance", strm_cfunc_value(ary_var));
+  strm_var_def(strm_array_ns, "correl", strm_cfunc_value(ary_correl));
 
   strm_sort_init(state);
 }
