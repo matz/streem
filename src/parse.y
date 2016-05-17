@@ -61,6 +61,7 @@ static void yyerror(parser_state *p, const char *s);
         keyword_false
         op_lasgn
         op_rasgn
+        op_lambda
         op_plus
         op_minus
         op_mult
@@ -90,6 +91,7 @@ static void yyerror(parser_state *p, const char *s);
 
 %nonassoc op_LOWEST
 
+%left  op_parrow
 %left  op_amper
 %left  op_bar
 %left  op_or
@@ -232,6 +234,10 @@ stmt            : var '=' expr
                     {
                       $$ = node_let_new($1, $3);
                     }
+                | expr op_rasgn var
+                    {
+                      $$ = node_let_new($3, $1);
+                    }
                 | keyword_skip
                     {
                       $$ = node_skip_new();
@@ -327,6 +333,10 @@ expr            : expr op_plus expr
                       $$ = node_op_new("&&", $1, $3);
                     }
                 | expr op_or expr
+                    {
+                      $$ = node_op_new("||", $1, $3);
+                    }
+                | expr op_parrow expr
                     {
                       $$ = node_op_new("||", $1, $3);
                     }
@@ -580,11 +590,11 @@ block           : '{' bparam stmts '}'
                     }
                 ;
 
-bparam          : op_rasgn
+bparam          : op_lambda
                     {
                       $$ = NULL;
                     }
-                | f_args op_rasgn
+                | f_args op_lambda
                     {
                       $$ = $1;
                     }
