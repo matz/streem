@@ -569,6 +569,7 @@ time_func(time_day, tm_mday);
 time_func(time_hour, tm_hour);
 time_func(time_min, tm_min);
 time_func(time_sec, tm_sec);
+time_func(time_weekday, tm_wday);
 
 static int
 time_nanosec(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
@@ -600,4 +601,5 @@ strm_time_init(strm_state* state)
   strm_var_def(time_ns, "minute", strm_cfunc_value(time_min));
   strm_var_def(time_ns, "second", strm_cfunc_value(time_sec));
   strm_var_def(time_ns, "nanosecond", strm_cfunc_value(time_nanosec));
+  strm_var_def(time_ns, "weekday", strm_cfunc_value(time_weekday));
 }
