@@ -91,7 +91,6 @@ static void yyerror(parser_state *p, const char *s);
 
 %nonassoc op_LOWEST
 
-%left  op_parrow
 %left  op_amper
 %left  op_bar
 %left  op_or
@@ -333,10 +332,6 @@ expr            : expr op_plus expr
                       $$ = node_op_new("&&", $1, $3);
                     }
                 | expr op_or expr
-                    {
-                      $$ = node_op_new("||", $1, $3);
-                    }
-                | expr op_parrow expr
                     {
                       $$ = node_op_new("||", $1, $3);
                     }
