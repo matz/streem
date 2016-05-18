@@ -42,46 +42,6 @@ node_to_str(node_string s)
 }
 
 static int
-exec_gt(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
-{
-  double x, y;
-
-  strm_get_args(strm, argc, args, "ff", &x, &y);
-  *ret = strm_flt_value(x>y);
-  return STRM_OK;
-}
-
-static int
-exec_ge(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
-{
-  double x, y;
-
-  strm_get_args(strm, argc, args, "ff", &x, &y);
-  *ret = strm_flt_value(x>=y);
-  return STRM_OK;
-}
-
-static int
-exec_lt(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
-{
-  double x, y;
-
-  strm_get_args(strm, argc, args, "ff", &x, &y);
-  *ret = strm_flt_value(x<y);
-  return STRM_OK;
-}
-
-static int
-exec_le(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
-{
-  double x, y;
-
-  strm_get_args(strm, argc, args, "ff", &x, &y);
-  *ret = strm_flt_value(x<=y);
-  return STRM_OK;
-}
-
-static int
 exec_eq(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   strm_value x, y;
@@ -700,10 +660,6 @@ node_init(strm_state* state)
   strm_var_def(state, "stderr", strm_io_new(2, STRM_IO_WRITE));
   strm_var_def(state, "puts", strm_cfunc_value(exec_puts));
   strm_var_def(state, "print", strm_cfunc_value(exec_puts));
-  strm_var_def(state, "<", strm_cfunc_value(exec_lt));
-  strm_var_def(state, "<=", strm_cfunc_value(exec_le));
-  strm_var_def(state, ">", strm_cfunc_value(exec_gt));
-  strm_var_def(state, ">=", strm_cfunc_value(exec_ge));
   strm_var_def(state, "==", strm_cfunc_value(exec_eq));
   strm_var_def(state, "!=", strm_cfunc_value(exec_neq));
   strm_var_def(state, "|", strm_cfunc_value(exec_bar));

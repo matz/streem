@@ -76,6 +76,46 @@ num_div(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 }
 
 static int
+num_gt(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  double x, y;
+
+  strm_get_args(strm, argc, args, "ff", &x, &y);
+  *ret = strm_bool_value(x>y);
+  return STRM_OK;
+}
+
+static int
+num_ge(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  double x, y;
+
+  strm_get_args(strm, argc, args, "ff", &x, &y);
+  *ret = strm_bool_value(x>=y);
+  return STRM_OK;
+}
+
+static int
+num_lt(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  double x, y;
+
+  strm_get_args(strm, argc, args, "ff", &x, &y);
+  *ret = strm_bool_value(x<y);
+  return STRM_OK;
+}
+
+static int
+num_le(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  double x, y;
+
+  strm_get_args(strm, argc, args, "ff", &x, &y);
+  *ret = strm_bool_value(x<=y);
+  return STRM_OK;
+}
+
+static int
 num_number(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   double x;
@@ -95,5 +135,9 @@ strm_number_init(strm_state* state)
   strm_var_def(strm_ns_number, "-", strm_cfunc_value(num_minus));
   strm_var_def(strm_ns_number, "*", strm_cfunc_value(num_mult));
   strm_var_def(strm_ns_number, "/", strm_cfunc_value(num_div));
+  strm_var_def(strm_ns_number, "<", strm_cfunc_value(num_lt));
+  strm_var_def(strm_ns_number, "<=", strm_cfunc_value(num_le));
+  strm_var_def(strm_ns_number, ">", strm_cfunc_value(num_gt));
+  strm_var_def(strm_ns_number, ">=", strm_cfunc_value(num_ge));
   strm_var_def(state, "number", strm_cfunc_value(num_number));
 }
