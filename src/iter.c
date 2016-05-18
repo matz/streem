@@ -762,8 +762,8 @@ strm_iter_init(strm_state* state)
   strm_var_def(state, "reduce_by_key", strm_cfunc_value(exec_rbk));
   strm_var_def(state, "split", strm_cfunc_value(exec_split));
 
-  strm_var_def(strm_array_ns, "each", strm_cfunc_value(ary_each));
-  strm_var_def(strm_array_ns, "map", strm_cfunc_value(ary_map));
-  strm_var_def(strm_array_ns, "flatmap", strm_cfunc_value(ary_flatmap));
+  strm_var_def(strm_ns_array, "each", strm_cfunc_value(ary_each));
+  strm_var_def(strm_ns_array, "map", strm_cfunc_value(ary_map));
+  strm_var_def(strm_ns_array, "flatmap", strm_cfunc_value(ary_flatmap));
   strm_stat_init(state);
 }

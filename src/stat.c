@@ -462,11 +462,11 @@ strm_stat_init(strm_state* state)
   strm_var_def(state, "correl", strm_cfunc_value(exec_correl));
   strm_var_def(state, "sample", strm_cfunc_value(exec_sample));
 
-  strm_var_def(strm_array_ns, "sum", strm_cfunc_value(ary_sum));
-  strm_var_def(strm_array_ns, "average", strm_cfunc_value(ary_avg));
-  strm_var_def(strm_array_ns, "stdev", strm_cfunc_value(ary_stdev));
-  strm_var_def(strm_array_ns, "variance", strm_cfunc_value(ary_var));
-  strm_var_def(strm_array_ns, "correl", strm_cfunc_value(ary_correl));
+  strm_var_def(strm_ns_array, "sum", strm_cfunc_value(ary_sum));
+  strm_var_def(strm_ns_array, "average", strm_cfunc_value(ary_avg));
+  strm_var_def(strm_ns_array, "stdev", strm_cfunc_value(ary_stdev));
+  strm_var_def(strm_ns_array, "variance", strm_cfunc_value(ary_var));
+  strm_var_def(strm_ns_array, "correl", strm_cfunc_value(ary_correl));
 
   strm_sort_init(state);
 }

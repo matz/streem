@@ -55,7 +55,7 @@ strm_ary_struct(strm_value v)
   return (struct strm_array*)strm_value_vptr(v);
 }
 
-strm_state* strm_array_ns;
+strm_state* strm_ns_array;
 
 static int
 ary_length(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
@@ -134,8 +134,8 @@ ary_max(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 void
 strm_array_init(strm_state* state)
 {
-  strm_array_ns = strm_ns_new(NULL);
-  strm_var_def(strm_array_ns, "length", strm_cfunc_value(ary_length));
-  strm_var_def(strm_array_ns, "min", strm_cfunc_value(ary_min));
-  strm_var_def(strm_array_ns, "max", strm_cfunc_value(ary_max));
+  strm_ns_array = strm_ns_new(NULL);
+  strm_var_def(strm_ns_array, "length", strm_cfunc_value(ary_length));
+  strm_var_def(strm_ns_array, "min", strm_cfunc_value(ary_min));
+  strm_var_def(strm_ns_array, "max", strm_cfunc_value(ary_max));
 }

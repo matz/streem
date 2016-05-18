@@ -37,7 +37,7 @@ struct strm_time {
   int utc_offset;
 };
 
-static strm_state* time_ns;
+static strm_state* ns_time;
 
 int
 strm_time_p(strm_value val)
@@ -52,7 +52,7 @@ strm_time_p(strm_value val)
     if (!p) return FALSE;
     if (p->type != STRM_PTR_AUX)
       return FALSE;
-    if (p->ns != time_ns)
+    if (p->ns != ns_time)
       return FALSE;
   }
   return TRUE;
@@ -103,7 +103,7 @@ time_alloc(struct timeval* tv, int utc_offset, strm_value* ret)
 
   if (!t) return STRM_NG;
   t->type = STRM_PTR_AUX;
-  t->ns = time_ns;
+  t->ns = ns_time;
   t->tv = *tv;
   t->utc_offset = utc_offset;
   *ret = strm_ptr_value(t);
@@ -409,7 +409,7 @@ static struct strm_time*
 get_time(strm_value val)
 {
   struct strm_time* t = (struct strm_time*)strm_value_ptr(val, STRM_PTR_AUX);
-  if (t->ns != time_ns) return NULL;
+  if (t->ns != ns_time) return NULL;
   return t;
 }
 
@@ -589,17 +589,17 @@ strm_time_init(strm_state* state)
   strm_var_def(state, "now", strm_cfunc_value(time_now));
   strm_var_def(state, "time", strm_cfunc_value(time_time));
 
-  time_ns = strm_ns_new(NULL);
-  strm_var_def(time_ns, "+", strm_cfunc_value(time_plus));
-  strm_var_def(time_ns, "-", strm_cfunc_value(time_minus));
-  strm_var_def(time_ns, "string", strm_cfunc_value(time_str));
-  strm_var_def(time_ns, "number", strm_cfunc_value(time_num));
-  strm_var_def(time_ns, "year", strm_cfunc_value(time_year));
-  strm_var_def(time_ns, "month", strm_cfunc_value(time_month));
-  strm_var_def(time_ns, "day", strm_cfunc_value(time_day));
-  strm_var_def(time_ns, "hour", strm_cfunc_value(time_hour));
-  strm_var_def(time_ns, "minute", strm_cfunc_value(time_min));
-  strm_var_def(time_ns, "second", strm_cfunc_value(time_sec));
-  strm_var_def(time_ns, "nanosecond", strm_cfunc_value(time_nanosec));
-  strm_var_def(time_ns, "weekday", strm_cfunc_value(time_weekday));
+  ns_time = strm_ns_new(NULL);
+  strm_var_def(ns_time, "+", strm_cfunc_value(time_plus));
+  strm_var_def(ns_time, "-", strm_cfunc_value(time_minus));
+  strm_var_def(ns_time, "string", strm_cfunc_value(time_str));
+  strm_var_def(ns_time, "number", strm_cfunc_value(time_num));
+  strm_var_def(ns_time, "year", strm_cfunc_value(time_year));
+  strm_var_def(ns_time, "month", strm_cfunc_value(time_month));
+  strm_var_def(ns_time, "day", strm_cfunc_value(time_day));
+  strm_var_def(ns_time, "hour", strm_cfunc_value(time_hour));
+  strm_var_def(ns_time, "minute", strm_cfunc_value(time_min));
+  strm_var_def(ns_time, "second", strm_cfunc_value(time_sec));
+  strm_var_def(ns_time, "nanosecond", strm_cfunc_value(time_nanosec));
+  strm_var_def(ns_time, "weekday", strm_cfunc_value(time_weekday));
 }

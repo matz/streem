@@ -484,10 +484,10 @@ strm_value_ns(strm_value val)
   if (strm_array_p(val)) {
     strm_state* ns = strm_ary_ns(val);
     if (ns) return ns;
-    return strm_array_ns;
+    return strm_ns_array;
   }
   if (strm_string_p(val)) {
-    return strm_string_ns;
+    return strm_ns_string;
   }
   if (strm_value_tag(val) == STRM_TAG_PTR) {
     struct strm_misc* p = strm_ptr(val);

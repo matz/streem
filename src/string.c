@@ -334,7 +334,7 @@ strm_string_p(strm_string s)
   }
 }
 
-strm_state* strm_string_ns;
+strm_state* strm_ns_string;
 
 static int
 str_length(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
@@ -414,7 +414,7 @@ str_split(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 void
 strm_string_init(strm_state* state)
 {
-  strm_string_ns = strm_ns_new(NULL);
-  strm_var_def(strm_string_ns, "length", strm_cfunc_value(str_length));
-  strm_var_def(strm_string_ns, "split", strm_cfunc_value(str_split));
+  strm_ns_string = strm_ns_new(NULL);
+  strm_var_def(strm_ns_string, "length", strm_cfunc_value(str_length));
+  strm_var_def(strm_ns_string, "split", strm_cfunc_value(str_split));
 }

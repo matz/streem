@@ -527,9 +527,9 @@ exec_cmp(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 void
 strm_sort_init(strm_state* state)
 {
-  strm_var_def(strm_array_ns, "sort", strm_cfunc_value(ary_sort));
-  strm_var_def(strm_array_ns, "sort_by", strm_cfunc_value(ary_sortby));
-  strm_var_def(strm_array_ns, "median", strm_cfunc_value(ary_median));
+  strm_var_def(strm_ns_array, "sort", strm_cfunc_value(ary_sort));
+  strm_var_def(strm_ns_array, "sort_by", strm_cfunc_value(ary_sortby));
+  strm_var_def(strm_ns_array, "median", strm_cfunc_value(ary_median));
   strm_var_def(state, "cmp", strm_cfunc_value(exec_cmp));
   strm_var_def(state, "sort", strm_cfunc_value(exec_sort));
   strm_var_def(state, "sort_by", strm_cfunc_value(exec_sortby));

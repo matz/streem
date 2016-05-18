@@ -380,5 +380,5 @@ strm_csv_init(strm_state* state)
 {
   strm_var_def(state, "csv", strm_cfunc_value(csv));
 
-  strm_var_def(strm_string_ns, "number", strm_cfunc_value(str_number));
+  strm_var_def(strm_ns_string, "number", strm_cfunc_value(str_number));
 }

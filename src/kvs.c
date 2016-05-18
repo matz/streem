@@ -146,8 +146,8 @@ kvs_close(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   return STRM_OK;
 }
 
-static strm_state* kvs_ns;
-static strm_state* txn_ns;
+static strm_state* ns_kvs;
+static strm_state* ns_txn;
 
 /* kvs(): return a new instance of key-value store */
 static int
@@ -156,7 +156,7 @@ kvs_new(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   struct strm_kvs *k = malloc(sizeof(struct strm_kvs));
 
   if (!k) return STRM_NG;
-  k->ns = kvs_ns;
+  k->ns = ns_kvs;
   k->type = STRM_PTR_AUX;
   k->kv = kh_init(kvs);
   k->serial = 1;
@@ -171,7 +171,7 @@ txn_new(strm_kvs* kvs)
   struct strm_txn *t = malloc(sizeof(struct strm_txn));
 
   if (!t) return NULL;
-  t->ns = txn_ns;
+  t->ns = ns_txn;
   t->type = STRM_PTR_AUX;
   t->tv = kh_init(txn);
   t->kvs = kvs;
@@ -413,19 +413,19 @@ txn_str(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 void
 strm_kvs_init(strm_state* state)
 {
-  kvs_ns = strm_ns_new(NULL);
-  strm_var_def(kvs_ns, "get", strm_cfunc_value(kvs_get));
-  strm_var_def(kvs_ns, "put", strm_cfunc_value(kvs_put));
-  strm_var_def(kvs_ns, "update", strm_cfunc_value(kvs_update));
-  strm_var_def(kvs_ns, "txn", strm_cfunc_value(kvs_txn));
-  strm_var_def(kvs_ns, "close", strm_cfunc_value(kvs_close));
-  strm_var_def(kvs_ns, "string", strm_cfunc_value(kvs_str));
+  ns_kvs = strm_ns_new(NULL);
+  strm_var_def(ns_kvs, "get", strm_cfunc_value(kvs_get));
+  strm_var_def(ns_kvs, "put", strm_cfunc_value(kvs_put));
+  strm_var_def(ns_kvs, "update", strm_cfunc_value(kvs_update));
+  strm_var_def(ns_kvs, "txn", strm_cfunc_value(kvs_txn));
+  strm_var_def(ns_kvs, "close", strm_cfunc_value(kvs_close));
+  strm_var_def(ns_kvs, "string", strm_cfunc_value(kvs_str));
 
-  txn_ns = strm_ns_new(NULL);
-  strm_var_def(txn_ns, "get", strm_cfunc_value(txn_get));
-  strm_var_def(txn_ns, "put", strm_cfunc_value(txn_put));
-  strm_var_def(txn_ns, "update", strm_cfunc_value(txn_update));
-  strm_var_def(kvs_ns, "string", strm_cfunc_value(txn_str));
+  ns_txn = strm_ns_new(NULL);
+  strm_var_def(ns_txn, "get", strm_cfunc_value(txn_get));
+  strm_var_def(ns_txn, "put", strm_cfunc_value(txn_put));
+  strm_var_def(ns_txn, "update", strm_cfunc_value(txn_update));
+  strm_var_def(ns_kvs, "string", strm_cfunc_value(txn_str));
 
   strm_var_def(state, "kvs", strm_cfunc_value(kvs_new));
 }
