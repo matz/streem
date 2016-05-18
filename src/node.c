@@ -198,11 +198,11 @@ node_args_free(node* a)
 node*
 node_ns_new(node_string name, node* body)
 {
-  node_ns* nns = malloc(sizeof(node_ns));
-  nns->type = NODE_NS;
-  nns->name = name;
-  nns->body = body;
-  return (node*)nns;
+  node_ns* newns = malloc(sizeof(node_ns));
+  newns->type = NODE_NS;
+  newns->name = name;
+  newns->body = body;
+  return (node*)newns;
 }
 
 node*
