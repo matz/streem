@@ -411,10 +411,28 @@ str_split(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   return STRM_OK;
 }
 
+static int
+str_plus(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  strm_string str1, str2, str3;
+  char *p;
+
+  strm_get_args(strm, argc, args, "SS", &str1, &str2);
+  str3 = strm_str_new(NULL, strm_str_len(str1) + strm_str_len(str2));
+
+  p = (char*)strm_str_ptr(str3);
+  memcpy(p, strm_str_ptr(str1), strm_str_len(str1));
+  memcpy(p+strm_str_len(str1), strm_str_ptr(str2), strm_str_len(str2));
+  p[strm_str_len(str3)] = '\0';
+  *ret = strm_str_value(str3);
+  return STRM_OK;
+}
+
 void
 strm_string_init(strm_state* state)
 {
   strm_ns_string = strm_ns_new(NULL);
   strm_var_def(strm_ns_string, "length", strm_cfunc_value(str_length));
   strm_var_def(strm_ns_string, "split", strm_cfunc_value(str_split));
+  strm_var_def(strm_ns_string, "+", strm_cfunc_value(str_plus));
 }

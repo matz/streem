@@ -76,6 +76,10 @@ int strm_lambda_p(strm_value);
 int strm_array_p(strm_value);
 int strm_string_p(strm_value);
 
+/* internal functions */
+int strm_int_p(strm_value);
+int strm_flt_p(strm_value);
+
 enum strm_ptr_type {
   STRM_PTR_STREAM,
   STRM_PTR_LAMBDA,
@@ -225,6 +229,7 @@ strm_state* strm_value_ns(strm_value);
 
 extern strm_state* strm_ns_array;
 extern strm_state* strm_ns_string;
+extern strm_state* strm_ns_number;
 
 /* ----- I/O */
 #define STRM_IO_READ  1

@@ -489,6 +489,9 @@ strm_value_ns(strm_value val)
   if (strm_string_p(val)) {
     return strm_ns_string;
   }
+  if (strm_number_p(val)) {
+    return strm_ns_number;
+  }
   if (strm_value_tag(val) == STRM_TAG_PTR) {
     struct strm_misc* p = strm_ptr(val);
 
