@@ -14,14 +14,15 @@
     ----------------------------------------------------------------------------------------------
     v:      value          [strm_value]
     S:      string         [strm_string]           when ! follows, the value may be nil
-    s:      string         [char*,strm_int]        Receive two arguments; s! gives (NULL,0) for nil
+    s:      string         [char*,strm_int]        takes two arguments; s! gives (NULL,0) for nil
     A:      array          [strm_value]            when ! follows, the value may be nil
-    a:      Array          [strm_value*,strm_int]  Receive two arguments; a! gives (NULL,0) for nil
-    f:      Float          [double]
-    i:      Integer        [strm_int]
-    b:      Boolean        [strm_int]
-    |:      optional                               Next argument of '|' and later are optional.
-    ?:      optional given [strm_int]              true if preceding argument (optional) is given.
+    a:      array          [strm_value*,strm_int]  takes two arguments; a! gives (NULL,0) for nil
+    N:      number         [strm_value]            receive either integer or float
+    f:      number         [double]
+    i:      number         [strm_int]              truncate float number to integer
+    b:      boolean        [strm_int]
+    |:      optional                               next argument of '|' and later are optional
+    ?:      optional given [strm_int]              true if preceding (optional) argument is given
  */
 strm_int
 strm_parse_args(strm_stream* strm, int argc, strm_value* argv, const char* format, ...)
