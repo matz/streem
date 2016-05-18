@@ -90,4 +90,5 @@ strm_math_init(strm_state* state)
   strm_var_def(state, "ceil", strm_cfunc_value(math_ceil));
   strm_var_def(state, "floor", strm_cfunc_value(math_floor));
   strm_var_def(state, "trunc", strm_cfunc_value(math_trunc));
+  strm_var_def(state, "int", strm_cfunc_value(math_trunc));
 }
