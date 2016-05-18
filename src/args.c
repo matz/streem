@@ -13,10 +13,10 @@
     string  streem type    C type                 note
     ----------------------------------------------------------------------------------------------
     v:      value          [strm_value]
-    S:      string         [strm_string]           when ! follows, the value may be nil
-    s:      string         [char*,strm_int]        takes two arguments; s! gives (NULL,0) for nil
-    A:      array          [strm_value]            when ! follows, the value may be nil
-    a:      array          [strm_value*,strm_int]  takes two arguments; a! gives (NULL,0) for nil
+    S:      string         [strm_string]
+    s:      string         [char*,strm_int]        takes two arguments
+    A:      array          [strm_value]
+    a:      array          [strm_value*,strm_int]  takes two arguments
     N:      number         [strm_value]            receive either integer or float
     f:      number         [double]
     i:      number         [strm_int]              truncate float number to integer
@@ -83,20 +83,12 @@ strm_parse_args(strm_stream* strm, int argc, strm_value* argv, const char* forma
       {
         strm_value ss;
         strm_string* p;
-        int nil_ok = FALSE;
 
         p = va_arg(ap, strm_string*);
         if (i < argc) {
           ss = argv[arg_i++];
           i++;
-          if (*format == '!') {
-            format++;
-            if (strm_nil_p(ss)) {
-              nil_ok = TRUE;
-              break;
-            }
-          }
-          if (!strm_string_p(ss) && (nil_ok == FALSE || !strm_nil_p(ss))) {
+          if (!strm_string_p(ss)) {
             strm_raise(strm, "string required");
             return STRM_NG;
           }
@@ -115,14 +107,6 @@ strm_parse_args(strm_stream* strm, int argc, strm_value* argv, const char* forma
         if (i < argc) {
           ss = argv[arg_i];
           i++;
-          if (*format == '!') {
-            format++;
-            if (strm_nil_p(ss)) {
-              *ps = NULL;
-              *pl = 0;
-              break;
-            }
-          }
           if (!strm_string_p(ss)) {
             strm_raise(strm, "string required");
             return STRM_NG;
