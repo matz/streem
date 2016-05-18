@@ -133,19 +133,6 @@ exec_bar(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   return strm_connect(strm, x, y, ret);
 }
 
-static int
-exec_mod(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
-{
-  strm_value x, y;
-
-  strm_get_args(strm, argc, args, "vv", &x, &y);
-  if (strm_number_p(x) && strm_number_p(y)) {
-    *ret = strm_int_value(strm_value_int(x)%strm_value_int(y));
-    return STRM_OK;
-  }
-  return STRM_NG;
-}
-
 static int exec_expr(strm_stream* strm, strm_state* state, node* np, strm_value* val);
 
 static int
@@ -658,7 +645,6 @@ node_init(strm_state* state)
   strm_var_def(state, "==", strm_cfunc_value(exec_eq));
   strm_var_def(state, "!=", strm_cfunc_value(exec_neq));
   strm_var_def(state, "|", strm_cfunc_value(exec_bar));
-  strm_var_def(state, "%", strm_cfunc_value(exec_mod));
   strm_var_def(state, "fread", strm_cfunc_value(exec_fread));
   strm_var_def(state, "fwrite", strm_cfunc_value(exec_fwrite));
   strm_var_def(state, "exit", strm_cfunc_value(exec_exit));

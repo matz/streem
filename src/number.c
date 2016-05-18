@@ -1,4 +1,5 @@
 #include "strm.h"
+#include <math.h>
 
 static int
 num_plus(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
@@ -86,6 +87,24 @@ num_bar(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 }
 
 static int
+num_mod(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  strm_value x;
+  strm_int y;
+
+  strm_get_args(strm, argc, args, "vi", &x, &y);
+  if (strm_int_p(x)) {
+    *ret = strm_int_value(strm_value_int(x)%y);
+    return STRM_OK;
+  }
+  if (strm_flt_p(x)) {
+    *ret = strm_flt_value(fmod(strm_value_flt(x), y));
+    return STRM_OK;
+  }
+  return STRM_NG;
+}
+
+static int
 num_gt(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   double x, y;
@@ -145,6 +164,7 @@ strm_number_init(strm_state* state)
   strm_var_def(strm_ns_number, "-", strm_cfunc_value(num_minus));
   strm_var_def(strm_ns_number, "*", strm_cfunc_value(num_mult));
   strm_var_def(strm_ns_number, "/", strm_cfunc_value(num_div));
+  strm_var_def(strm_ns_number, "%", strm_cfunc_value(num_mod));
   strm_var_def(strm_ns_number, "|", strm_cfunc_value(num_bar));
   strm_var_def(strm_ns_number, "<", strm_cfunc_value(num_lt));
   strm_var_def(strm_ns_number, "<=", strm_cfunc_value(num_le));
