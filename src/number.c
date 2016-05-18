@@ -76,6 +76,16 @@ num_div(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 }
 
 static int
+num_bar(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  strm_value x, y;
+
+  strm_get_args(strm, argc, args, "ii", &x, &y);
+  *ret = strm_int_value(strm_value_int(x)|strm_value_int(y));
+  return STRM_OK;
+}
+
+static int
 num_gt(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   double x, y;
@@ -135,6 +145,7 @@ strm_number_init(strm_state* state)
   strm_var_def(strm_ns_number, "-", strm_cfunc_value(num_minus));
   strm_var_def(strm_ns_number, "*", strm_cfunc_value(num_mult));
   strm_var_def(strm_ns_number, "/", strm_cfunc_value(num_div));
+  strm_var_def(strm_ns_number, "|", strm_cfunc_value(num_bar));
   strm_var_def(strm_ns_number, "<", strm_cfunc_value(num_lt));
   strm_var_def(strm_ns_number, "<=", strm_cfunc_value(num_le));
   strm_var_def(strm_ns_number, ">", strm_cfunc_value(num_gt));

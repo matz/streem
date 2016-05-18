@@ -130,11 +130,6 @@ exec_bar(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   strm_value x, y;
 
   strm_get_args(strm, argc, args, "vv", &x, &y);
-  if (strm_number_p(x) && strm_number_p(y)) {
-    *ret = strm_int_value(strm_value_int(x)|strm_value_int(y));
-    return STRM_OK;
-  }
-
   return strm_connect(strm, x, y, ret);
 }
 
