@@ -53,6 +53,29 @@ math_pow(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   return STRM_OK;
 }
 
+#define round_func(func) \
+static int \
+math_ ## func(strm_stream* strm, int argc, strm_value* args, strm_value* ret)\
+{\
+  double x;\
+  strm_int d = 0;\
+\
+  strm_get_args(strm, argc, args, "f|i", &x, &d);\
+  if (argc == 1) {\
+    *ret = strm_flt_value(func(x));\
+  }\
+  else {\
+    double f = pow(10, d);\
+    *ret = strm_flt_value(func(x*f)/f);\
+  }\
+  return STRM_OK;\
+}
+
+round_func(round);
+round_func(ceil);
+round_func(floor);
+round_func(trunc);
+
 void
 strm_math_init(strm_state* state)
 {
@@ -63,4 +86,8 @@ strm_math_init(strm_state* state)
   strm_var_def(state, "cos", strm_cfunc_value(math_cos));
   strm_var_def(state, "tan", strm_cfunc_value(math_tan));
   strm_var_def(state, "pow", strm_cfunc_value(math_pow));
+  strm_var_def(state, "round", strm_cfunc_value(math_round));
+  strm_var_def(state, "ceil", strm_cfunc_value(math_ceil));
+  strm_var_def(state, "floor", strm_cfunc_value(math_floor));
+  strm_var_def(state, "trunc", strm_cfunc_value(math_trunc));
 }
