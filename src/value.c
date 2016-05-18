@@ -447,7 +447,7 @@ strm_to_str(strm_value v)
     }
   default:
     if (strm_flt_p(v)) {
-      n = sprintf(buf, "%g", strm_to_flt(v));
+      n = sprintf(buf, "%.14g", strm_to_flt(v));
       return strm_str_new(buf, n);
     }
     n = sprintf(buf, "<%p>", strm_value_vptr(v));
