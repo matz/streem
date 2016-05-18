@@ -6,7 +6,7 @@ num_plus(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   strm_value x, y;
 
-  strm_get_args(strm, argc, args, "vv", &x, &y);
+  strm_get_args(strm, argc, args, "NN", &x, &y);
   if (strm_int_p(x) && strm_int_p(y)) {
     *ret = strm_int_value(strm_value_int(x)+strm_value_int(y));
     return STRM_OK;
@@ -15,7 +15,6 @@ num_plus(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
     *ret = strm_flt_value(strm_value_flt(x)+strm_value_flt(y));
     return STRM_OK;
   }
-  strm_raise(strm, "number required");
   return STRM_NG;
 }
 
@@ -35,7 +34,7 @@ num_minus(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   else {
     strm_value x, y;
 
-    strm_get_args(strm, argc, args, "vv", &x, &y);
+    strm_get_args(strm, argc, args, "NN", &x, &y);
     if (strm_int_p(x) && strm_int_p(y)) {
       *ret = strm_int_value(strm_value_int(x)-strm_value_int(y));
       return STRM_OK;
@@ -45,7 +44,6 @@ num_minus(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
       return STRM_OK;
     }
   }
-  strm_raise(strm, "number required");
   return STRM_NG;
 }
 
@@ -54,7 +52,7 @@ num_mult(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   strm_value x, y;
 
-  strm_get_args(strm, argc, args, "vv", &x, &y);
+  strm_get_args(strm, argc, args, "NN", &x, &y);
   if (strm_int_p(x) && strm_int_p(y)) {
     *ret = strm_int_value(strm_value_int(x)*strm_value_int(y));
     return STRM_OK;
@@ -92,7 +90,7 @@ num_mod(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   strm_value x;
   strm_int y;
 
-  strm_get_args(strm, argc, args, "vi", &x, &y);
+  strm_get_args(strm, argc, args, "Ni", &x, &y);
   if (strm_int_p(x)) {
     *ret = strm_int_value(strm_value_int(x)%y);
     return STRM_OK;

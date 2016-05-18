@@ -63,6 +63,21 @@ strm_parse_args(strm_stream* strm, int argc, strm_value* argv, const char* forma
         }
       }
       break;
+    case 'N':
+      {
+        strm_value* p;
+
+        p = va_arg(ap, strm_value*);
+        if (i < argc) {
+          strm_value nn = argv[arg_i++];
+          if (!strm_number_p(nn)) {
+            strm_raise(strm, "number required");
+          }
+          *p = nn;
+          i++;
+        }
+      }
+      break;
     case 'S':
       {
         strm_value ss;
