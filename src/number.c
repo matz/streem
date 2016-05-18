@@ -10,7 +10,7 @@ num_plus(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
     *ret = strm_int_value(strm_value_int(x)+strm_value_int(y));
     return STRM_OK;
   }
-  if (strm_flt_p(x) && strm_flt_p(y)) {
+  if (strm_number_p(x) && strm_number_p(y)) {
     *ret = strm_flt_value(strm_value_flt(x)+strm_value_flt(y));
     return STRM_OK;
   }
