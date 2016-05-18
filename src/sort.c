@@ -524,6 +524,54 @@ exec_cmp(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   return STRM_OK;
 }
 
+static int
+str_lt(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  strm_value x, y;
+  int cmp;
+
+  strm_get_args(strm, argc, args, "SS", &x, &y);
+  cmp = str_cmp(x, y);
+  *ret = strm_bool_value(cmp < 0);
+  return STRM_OK;
+}
+
+static int
+str_le(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  strm_value x, y;
+  int cmp;
+
+  strm_get_args(strm, argc, args, "SS", &x, &y);
+  cmp = str_cmp(x, y);
+  *ret = strm_bool_value(cmp <= 0);
+  return STRM_OK;
+}
+
+static int
+str_gt(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  strm_value x, y;
+  int cmp;
+
+  strm_get_args(strm, argc, args, "SS", &x, &y);
+  cmp = str_cmp(x, y);
+  *ret = strm_bool_value(cmp > 0);
+  return STRM_OK;
+}
+
+static int
+str_ge(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  strm_value x, y;
+  int cmp;
+
+  strm_get_args(strm, argc, args, "SS", &x, &y);
+  cmp = str_cmp(x, y);
+  *ret = strm_bool_value(cmp >= 0);
+  return STRM_OK;
+}
+
 void
 strm_sort_init(strm_state* state)
 {
@@ -534,4 +582,9 @@ strm_sort_init(strm_state* state)
   strm_var_def(state, "sort", strm_cfunc_value(exec_sort));
   strm_var_def(state, "sort_by", strm_cfunc_value(exec_sortby));
   strm_var_def(state, "median", strm_cfunc_value(exec_median));
+
+  strm_var_def(strm_ns_string, "<", strm_cfunc_value(str_lt));
+  strm_var_def(strm_ns_string, "<=", strm_cfunc_value(str_le));
+  strm_var_def(strm_ns_string, ">", strm_cfunc_value(str_gt));
+  strm_var_def(strm_ns_string, ">=", strm_cfunc_value(str_ge));
 }
