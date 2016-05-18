@@ -175,7 +175,7 @@ struct csv_data {
 enum csv_type
 csv_type(strm_value v)
 {
-  if (strm_num_p(v)) return TYPE_NUM;
+  if (strm_number_p(v)) return TYPE_NUM;
   if (strm_time_p(v)) return TYPE_TIME;
   else return TYPE_STR;
 }
@@ -368,7 +368,7 @@ str_number(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 
   strm_get_args(strm, argc, args, "S", &s);
   s = csv_value(strm_str_ptr(s), strm_str_len(s), TYPE_NUM);
-  if (!strm_num_p(s)) {
+  if (!strm_number_p(s)) {
     return STRM_NG;
   }
   *ret = s;

@@ -81,7 +81,7 @@ tcp_server(strm_stream* task, int argc, strm_value* args, strm_value* ret)
     strm_raise(task, "tcp_server: wrong number of arguments");
     return STRM_NG;
   }
-  if (strm_num_p(args[0])) {
+  if (strm_number_p(args[0])) {
     sprintf(buf, "%d", (int)strm_value_int(args[0]));
     service = buf;
   }
@@ -158,7 +158,7 @@ tcp_socket(strm_stream* task, int argc, strm_value* args, strm_value* ret)
     return STRM_NG;
   }
   host = strm_value_str(args[0]);
-  if (strm_num_p(args[1])) {
+  if (strm_number_p(args[1])) {
     sprintf(sbuf, "%d", (int)strm_value_int(args[1]));
     service = sbuf;
   }

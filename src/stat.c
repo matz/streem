@@ -14,7 +14,7 @@ iter_sum(strm_stream* strm, strm_value data)
   struct sum_data* d = strm->data;
   double f, y, t;
 
-  if (!strm_num_p(data)) {
+  if (!strm_number_p(data)) {
     return STRM_NG;
   }
   f = strm_value_flt(data);
@@ -34,7 +34,7 @@ convert_number(strm_stream* strm, strm_value data, strm_value func)
   if (strm_funcall(strm, func, 1, &data, &val) == STRM_NG) {
     return STRM_NG;
   }
-  if (!strm_num_p(val)) {
+  if (!strm_number_p(val)) {
     strm_raise(strm, "number required");
     return STRM_NG;
   }
@@ -320,7 +320,7 @@ iter_correl(strm_stream* strm, strm_value data)
   }
 
   v = strm_ary_ptr(data);
-  if (!strm_num_p(v[0]) || !strm_num_p(v[1])) {
+  if (!strm_number_p(v[0]) || !strm_number_p(v[1])) {
     strm_raise(strm, "correl() requires [num, num]");
     return STRM_NG;
   }

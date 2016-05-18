@@ -175,7 +175,7 @@ strm_value_cfunc(strm_value v)
 }
 
 int
-strm_num_p(strm_value v)
+strm_number_p(strm_value v)
 {
   if (strm_int_p(v) || strm_flt_p(v))
     return TRUE;

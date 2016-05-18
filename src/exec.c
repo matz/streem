@@ -260,7 +260,7 @@ exec_bar(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   strm_value x, y;
 
   strm_get_args(strm, argc, args, "vv", &x, &y);
-  if (strm_num_p(x) && strm_num_p(y)) {
+  if (strm_number_p(x) && strm_number_p(y)) {
     *ret = strm_int_value(strm_value_int(x)|strm_value_int(y));
     return STRM_OK;
   }
@@ -274,7 +274,7 @@ exec_mod(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   strm_value x, y;
 
   strm_get_args(strm, argc, args, "vv", &x, &y);
-  if (strm_num_p(x) && strm_num_p(y)) {
+  if (strm_number_p(x) && strm_number_p(y)) {
     *ret = strm_int_value(strm_value_int(x)%strm_value_int(y));
     return STRM_OK;
   }
@@ -296,7 +296,7 @@ ary_get(strm_stream* strm, strm_value ary, int argc, strm_value* argv, strm_valu
 
   a = strm_ary_struct(ary);
   idx = argv[0];
-  if (strm_num_p(idx)) {
+  if (strm_number_p(idx)) {
     strm_int i = strm_value_int(idx);
 
     if (i>=a->len)

@@ -70,7 +70,7 @@ double strm_value_flt(strm_value);
 int strm_value_eq(strm_value, strm_value);
 int strm_nil_p(strm_value);
 int strm_bool_p(strm_value);
-int strm_num_p(strm_value);
+int strm_number_p(strm_value);
 int strm_cfunc_p(strm_value);
 int strm_lambda_p(strm_value);
 int strm_array_p(strm_value);

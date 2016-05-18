@@ -42,8 +42,8 @@ str_cmp(strm_value x, strm_value y)
 static int
 strm_cmp(strm_value a, strm_value b)
 {
-  if (strm_num_p(a)) {
-    if (strm_num_p(b)) {
+  if (strm_number_p(a)) {
+    if (strm_number_p(b)) {
       return num_cmp(a,b);
     }
     return -1;
@@ -52,7 +52,7 @@ strm_cmp(strm_value a, strm_value b)
     if (strm_string_p(b)) {
       return str_cmp(a,b);
     }
-    if (strm_num_p(b)) {
+    if (strm_number_p(b)) {
       return 1;
     }
     return 1;
@@ -96,7 +96,7 @@ sort_cmpf cmp_args(const void* a_p, const void* b_p, void* arg)
   if (strm_funcall(a->strm, a->func, 2, args, &val) == STRM_NG) {
     return 0;
   }
-  if (!strm_num_p(val)) {
+  if (!strm_number_p(val)) {
     return 0;
   }
   cmp = strm_value_int(val);
@@ -233,16 +233,16 @@ sortby_cmp(const void* a_p, const void* b_p)
   struct sortby_value* bv = (struct sortby_value*)b_p;
   double a, b;
 
-  if (strm_num_p(av->v)) {
+  if (strm_number_p(av->v)) {
     a = strm_value_flt(av->v);
   }
   else {
-    if (strm_num_p(bv->v)) {
+    if (strm_number_p(bv->v)) {
       return 1;
     }
     return 0;
   }
-  if (strm_num_p(bv->v)) {
+  if (strm_number_p(bv->v)) {
     b = strm_value_flt(bv->v);
   }
   else {
@@ -411,9 +411,9 @@ quick_median(strm_value *p, int len)
 {
   strm_value v = quick_select(p, len);
 
-  if (len%2 == 0 && strm_num_p(v)) {
+  if (len%2 == 0 && strm_number_p(v)) {
     strm_int next = len/2;
-    if (strm_num_p(p[next])) {
+    if (strm_number_p(p[next])) {
        double x = strm_value_flt(v);
        double y = strm_value_flt(p[next]);
 

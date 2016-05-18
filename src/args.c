@@ -169,7 +169,7 @@ strm_parse_args(strm_stream* strm, int argc, strm_value* argv, const char* forma
         if (i < argc) {
           ff = argv[arg_i++];
           i++;
-          if (!strm_num_p(ff)) {
+          if (!strm_number_p(ff)) {
             strm_raise(strm, "number required");
             return STRM_NG;
           }
@@ -186,7 +186,7 @@ strm_parse_args(strm_stream* strm, int argc, strm_value* argv, const char* forma
         if (i < argc) {
           ff = argv[arg_i++];
           i++;
-          if (!strm_num_p(ff)) {
+          if (!strm_number_p(ff)) {
             strm_raise(strm, "number required");
             return STRM_NG;
           }

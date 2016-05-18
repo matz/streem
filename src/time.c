@@ -424,7 +424,7 @@ time_plus(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
     return STRM_NG;
   }
   t1 = get_time(args[0]);
-  if (!strm_num_p(args[1])) {
+  if (!strm_number_p(args[1])) {
     strm_raise(strm, "number required");
     return STRM_NG;
   }
@@ -445,7 +445,7 @@ time_minus(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
     strm_raise(strm, "wrong # of arguments");
     return STRM_NG;
   }
-  if (strm_num_p(args[1])) {
+  if (strm_number_p(args[1])) {
     d = strm_value_flt(args[1]);
     args[1] = strm_flt_value(-d);
     return time_plus(strm, argc, args, ret);
