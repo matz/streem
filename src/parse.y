@@ -171,6 +171,33 @@ topstmt         : /* namespace statement:
                     {
                       $$ = node_import_new($2);
                     }
+                | /* method statement:
+                    method foo(args) {
+                      statements
+                    }
+
+                    define a method named foo.
+                    Above method statement works like:
+
+                    method foo(self, args) {
+                      statements
+                    } */
+                  keyword_method identifier '(' opt_f_args ')' '{' stmts '}'
+                    {
+                      $$ = node_let_new($2, node_method_new($4, $7));
+                    }
+                | /* alternative method statement:
+                    method foo(args) = expr
+
+                    define a method named foo.
+                    Above method statement works like:
+
+                    method foo(self, args) = expr
+                   */
+                  keyword_method identifier '(' opt_f_args ')' '=' expr
+                    {
+                      $$ = node_let_new($2, node_method_new($4, $7));
+                    }
                 | stmt
                 ;
 
@@ -237,33 +264,6 @@ stmt            : var '=' expr
                   keyword_def identifier '=' expr
                     {
                       $$ = node_let_new($2, node_lambda_new(NULL, $4));
-                    }
-                | /* method statement:
-                    method foo(args) {
-                      statements
-                    }
-
-                    define a method named foo.
-                    Above method statement works like:
-
-                    def method foo(self, args) {
-                      statements
-                    } */
-                  keyword_method identifier '(' opt_f_args ')' '{' stmts '}'
-                    {
-                      $$ = node_let_new($2, node_method_new($4, $7));
-                    }
-                | /* alternative method statement:
-                    method foo(args) = expr
-
-                    define a method named foo.
-                    Above method statement works like:
-
-                    def method foo(self, args) = expr
-                   */
-                  keyword_method identifier '(' opt_f_args ')' '=' expr
-                    {
-                      $$ = node_let_new($2, node_method_new($4, $7));
                     }
                 | expr op_rasgn var
                     {
@@ -388,9 +388,6 @@ expr            : expr op_plus expr
                       $$ = node_lambda_new($$, $3);
                     }
                 | primary
-                    {
-                      $$ = $1;
-                    }
                 ;
 
 condition       : '(' expr ')'
@@ -525,9 +522,6 @@ opt_block       : /* none */
                       $$ = NULL;
                     }
                 | block
-                    {
-                       $$ = $1;
-                    }
                 ;
 
 block           : '{' bparam stmts '}'
