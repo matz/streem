@@ -27,7 +27,7 @@ node_lineinfo(parser_state* p, node* node)
 }
 
 %type <nd> program topstmts decls decl_list decl stmts stmt_list
-%type <nd> stmt expr condition block cond primary primary0
+%type <nd> stmt expr condition block primary
 %type <nd> arg args opt_args opt_block f_args opt_f_args bparam
 %type <nd> opt_else opt_elsif
 %type <id> identifier var label
@@ -341,85 +341,9 @@ expr            : expr op_plus expr
                     }
                 ;
 
-condition       : condition op_plus condition
-                    {
-                      $$ = node_op_new("+", $1, $3);
-                    }
-                | condition op_minus condition
-                    {
-                      $$ = node_op_new("-", $1, $3);
-                    }
-                | condition op_mult condition
-                    {
-                      $$ = node_op_new("*", $1, $3);
-                    }
-                | condition op_div condition
-                    {
-                      $$ = node_op_new("/", $1, $3);
-                    }
-                | condition op_mod condition
-                    {
-                      $$ = node_op_new("%", $1, $3);
-                    }
-                | condition op_bar condition
-                    {
-                      $$ = node_op_new("|", $1, $3);
-                    }
-                | condition op_amper condition
-                    {
-                      $$ = node_op_new("&", $1, $3);
-                    }
-                | condition op_gt condition
-                    {
-                      $$ = node_op_new(">", $1, $3);
-                    }
-                | condition op_ge condition
-                    {
-                      $$ = node_op_new(">=", $1, $3);
-                    }
-                | condition op_lt condition
-                    {
-                      $$ = node_op_new("<", $1, $3);
-                    }
-                | condition op_le condition
-                    {
-                      $$ = node_op_new("<=", $1, $3);
-                    }
-                | condition op_eq condition
-                    {
-                      $$ = node_op_new("==", $1, $3);
-                    }
-                | condition op_neq condition
-                    {
-                      $$ = node_op_new("!=", $1, $3);
-                    }
-                | op_plus condition            %prec '!'
+condition       : '(' expr ')'
                     {
                       $$ = $2;
-                    }
-                | op_minus condition           %prec '!'
-                    {
-                      $$ = node_op_new("-", NULL, $2);
-                    }
-                | '!' condition
-                    {
-                      $$ = node_op_new("!", NULL, $2);
-                    }
-                | '~' condition
-                    {
-                      $$ = node_op_new("~", NULL, $2);
-                    }
-                | condition op_and condition
-                    {
-                      $$ = node_op_new("&&", $1, $3);
-                    }
-                | condition op_or condition
-                    {
-                      $$ = node_op_new("||", $1, $3);
-                    }
-                | cond
-                    {
-                      $$ = $1;
                     }
                 ;
 
@@ -483,7 +407,7 @@ args            : arg
                     }
                 ;
 
-primary0        : lit_number
+primary         : lit_number
                 | lit_string
                 | identifier
                     {
@@ -517,31 +441,6 @@ primary0        : lit_number
                     {
                       $$ = node_false();
                     }
-                ;
-
-cond            : primary0
-                    {
-                       $$ = $1;
-                    }
-                | keyword_new identifier '(' opt_args ')'
-                    {
-                      $$ = node_obj_new($4, $2);
-                    }
-                | identifier '(' opt_args ')'
-                    {
-                      $$ = node_call_new($1, NULL, $3, NULL);
-                    }
-                | cond '.' identifier '(' opt_args ')'
-                    {
-                      $$ = node_call_new($3, NULL, $5, NULL);
-                    }
-                | cond '.' identifier
-                    {
-                      $$ = node_call_new($3, $1, NULL, NULL);
-                    }
-                ;
-
-primary         : primary0
                 | block
                 | keyword_new identifier '(' opt_args ')' opt_block
                     {
