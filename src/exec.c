@@ -447,6 +447,30 @@ exec_expr(strm_stream* strm, strm_state* state, node* np, strm_value* val)
       return n;
     }
     break;
+  case NODE_FCALL:
+    {
+      node_fcall* ncall = (node_fcall*)np;
+      int i;
+      strm_value func;
+      node_nodes* v0 = (node_nodes*)ncall->args;
+      strm_value *args;
+
+      if (exec_expr(strm, state, ncall->func, &func) == STRM_NG) {
+        return STRM_NG;
+      }
+      args = malloc(sizeof(strm_value)*v0->len);
+      for (i = 0; i < v0->len; i++) {
+        n = exec_expr(strm, state, v0->data[i], &args[i]);
+        if (n == STRM_NG) {
+          free(args);
+          return n;
+        }
+      }
+      n = strm_funcall(strm, func, i, args, val);
+      free(args);
+      return n;
+    }
+    break;
   case NODE_RETURN:
     {
       node_return* nreturn = (node_return*)np;

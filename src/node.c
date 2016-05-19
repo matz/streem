@@ -282,6 +282,20 @@ node_call_new(node_string ident, node* recv, node* args, node* blk)
 }
 
 node*
+node_fcall_new(node* func, node* args, node* blk)
+{
+  node_fcall* ncall = malloc(sizeof(node_fcall));
+  ncall->type = NODE_FCALL;
+  ncall->func = func;
+  if (!args) args = node_array_new();
+  if (blk) {
+    node_nodes_add(args, blk);
+  }
+  ncall->args = args;
+  return (node*)ncall;
+}
+
+node*
 node_int_new(long i)
 {
   node_int* ni = malloc(sizeof(node_int));

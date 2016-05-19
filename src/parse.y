@@ -91,6 +91,7 @@ static void yyerror(parser_state *p, const char *s);
 
 %nonassoc op_LOWEST
 
+%right op_lambda op_lambda2
 %left  op_amper
 %left  op_bar
 %left  op_or
@@ -335,6 +336,10 @@ expr            : expr op_plus expr
                     {
                       $$ = node_op_new("||", $1, $3);
                     }
+                | '(' opt_f_args op_lambda2 expr
+                    {
+                      $$ = node_lambda_new($2, $4);
+                    }
                 | primary
                     {
                       $$ = $1;
@@ -461,6 +466,10 @@ primary         : lit_number
                 | primary '.' identifier opt_block
                     {
                       $$ = node_call_new($3, $1, NULL, $4);
+                    }
+                | '(' expr ')' '(' opt_args ')' opt_block
+                    {
+                      $$ = node_fcall_new($2, $5, $7);
                     }
                 ;
 
