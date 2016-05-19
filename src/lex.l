@@ -52,6 +52,7 @@ TZONE  "Z"|[+-][0-9]+(":"[0-9]+)?
 "=>"{TRAIL} LEX_RETURN(op_rasgn);
 "->"{TRAIL} LEX_RETURN(op_lambda);
 ")"" "*"->"{TRAIL} LEX_RETURN(op_lambda2);
+")"" "*"->"" "*"{"{TRAIL} LEX_RETURN(op_lambda3);
 "="{TRAIL}  LEX_RETURN('=');
 "::"{TRAIL} LEX_RETURN(op_colon2);
 

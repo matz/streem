@@ -62,6 +62,8 @@ static void yyerror(parser_state *p, const char *s);
         op_lasgn
         op_rasgn
         op_lambda
+        op_lambda2
+        op_lambda3
         op_plus
         op_minus
         op_mult
@@ -91,7 +93,7 @@ static void yyerror(parser_state *p, const char *s);
 
 %nonassoc op_LOWEST
 
-%right op_lambda op_lambda2
+%right op_lambda op_lambda2 op_lambda3
 %left  op_amper
 %left  op_bar
 %left  op_or
@@ -337,6 +339,10 @@ expr            : expr op_plus expr
                       $$ = node_op_new("||", $1, $3);
                     }
                 | '(' opt_f_args op_lambda2 expr
+                    {
+                      $$ = node_lambda_new($2, $4);
+                    }
+                | '(' opt_f_args op_lambda3 stmts '}'
                     {
                       $$ = node_lambda_new($2, $4);
                     }
