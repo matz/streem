@@ -310,7 +310,11 @@ lambda_call(strm_stream* strm, strm_value func, int argc, strm_value* argv, strm
   node_error* exc;
 
   c.prev = lambda->state;
-  if ((args == NULL && argc != 0) || (args->len != argc)) {
+  if (args == NULL) {
+    if (argc > 0) goto argerr;
+  }
+  else if (args->len != argc) {
+  argerr:
     if (strm) {
       strm_raise(strm, "wrong number of arguments");
       strm->exc->fname = nlbd->fname;
