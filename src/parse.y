@@ -26,8 +26,8 @@ node_lineinfo(parser_state* p, node* node)
   node_string id;
 }
 
-%type <nd> program topstmts decls decl_list decl stmts stmt_list
-%type <nd> stmt expr condition block primary
+%type <nd> program topstmts topstmt stmts stmt_list stmt
+%type <nd> expr condition block primary
 %type <nd> arg args opt_args opt_block f_args opt_f_args bparam
 %type <nd> opt_else opt_elsif
 %type <id> identifier var label
@@ -64,6 +64,7 @@ static void yyerror(parser_state *p, const char *s);
         op_lambda
         op_lambda2
         op_lambda3
+        op_lambda4
         op_plus
         op_minus
         op_mult
@@ -93,7 +94,7 @@ static void yyerror(parser_state *p, const char *s);
 
 %nonassoc op_LOWEST
 
-%right op_lambda op_lambda2 op_lambda3
+%right op_lambda op_lambda2 op_lambda3 op_lambda4
 %left  op_amper
 %left  op_bar
 %left  op_or
@@ -107,30 +108,17 @@ static void yyerror(parser_state *p, const char *s);
 %token op_HIGHEST
 
 %%
-program         : topstmts
-                    { 
-                      p->lval = $1;  
+program         : opt_terms topstmts opt_terms
+                    {
+                      p->lval = $2;
+                    }
+                | opt_terms
+                    {
+                      p->lval = NULL;
                     }
                 ;
 
-/* declarations must come before actual statements */
-topstmts        : decls stmts
-                    {
-                      $$ = node_nodes_concat($1, $2);
-                    }
-                ;
-
-decls           : opt_terms
-                    {
-                      $$ = NULL;
-                    }
-                | decl_list opt_terms
-                    {
-                      $$ = $1;
-                    }
-                ;
-
-decl_list       : decl
+topstmts        : topstmt
                     {
                       $$ = node_nodes_new();
                       node_lineinfo(p, $$);
@@ -139,22 +127,28 @@ decl_list       : decl
                         node_lineinfo(p, $1);
                       }
                     }
-                | decl_list terms decl
+                | topstmts terms topstmt
                     {
+                      $$ = $1;
                       if ($3) {
-                        node_nodes_add($$, $3);
+                        if ($1) {
+                          node_nodes_add($$, $3);
+                        }
+                        else {
+                          $1 = $3;
+                        }
                         node_lineinfo(p, $3);
                       }
                     }
                 ;
 
-decl            : /* namespace statement:
+topstmt         : /* namespace statement:
                     namespace name_of_namespace {
                       declarations
                     }
 
                     define a new namespace. */
-                  keyword_namespace identifier '{' decls '}'
+                  keyword_namespace identifier '{' topstmts '}'
                     {
                       $$ = node_ns_new($2, $4);
                     }
@@ -165,7 +159,7 @@ decl            : /* namespace statement:
 
                     alias of namespace statement.
                     namespace work like class when bound with new expression. */
-                  keyword_class identifier '{' decls '}'
+                  keyword_class identifier '{' topstmts '}'
                     {
                       $$ = node_ns_new($2, $4);
                     }
@@ -177,15 +171,16 @@ decl            : /* namespace statement:
                     {
                       $$ = node_import_new($2);
                     }
+                | stmt
                 ;
 
-stmts           : opt_terms
+stmts           : opt_terms stmt_list opt_terms
+                    {
+                      $$ = $2;
+                    }
+                | opt_terms
                     {
                       $$ = NULL;
-                    }
-                | stmt_list opt_terms
-                    {
-                      $$ = $1;
                     }
                 ;
 
@@ -200,8 +195,14 @@ stmt_list       : stmt
                     }
                 | stmt_list terms stmt
                     {
+                      $$ = $1;
                       if ($3) {
-                        node_nodes_add($$, $3);
+                        if ($1) {
+                          node_nodes_add($$, $3);
+                        }
+                        else {
+                          $1 = $3;
+                        }
                         node_lineinfo(p, $3);
                       }
                     }
@@ -370,9 +371,21 @@ expr            : expr op_plus expr
                     {
                       $$ = node_lambda_new($2, $4);
                     }
-                | '(' opt_f_args op_lambda3 stmts '}'
+                | '(' opt_f_args op_lambda4 stmts '}'
                     {
                       $$ = node_lambda_new($2, $4);
+                    }
+                | identifier op_lambda expr
+                    {
+                      $$ = node_args_new();
+                      node_args_add($$, $1);
+                      $$ = node_lambda_new($$, $3);
+                    }
+                | identifier op_lambda3 stmts '}'
+                    {
+                      $$ = node_args_new();
+                      node_args_add($$, $1);
+                      $$ = node_lambda_new($$, $3);
                     }
                 | primary
                     {
