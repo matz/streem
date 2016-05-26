@@ -69,6 +69,25 @@ ary_length(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 }
 
 static int
+ary_reverse(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  strm_value* v;
+  strm_value* v2;
+  strm_int len;
+  strm_array ary;
+  strm_int i;
+
+  strm_get_args(strm, argc, args, "a", &v, &len);
+  ary = strm_ary_new(NULL, len);
+  v2 = strm_ary_ptr(ary);
+  for (i=0; i<len; i++) {
+    v2[len-i-1] = v[i];
+  }
+  *ret = strm_ary_value(ary);
+  return STRM_OK;
+}
+
+static int
 ary_minmax(strm_stream* strm, int argc, strm_value* args, strm_value* ret, int min)
 {
   strm_value func = strm_nil_value();
@@ -136,6 +155,7 @@ strm_array_init(strm_state* state)
 {
   strm_ns_array = strm_ns_new(NULL);
   strm_var_def(strm_ns_array, "length", strm_cfunc_value(ary_length));
+  strm_var_def(strm_ns_array, "reverse", strm_cfunc_value(ary_reverse));
   strm_var_def(strm_ns_array, "min", strm_cfunc_value(ary_min));
   strm_var_def(strm_ns_array, "max", strm_cfunc_value(ary_max));
 }
