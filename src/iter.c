@@ -798,6 +798,65 @@ exec_slice(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   return STRM_OK;
 }
 
+static int
+iter_consec(strm_stream* strm, strm_value data)
+{
+  struct slice_data* d = strm->data;
+  strm_int n = d->n;
+
+  if (d->i < n) {
+    d->buf[d->i++] = data;
+    if (d->i == n) {
+      strm_array ary = strm_ary_new(d->buf, n);
+      strm_emit(strm, strm_ary_value(ary), NULL);
+    }
+    return STRM_OK;
+  }
+  else {
+    strm_array ary;
+    strm_int i;
+    strm_int len = n-1;
+
+    for (i=0; i<len; i++) {
+      d->buf[i] = d->buf[i+1];
+    }
+    d->buf[len] = data;
+    ary = strm_ary_new(d->buf, n);
+    strm_emit(strm, strm_ary_value(ary), NULL);
+  }
+  return STRM_OK;
+}
+
+static int
+finish_consec(strm_stream* strm, strm_value data)
+{
+  struct slice_data* d = strm->data;
+
+  free(d->buf);
+  free(d);
+  return STRM_OK;
+}
+
+static int
+exec_consec(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  struct slice_data* d;
+  strm_int n;
+
+  strm_get_args(strm, argc, args, "i", &n);
+  d = malloc(sizeof(struct slice_data));
+  if (!d) return STRM_NG;
+  d->n = n;
+  d->i = 0;
+  d->buf = malloc(n*sizeof(strm_value));
+  if (!d->buf) {
+    free(d);
+    return STRM_NG;
+  }
+  *ret = strm_stream_value(strm_stream_new(strm_filter, iter_consec, finish_consec, (void*)d));
+  return STRM_OK;
+}
+
 void strm_stat_init(strm_state* state);
 
 void
@@ -819,6 +878,7 @@ strm_iter_init(strm_state* state)
   strm_var_def(state, "split", strm_cfunc_value(exec_split));
 
   strm_var_def(state, "slice", strm_cfunc_value(exec_slice));
+  strm_var_def(state, "consec", strm_cfunc_value(exec_consec));
 
   strm_var_def(strm_ns_array, "each", strm_cfunc_value(ary_each));
   strm_var_def(strm_ns_array, "map", strm_cfunc_value(ary_map));
