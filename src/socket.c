@@ -196,8 +196,7 @@ tcp_socket(strm_stream* task, int argc, strm_value* args, strm_value* ret)
     strm_raise(task, "socket error: connect");
     return STRM_NG;
   }
-  *ret = strm_ptr_value((void*)strm_io_new(sock,
-		STRM_IO_READ|STRM_IO_WRITE|STRM_IO_FLUSH));
+  *ret = strm_io_new(sock, STRM_IO_READ|STRM_IO_WRITE|STRM_IO_FLUSH);
   return STRM_OK;
 }
 
