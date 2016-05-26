@@ -60,11 +60,12 @@ server_close(strm_stream* task, strm_value d)
 }
 
 static int
-tcp_server(strm_stream* task, int argc, strm_value* args, strm_value* ret)
+tcp_server(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   struct addrinfo hints;
   struct addrinfo *result, *rp;
   int sock, s;
+  strm_value srv;
   const char *service;
   char buf[12];
   struct socket_data *sd;
@@ -77,16 +78,13 @@ tcp_server(strm_stream* task, int argc, strm_value* args, strm_value* ret)
   setsockopt(INVALID_SOCKET, SOL_SOCKET, SO_OPENTYPE, (char *)&sockopt, sizeof(sockopt));
 #endif
 
-  if (argc != 1) {
-    strm_raise(task, "tcp_server: wrong number of arguments");
-    return STRM_NG;
-  }
-  if (strm_number_p(args[0])) {
-    sprintf(buf, "%d", (int)strm_value_int(args[0]));
+  strm_get_args(strm, argc, args, "v", &srv);
+  if (strm_number_p(srv)) {
+    sprintf(buf, "%d", (int)strm_value_int(srv));
     service = buf;
   }
   else {
-    strm_string str = strm_value_str(args[0]);
+    strm_string str = strm_value_str(srv);
     service = strm_str_cstr(str, buf);
   }
 
@@ -104,7 +102,7 @@ tcp_server(strm_stream* task, int argc, strm_value* args, strm_value* ret)
     s = getaddrinfo(NULL, service, &hints, &result);
     if (s != 0) {
       if (s == EAI_AGAIN) continue;
-      strm_raise(task, gai_strerror(s));
+      strm_raise(strm, gai_strerror(s));
       return STRM_NG;
     }
     break;
@@ -121,13 +119,13 @@ tcp_server(strm_stream* task, int argc, strm_value* args, strm_value* ret)
 
   freeaddrinfo(result);
   if (rp == NULL) {
-    strm_raise(task, "socket error: bind");
+    strm_raise(strm, "socket error: bind");
     return STRM_NG;
   }
 
   if (listen(sock, 5) < 0) {
     closesocket(sock);
-    strm_raise(task, "socket error: listen");
+    strm_raise(strm, "socket error: listen");
     return STRM_NG;
   }
 
@@ -139,7 +137,7 @@ tcp_server(strm_stream* task, int argc, strm_value* args, strm_value* ret)
 }
 
 static int
-tcp_socket(strm_stream* task, int argc, strm_value* args, strm_value* ret)
+tcp_socket(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   struct addrinfo hints;
   struct addrinfo *result, *rp;
@@ -147,23 +145,20 @@ tcp_socket(strm_stream* task, int argc, strm_value* args, strm_value* ret)
   const char *service;
   char sbuf[12], hbuf[7];
   strm_string host;
+  strm_value srv;
 
 #ifdef _WIN32
   WSADATA wsa;
   WSAStartup(MAKEWORD(2, 0), &wsa);
 #endif
 
-  if (argc != 2) {
-    strm_raise(task, "tcp_socket: wrong number of arguments");
-    return STRM_NG;
-  }
-  host = strm_value_str(args[0]);
-  if (strm_number_p(args[1])) {
-    sprintf(sbuf, "%d", (int)strm_value_int(args[1]));
+  strm_get_args(strm, argc, args, "Sv", &host, &srv);
+  if (strm_number_p(srv)) {
+    sprintf(sbuf, "%d", (int)strm_value_int(srv));
     service = sbuf;
   }
   else {
-    strm_string str = strm_value_str(args[1]);
+    strm_string str = strm_value_str(srv);
     service = strm_str_cstr(str, sbuf);
   }
 
@@ -178,7 +173,7 @@ tcp_socket(strm_stream* task, int argc, strm_value* args, strm_value* ret)
   s = getaddrinfo(strm_str_cstr(host, hbuf), service, &hints, &result);
 
   if (s != 0) {
-    strm_raise(task, gai_strerror(s));
+    strm_raise(strm, gai_strerror(s));
     return STRM_NG;
   }
 
@@ -193,7 +188,7 @@ tcp_socket(strm_stream* task, int argc, strm_value* args, strm_value* ret)
 
   freeaddrinfo(result);
   if (rp == NULL) {
-    strm_raise(task, "socket error: connect");
+    strm_raise(strm, "socket error: connect");
     return STRM_NG;
   }
   *ret = strm_io_new(sock, STRM_IO_READ|STRM_IO_WRITE|STRM_IO_FLUSH);
