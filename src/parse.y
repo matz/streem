@@ -27,9 +27,8 @@ node_lineinfo(parser_state* p, node* node)
 }
 
 %type <nd> program topstmts topstmt stmts stmt_list stmt
-%type <nd> expr condition block primary
+%type <nd> expr condition block primary if_body
 %type <nd> arg args opt_args opt_block f_args opt_f_args bparam
-%type <nd> opt_else opt_elsif
 %type <id> identifier var label
 %type <nd> lit_string lit_number
 
@@ -95,6 +94,8 @@ static void yyerror(parser_state *p, const char *s);
 %nonassoc op_LOWEST
 
 %right op_lambda op_lambda2 op_lambda3 op_lambda4
+%right keyword_else
+%right keyword_if
 %left  op_amper
 %left  op_bar
 %left  op_or
@@ -285,6 +286,10 @@ stmt            : var '=' expr
                     {
                       $$ = node_break_new();
                     }
+                | keyword_if condition if_body
+                    {
+                      $$ = node_if_new($2, $3, NULL);
+                    }
                 | expr
                 ;
 
@@ -387,6 +392,10 @@ expr            : expr op_plus expr
                       node_args_add($$, $1);
                       $$ = node_lambda_new($$, $3);
                     }
+                | keyword_if condition if_body keyword_else if_body
+                    {
+                      $$ = node_if_new($2, $3, $5);
+                    }
                 | primary
                 ;
 
@@ -396,32 +405,10 @@ condition       : '(' expr ')'
                     }
                 ;
 
-opt_elsif       : /* none */
+if_body         : expr                         %prec keyword_if
+                | '{' stmts '}'                %prec keyword_if
                     {
-                      $$ = NULL;
-                    }
-                | opt_elsif keyword_else keyword_if condition '{' stmts '}'
-                    {
-                      if ($1)
-                        ((node_if*)$1)->opt_else = node_if_new($4, $6, NULL);
-                      else
-                        $$ = node_if_new($4, $6, NULL);
-                    }
-                ;
-
-opt_else        : opt_elsif
-                | opt_elsif keyword_else '{' stmts '}'
-                    {
-                      if ($1) {
-                        node_if* n = (node_if*)$1;
-
-                        while (n->opt_else && n->opt_else->type == NODE_IF) {
-                          n = (node_if*)n->opt_else;
-                        }
-                        n->opt_else = $4;
-                      }
-                      else
-                        $$ = $4;
+                      $$ = $2;
                     }
                 ;
 
@@ -474,10 +461,7 @@ primary         : lit_number
                     {
                       $$ = node_array_new();
                     }
-                | keyword_if condition '{' stmts '}' opt_else
-                    {
-                      $$ = node_if_new($2, $4, $6);
-                    }
+                | block
                 | keyword_nil
                     {
                       $$ = node_nil();
@@ -490,7 +474,6 @@ primary         : lit_number
                     {
                       $$ = node_false();
                     }
-                | block
                 | keyword_new identifier '(' opt_args ')' opt_block
                     {
                       $$ = node_obj_new($4, $2);
@@ -521,6 +504,10 @@ opt_block       : /* none */
                     {
                       $$ = NULL;
                     }
+                | '{' stmts '}'
+                    {
+                      $$ = node_lambda_new(NULL, $2);
+                    }
                 | block
                 ;
 
@@ -528,19 +515,15 @@ block           : '{' bparam stmts '}'
                     {
                       $$ = node_lambda_new($2, $3);
                     }
-                | '{' stmts '}'
-                    {
-                      $$ = node_lambda_new(NULL, $2);
-                    }
                 ;
 
-bparam          : op_lambda
+bparam          : op_or
                     {
                       $$ = NULL;
                     }
-                | f_args op_lambda
+                |  op_bar opt_f_args op_bar
                     {
-                      $$ = $1;
+                      $$ = $2;
                     }
                 ;
 
