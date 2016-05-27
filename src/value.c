@@ -222,8 +222,6 @@ strm_value_eq(strm_value a, strm_value b)
   case STRM_TAG_ARRAY:
   case STRM_TAG_STRUCT:
     return strm_ary_eq(a, b);
-  case STRM_TAG_STRING_I:
-  case STRM_TAG_STRING_6:
   case STRM_TAG_STRING_O:
   case STRM_TAG_STRING_F:
     return strm_str_eq(a, b);
