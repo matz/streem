@@ -217,9 +217,8 @@ int
 strm_value_eq(strm_value a, strm_value b)
 {
   if (a == b) return TRUE;
-  if (strm_value_tag(a) != strm_value_tag(b)) return FALSE;
+  if (strm_value_tag(a) != strm_value_tag(b)) goto typediff;
   switch (strm_value_tag(a)) {
-  case STRM_TAG_ARRAY:
   case STRM_TAG_STRUCT:
     return strm_ary_eq(a, b);
   case STRM_TAG_STRING_O:
@@ -229,7 +228,11 @@ strm_value_eq(strm_value a, strm_value b)
     return (strm_cfunc)(intptr_t)strm_value_val(a) == (strm_cfunc)(intptr_t)strm_value_val(b);
   case STRM_TAG_PTR:
     return strm_value_vptr(a) == strm_value_vptr(b);
+  typediff:
   default:
+    if (strm_number_p(a) && strm_number_p(b)) {
+      return strm_value_flt(a) == strm_value_flt(b);
+    }
     return FALSE;
   }
 }
