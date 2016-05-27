@@ -192,17 +192,17 @@ fin_cycle(strm_stream* strm, strm_value data)
 static int
 exec_cycle(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
-  strm_value v;
+  strm_array a;
   strm_int n = -1;
   struct cycle_data *d;
 
-  strm_get_args(strm, argc, args, "A|i", &v, &n);
+  strm_get_args(strm, argc, args, "A|i", &a, &n);
   if (argc == 2 && n <= 0) {
     strm_raise(strm, "invalid count number");
     return STRM_NG;
   }
   d = malloc(sizeof(struct cycle_data));
-  d->ary = strm_value_ary(v);
+  d->ary = a;
   d->count = n;
   *ret = strm_stream_value(strm_stream_new(strm_producer, gen_cycle, fin_cycle, (void*)d));
   return STRM_OK;
@@ -386,7 +386,7 @@ exec_flatmap(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 static int
 ary_flatmap(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
-  strm_value ary;
+  strm_array ary;
   strm_value func;
   strm_array a2;
   strm_value* v2;

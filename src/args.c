@@ -15,7 +15,7 @@
     v:      value          [strm_value]
     S:      string         [strm_string]
     s:      string         [char*,strm_int]        takes two arguments
-    A:      array          [strm_value]
+    A:      array          [strm_array]
     a:      array          [strm_value*,strm_int]  takes two arguments
     N:      number         [strm_value]            receive either integer or float
     f:      number         [double]
@@ -122,16 +122,18 @@ strm_parse_args(strm_stream* strm, int argc, strm_value* argv, const char* forma
       break;
     case 'A':
       {
-        strm_value* p;
+        strm_array* p;
+        strm_value v;
 
-        p = va_arg(ap, strm_value*);
+        p = va_arg(ap, strm_array*);
         if (i < argc) {
-          *p = argv[arg_i++];
+          v = argv[arg_i++];
           i++;
-          if (!strm_array_p(*p)) {
+          if (!strm_array_p(v)) {
             strm_raise(strm, "array required");
             return STRM_NG;
           }
+          *p = strm_value_ary(v);
         }
       }
       break;
