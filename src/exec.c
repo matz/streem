@@ -70,6 +70,7 @@ struct array_data {
 
 static int arr_exec(strm_stream* strm, strm_value data);
 static int cfunc_exec(strm_stream* strm, strm_value data);
+static int cfunc_closer(strm_stream* strm, strm_value data) { return STRM_OK; }
 
 int
 strm_connect(strm_stream* strm, strm_value src, strm_value dst, strm_value* ret)
@@ -104,7 +105,7 @@ strm_connect(strm_stream* strm, strm_value src, strm_value dst, strm_value* ret)
   /* dst: cfunc */
   else if (strm_cfunc_p(dst)) {
     strm_cfunc func = strm_value_cfunc(dst);
-    dst = strm_stream_value(strm_stream_new(strm_filter, cfunc_exec, NULL, func));
+    dst = strm_stream_value(strm_stream_new(strm_filter, cfunc_exec, cfunc_closer, func));
   }
 
   /* stream x stream */
