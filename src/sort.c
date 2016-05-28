@@ -72,6 +72,9 @@ sort_cmp(const void* a_p, const void* b_p)
 #if defined(__APPLE__) || defined(__FreeBSD__)
 #define qsort_arg(p,nmem,size,cmp,arg) qsort_r(p,nmem,size,arg,cmp)
 #define cmp_args(a,b,c) (c,a,b)
+#elif defined(_WIN32)
+#define qsort_arg(p,nmem,size,cmp,arg) qsort_s(p,nmem,size,cmp,arg)
+#define cmp_args(a,b,c) (c,a,b)
 #else
 #define qsort_arg(p,nmem,size,cmp,arg) qsort_r(p,nmem,size,cmp,arg)
 #define cmp_args(a,b,c) (a,b,c)
@@ -110,25 +113,12 @@ sort_cmpf cmp_args(const void* a_p, const void* b_p, void* arg)
 static void
 mem_sort(strm_value* p, strm_int len, struct sort_arg *arg)
 {
-#ifdef _WIN32
-  int i, j;
-  for (i = 0; i < len; i++) {
-    for (j = i; j > 0; j--) {
-      int r = arg ? sort_cmpf(p+j,p+j-1,arg) : sort_cmp(p+j, p+j-1);
-      if (r <= 0) break;
-      strm_value tmp = *(p+j);
-      *(p+j) = *(p+j-1);
-      *(p+j+1) = tmp;
-    }
-  }
-#else
   if (arg) {                    /* sort(ary, func) */
     qsort_arg(p, len, sizeof(strm_value), sort_cmpf, arg);
   }
   else {                        /* sort(ary) */
     qsort(p, len, sizeof(strm_value), sort_cmp);
   }
-#endif
 }
 
 struct sort_data {
