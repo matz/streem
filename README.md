@@ -23,19 +23,15 @@ invoked after program execution.
 For another example, a simple FizzBuzz will look like this:
 
 ```
-seq(100) | {x ->
-  if x % 15 == 0 {
-    "FizzBuzz"
-  }
-  else if x % 3 == 0 {
-    "Fizz"
-  }
-  else if x % 5 == 0 {
-    "Buzz"
-  }
-  else {
-    x
-  }
+# seq(100) returns a stream of numbers from 1 to 100.
+# A function object in pipeline works as a map function.
+# stdout is an output destination.
+seq(100) | map{|x|
+  print("x=",x)
+  if (x % 15 == 0)     "FizzBuzz"
+  else if (x % 3 == 0) "Fizz"
+  else if (x % 5 == 0) "Buzz"
+  else                 x
 } | stdout
 ```
 
