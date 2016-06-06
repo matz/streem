@@ -494,9 +494,9 @@ primary         : lit_number
                     {
                       $$ = node_call_new($3, $1, NULL, $4);
                     }
-                | '(' expr ')' '(' opt_args ')' opt_block
+                | primary '.' '(' opt_args ')' opt_block
                     {
-                      $$ = node_fcall_new($2, $5, $7);
+                      $$ = node_fcall_new($1, $4, $6);
                     }
                 ;
 
