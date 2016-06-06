@@ -194,9 +194,9 @@ topstmt         : /* namespace statement:
 
                     method foo(self, args) = expr
                    */
-                  keyword_method identifier '(' opt_f_args ')' expr
+                  keyword_method identifier '(' opt_f_args ')' '=' expr
                     {
-                      $$ = node_let_new($2, node_method_new($4, $6));
+                      $$ = node_let_new($2, node_method_new($4, $7));
                     }
                 | stmt
                 ;
@@ -253,17 +253,17 @@ stmt            : var '=' expr
                     def foo(args) = expr
 
                     define a function named foo. */
-                  keyword_def identifier '(' opt_f_args ')' expr
+                  keyword_def identifier '(' opt_f_args ')' '=' expr
                     {
-                      $$ = node_let_new($2, node_lambda_new($4, $6));
+                      $$ = node_let_new($2, node_lambda_new($4, $7));
                     }
                 | /* assignment using def statement:
                     def foo = expr
 
                     define a function named foo. */
-                  keyword_def identifier expr
+                  keyword_def identifier '=' expr
                     {
-                      $$ = node_let_new($2, node_lambda_new(NULL, $3));
+                      $$ = node_let_new($2, node_lambda_new(NULL, $4));
                     }
                 | expr op_rasgn var
                     {
