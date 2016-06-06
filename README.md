@@ -27,7 +27,6 @@ For another example, a simple FizzBuzz will look like this:
 # A function object in pipeline works as a map function.
 # stdout is an output destination.
 seq(100) | map{|x|
-  print("x=",x)
   if (x % 15 == 0)     "FizzBuzz"
   else if (x % 3 == 0) "Fizz"
   else if (x % 5 == 0) "Buzz"
