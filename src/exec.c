@@ -3,6 +3,7 @@
 
 #define NODE_ERROR_RUNTIME 0
 #define NODE_ERROR_RETURN 1
+#define NODE_ERROR_SKIP 2
 
 static void
 strm_clear_exc(strm_stream* strm)
@@ -316,6 +317,9 @@ exec_expr(strm_stream* strm, strm_state* state, node* np, strm_value* val)
     }
     break;
 
+  case NODE_SKIP:
+    strm_set_exc(strm, NODE_ERROR_SKIP, strm_nil_value());
+    return STRM_NG;
   case NODE_EMIT:
     {
       int i, n;
@@ -585,6 +589,7 @@ strm_eprint(strm_stream* strm)
   node_error* exc = strm->exc;
 
   if (!exc) return;
+  if (exc->type == NODE_ERROR_SKIP) return;
   if (exc->fname) {
     fprintf(stderr, "%s:%d:", exc->fname, exc->lineno);
   }

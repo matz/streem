@@ -47,6 +47,7 @@ static void yyerror(parser_state *p, const char *s);
         keyword_do
         keyword_break
         keyword_emit
+        keyword_skip
         keyword_return
         keyword_namespace
         keyword_class
@@ -268,6 +269,10 @@ stmt            : var '=' expr
                 | expr op_rasgn var
                     {
                       $$ = node_let_new($3, $1);
+                    }
+                | keyword_skip
+                    {
+                      $$ = node_skip_new();
                     }
                 | keyword_emit opt_args
                     {
