@@ -45,7 +45,6 @@ static void yyerror(parser_state *p, const char *s);
         keyword_if
         keyword_else
         keyword_do
-        keyword_break
         keyword_emit
         keyword_skip
         keyword_return
@@ -281,10 +280,6 @@ stmt            : var '=' expr
                 | keyword_return opt_args
                     {
                       $$ = node_return_new($2);
-                    }
-                | keyword_break
-                    {
-                      $$ = node_break_new();
                     }
                 | keyword_if condition if_body
                     {

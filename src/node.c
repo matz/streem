@@ -503,13 +503,6 @@ node_return_new(node* value)
   return (node*)nreturn;
 }
 
-node*
-node_break_new(node* value)
-{
-  static node nd = { NODE_BREAK };
-  return &nd;
-}
-
 void
 node_parse_init(parser_state* p)
 {

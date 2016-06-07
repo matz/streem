@@ -47,7 +47,6 @@ typedef enum {
   NODE_EMIT,
   NODE_SKIP,
   NODE_RETURN,
-  NODE_BREAK,
   NODE_VAR,
   NODE_CONST,
   NODE_OP,
@@ -219,7 +218,6 @@ extern node* node_if_new(node*, node*, node*);
 extern node* node_emit_new(node*);
 extern node* node_skip_new();
 extern node* node_return_new(node*);
-extern node* node_break_new();
 extern node* node_ident_new(node_string);
 extern node_string node_str_new(const char*, strm_int len);
 extern node_string node_str_escaped(const char* s, strm_int len);
