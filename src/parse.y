@@ -27,7 +27,7 @@ node_lineinfo(parser_state* p, node* node)
 }
 
 %type <nd> program topstmts topstmt stmts stmt_list stmt
-%type <nd> expr condition block primary if_body
+%type <nd> expr condition block primary if_body argif_body opt_else
 %type <nd> arg args opt_args opt_block f_args opt_f_args bparam
 %type <id> identifier var label
 %type <nd> lit_string lit_number
@@ -281,9 +281,9 @@ stmt            : var '=' expr
                     {
                       $$ = node_return_new($2);
                     }
-                | keyword_if condition if_body
+                | keyword_if condition if_body opt_else
                     {
-                      $$ = node_if_new($2, $3, NULL);
+                      $$ = node_if_new($2, $3, $4);
                     }
                 | expr
                 ;
@@ -387,10 +387,6 @@ expr            : expr op_plus expr
                       node_args_add($$, $1);
                       $$ = node_lambda_new($$, $3);
                     }
-                | keyword_if condition if_body keyword_else if_body
-                    {
-                      $$ = node_if_new($2, $3, $5);
-                    }
                 | primary
                 ;
 
@@ -400,7 +396,24 @@ condition       : '(' expr ')'
                     }
                 ;
 
-if_body         : expr                         %prec keyword_if
+opt_else        : /* none */                   %prec keyword_else
+                    {
+                      $$ = NULL;
+                    }
+                | keyword_else if_body         %prec keyword_else
+                    {
+                      $$ = $2;
+                    }
+                ;
+
+if_body         : stmt                         %prec keyword_if
+                | '{' stmts '}'                %prec keyword_if
+                    {
+                      $$ = $2;
+                    }
+                ;
+
+argif_body      : arg                          %prec keyword_if
                 | '{' stmts '}'                %prec keyword_if
                     {
                       $$ = $2;
@@ -419,6 +432,10 @@ opt_args        : /* none */
 
 
 arg             : expr
+                | keyword_if condition argif_body keyword_else argif_body
+                    {
+                      $$ = node_if_new($2, $3, $5);
+                    }
                 | label expr
                     {
                       $$ = node_pair_new($1, $2);
