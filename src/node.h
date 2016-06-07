@@ -53,6 +53,7 @@ typedef enum {
   NODE_OP,
   NODE_CALL,
   NODE_FCALL,
+  NODE_GENFUNC,
   NODE_ARRAY,
   NODE_NODES,
   NODE_NS,
@@ -171,6 +172,11 @@ typedef struct {
 
 typedef struct {
   NODE_HEADER;
+  node_string id;
+} node_genfunc;
+
+typedef struct {
+  NODE_HEADER;
   node* rv;
 } node_return;
 
@@ -204,6 +210,7 @@ extern node* node_lambda_new(node*, node*);
 extern node* node_method_new(node*, node*);
 extern node* node_call_new(node_string, node*, node*, node*);
 extern node* node_fcall_new(node*, node*, node*);
+extern node* node_genfunc_new(node_string);
 extern node* node_int_new(long);
 extern node* node_float_new(double);
 extern node* node_time_new(const char*, strm_int);

@@ -369,6 +369,7 @@ str_number(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   strm_get_args(strm, argc, args, "S", &s);
   s = csv_value(strm_str_ptr(s), strm_str_len(s), TYPE_NUM);
   if (!strm_number_p(s)) {
+    strm_raise(strm, "invalid string for number");
     return STRM_NG;
   }
   *ret = s;

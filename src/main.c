@@ -101,6 +101,13 @@ dump_node(node* np, int indent) {
     }
     dump_node(((node_call*)np)->args, indent+2);
     break;
+  case NODE_GENFUNC:
+    printf("GENFUNC: ");
+    {
+      node_string s = ((node_genfunc*)np)->id;
+      print_str(s);
+    }
+    break;
   case NODE_RETURN:
     printf("RETURN:\n");
     dump_node(((node_return*)np)->rv, indent+1);

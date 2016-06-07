@@ -498,6 +498,10 @@ primary         : lit_number
                     {
                       $$ = node_fcall_new($1, $4, $6);
                     }
+                | op_amper identifier
+                    {
+                      $$ = node_genfunc_new($2);
+                    }
                 ;
 
 opt_block       : /* none */

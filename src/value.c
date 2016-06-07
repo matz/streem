@@ -440,6 +440,13 @@ strm_to_str(strm_value v)
       case STRM_PTR_LAMBDA:
         n = sprintf(buf, "<lambda:%p>", p);
         break;
+      case STRM_PTR_GENFUNC:
+        {
+          char fbuf[7];
+          struct strm_genfunc *gf = p;
+          n = sprintf(buf, "<genfunc:&%s>", strm_str_cstr(gf->id, fbuf));
+        }
+        break;
       case STRM_PTR_AUX:
         n = sprintf(buf, "<obj:%p>", p);
         break;

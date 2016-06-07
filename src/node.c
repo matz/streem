@@ -296,6 +296,15 @@ node_fcall_new(node* func, node* args, node* blk)
 }
 
 node*
+node_genfunc_new(node_string id)
+{
+  node_genfunc* ngf = malloc(sizeof(node_genfunc));
+  ngf->type = NODE_GENFUNC;
+  ngf->id = id;
+  return (node*)ngf;
+}
+
+node*
 node_int_new(long i)
 {
   node_int* ni = malloc(sizeof(node_int));

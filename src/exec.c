@@ -211,6 +211,20 @@ lambda_call(strm_stream* strm, strm_value func, int argc, strm_value* argv, strm
   return n;
 }
 
+static struct strm_genfunc*
+genfunc_new(strm_state* state, strm_string id)
+{
+  struct strm_genfunc *gf = malloc(sizeof(struct strm_genfunc));
+
+  if (!gf) return NULL;
+  gf->type = STRM_PTR_GENFUNC;
+  gf->state = state;
+  gf->id = id;
+  return gf;
+}
+
+static int exec_call(strm_stream* strm, strm_state* state, strm_string name, int argc, strm_value* argv, strm_value* ret);
+
 int
 strm_funcall(strm_stream* strm, strm_value func, int argc, strm_value* argv, strm_value* ret)
 {
@@ -220,12 +234,16 @@ strm_funcall(strm_stream* strm, strm_value func, int argc, strm_value* argv, str
   case STRM_TAG_ARRAY:
     return ary_get(strm, func, argc, argv, ret);
   case STRM_TAG_PTR:
-    if (!strm_lambda_p(func)) {
-      strm_raise(strm, "not a function");
-      return STRM_NG;
+    if (strm_ptr_tag_p(func, STRM_PTR_GENFUNC)) {
+      struct strm_genfunc *gf = strm_value_vptr(func);
+      return exec_call(strm, gf->state, gf->id, argc, argv, ret);
+    }
+    else if (strm_lambda_p(func)) {
+      return lambda_call(strm, func, argc, argv, ret);
     }
     else {
-      return lambda_call(strm, func, argc, argv, ret);
+      strm_raise(strm, "not a function");
+      return STRM_NG;
     }
   default:
     strm_raise(strm, "not a function");
@@ -472,6 +490,17 @@ exec_expr(strm_stream* strm, strm_state* state, node* np, strm_value* val)
       n = strm_funcall(strm, func, i, args, val);
       free(args);
       return n;
+    }
+    break;
+  case NODE_GENFUNC:
+    {
+      node_genfunc* ngf = (node_genfunc*)np;
+      struct strm_genfunc *gf;
+
+      gf = genfunc_new(state, node_to_str(ngf->id));
+      if (!gf) return STRM_NG;
+      *val = strm_ptr_value(gf);
+      return STRM_OK;
     }
     break;
   case NODE_RETURN:
