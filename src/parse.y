@@ -59,10 +59,10 @@ static void yyerror(parser_state *p, const char *s);
         keyword_false
         op_lasgn
         op_rasgn
-        op_lambda
-        op_lambda2
-        op_lambda3
-        op_lambda4
+        op_lambda     /* -> */
+        op_lambda2    /* )-> */
+        op_lambda3    /* ->{*/
+        op_lambda4    /* )->{*/
         op_plus
         op_minus
         op_mult
