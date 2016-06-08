@@ -641,7 +641,7 @@ exec_fread(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   strm_get_args(strm, argc, args, "S", &path);
   fd = open(strm_str_cstr(path, buf), O_RDONLY);
   if (fd < 0) {
-    strm_raise(strm, "fopen() failed");
+    strm_raise(strm, "fread() failed");
     return STRM_NG;
   }
   *ret = strm_io_new(fd, STRM_IO_READ);
