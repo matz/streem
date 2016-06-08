@@ -53,8 +53,17 @@ strm_task_push(strm_stream* strm, strm_callback func, strm_value data)
 void
 strm_emit(strm_stream* strm, strm_value data, strm_callback func)
 {
-  if (strm->dst && !strm_nil_p(data)) {
-    strm_task_push(strm->dst, strm->dst->start_func, data);
+  if (!strm_nil_p(data)) {
+    if (strm->dst) {
+      strm_task_push(strm->dst, strm->dst->start_func, data);
+    }
+    if (strm->rest) {
+      int i;
+
+      for (i=0; i<strm->rsize; i++) {
+        strm_task_push(strm->rest[i], strm->rest[i]->start_func, data);
+      }
+    }
   }
   sched_yield();
   if (func) {
@@ -67,8 +76,16 @@ strm_stream_connect(strm_stream* src, strm_stream* dst)
 {
   assert(src->mode != strm_consumer);
   assert(dst->mode != strm_producer);
-  assert(src->dst == NULL);
-  src->dst = dst;
+  if (src->dst == NULL) {
+    src->dst = dst;
+  }
+  else {
+    if (src->rsize <= src->rcapa) {
+      src->rcapa = src->rcapa*2+2;
+      src->rest = realloc(src->rest, sizeof(strm_stream*)*src->rcapa);
+    }
+    src->rest[src->rsize++] = dst;
+  }
   strm_atomic_inc(dst->refcnt);
 
   if (src->mode == strm_producer) {
@@ -179,6 +196,9 @@ strm_stream_new(strm_stream_mode mode, strm_callback start_func, strm_callback c
   s->close_func = close_func;
   s->data = data;
   s->dst = NULL;
+  s->rest = NULL;
+  s->rsize = 0;
+  s->rcapa = 0;
   s->flags = 0;
   s->exc = NULL;
   s->refcnt = 0;
@@ -211,6 +231,14 @@ strm_stream_close(strm_stream* strm)
 
   if (strm->dst) {
     strm_task_push(strm->dst, (strm_callback)strm_stream_close, strm_nil_value());
+  }
+  if (strm->rest) {
+    int i;
+
+    for (i=0; i<strm->rsize; i++) {
+      strm_task_push(strm->rest[i], (strm_callback)strm_stream_close, strm_nil_value());
+    }
+    free(strm->rest);
   }
   strm_atomic_dec(stream_count);
 }
