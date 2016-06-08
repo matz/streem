@@ -227,10 +227,13 @@ iter_each(strm_stream* strm, strm_value data)
 static int
 exec_each(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
-  struct map_data* d = malloc(sizeof(struct map_data));
+  struct map_data* d;
   strm_value func;
 
   strm_get_args(strm, argc, args, "v", &func);
+  d = malloc(sizeof(struct map_data));
+  if (!d) return STRM_NG;
+  d->func = func;
   *ret = strm_stream_value(strm_stream_new(strm_filter, iter_each, NULL, (void*)d));
   return STRM_OK;
 }
