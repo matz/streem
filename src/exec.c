@@ -605,6 +605,7 @@ exec_cputs(strm_stream* strm, FILE* out, int argc, strm_value* args, strm_value*
     fwrite(strm_str_ptr(s), strm_str_len(s), 1, out);
   }
   fputs("\n", out);
+  *ret = strm_nil_value();
   return STRM_OK;
 }
 
