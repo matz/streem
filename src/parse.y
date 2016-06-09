@@ -284,10 +284,6 @@ stmt            : var '=' expr
                     {
                       $$ = node_return_new($2);
                     }
-                | keyword_if condition stmt opt_else
-                    {
-                      $$ = node_if_new($2, $3, $4);
-                    }
                 | expr
                 ;
 
@@ -378,6 +374,10 @@ expr            : expr op_plus expr
                     {
                       $$ = node_lambda_new($2, $4);
                     }
+                | keyword_if condition expr opt_else
+                    {
+                      $$ = node_if_new($2, $3, $4);
+                    }
                 | primary
                 ;
 
@@ -391,7 +391,7 @@ opt_else        : /* none */                   %prec keyword_else
                     {
                       $$ = NULL;
                     }
-                | keyword_else stmt            %prec keyword_else
+                | keyword_else expr            %prec keyword_else
                     {
                       $$ = $2;
                     }
@@ -409,10 +409,6 @@ opt_args        : /* none */
 
 
 arg             : expr
-                | keyword_if condition arg keyword_else arg
-                    {
-                      $$ = node_if_new($2, $3, $5);
-                    }
                 | label expr
                     {
                       $$ = node_pair_new($1, $2);
@@ -440,6 +436,12 @@ primary         : lit_number
                     }
                 | '(' expr ')'
                     {
+                      if ($2->type == NODE_LAMBDA) {
+                        node_lambda* lambda = (node_lambda*)$2;
+                        if (lambda->block) {
+                          lambda->block = 0;
+                        }
+                      }
                        $$ = $2;
                     }
                 | '[' args ']'
