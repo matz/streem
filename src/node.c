@@ -236,15 +236,28 @@ node_op_new(const char* op, node* lhs, node* rhs)
 }
 
 node*
-node_lambda_new(node* args, node* compstmt)
+node_lambda_alloc(node* args, node* compstmt, int block)
 {
   node_lambda* lambda = malloc(sizeof(node_lambda));
   lambda->type = NODE_LAMBDA;
   lambda->args = args;
   lambda->compstmt = compstmt;
+  lambda->block = block;
   lambda->fname = compstmt ? compstmt->fname : NULL;
   lambda->lineno = compstmt ? compstmt->lineno : 0;
   return (node*)lambda;
+}
+
+node*
+node_lambda_new(node* args, node* compstmt)
+{
+  return node_lambda_alloc(args, compstmt, 0);
+}
+
+node*
+node_block_new(node* compstmt)
+{
+  return node_lambda_alloc(NULL, compstmt, 1);
 }
 
 node*
@@ -467,14 +480,27 @@ node_false()
   return (node*)&nd;
 }
 
+static node*
+cond_body(node* body)
+{
+  if (body == NULL) return NULL;
+  if (body->type == NODE_LAMBDA) {
+    node_lambda* lambda = (node_lambda*)body;
+    if (lambda->block) {
+      return lambda->compstmt;
+    }
+  }
+  return body;
+}
+
 node*
 node_if_new(node* cond, node* then, node* opt_else)
 {
   node_if* nif = malloc(sizeof(node_if));
   nif->type = NODE_IF;
   nif->cond = cond;
-  nif->then = then;
-  nif->opt_else = opt_else;
+  nif->then = cond_body(then);
+  nif->opt_else = cond_body(opt_else);
   return (node*)nif;
 }
 

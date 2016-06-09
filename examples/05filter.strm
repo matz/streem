@@ -1,5 +1,5 @@
 # pick even numbers
-seq(100) | filter{|x| x % 2 == 0} | stdout
+seq(100) | filter{x-> x % 2 == 0} | stdout
 # output:
 #  2
 #  4

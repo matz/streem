@@ -155,6 +155,7 @@ typedef struct node_lambda {
   NODE_HEADER;
   node* args;
   node* compstmt;
+  int block;
 } node_lambda;
 
 typedef struct {
@@ -206,6 +207,7 @@ extern node* node_let_new(node_string, node*);
 extern node* node_op_new(const char*, node*, node*);
 extern node* node_obj_new(node*, node_string);
 extern node* node_lambda_new(node*, node*);
+extern node* node_block_new(node*);
 extern node* node_method_new(node*, node*);
 extern node* node_call_new(node_string, node*, node*, node*);
 extern node* node_fcall_new(node*, node*, node*);

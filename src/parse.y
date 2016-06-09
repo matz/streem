@@ -27,7 +27,7 @@ node_lineinfo(parser_state* p, node* node)
 }
 
 %type <nd> program topstmts topstmt stmts stmt_list stmt
-%type <nd> expr condition block primary if_body argif_body opt_else
+%type <nd> expr condition block primary opt_else
 %type <nd> arg args opt_args opt_block f_args opt_f_args bparam
 %type <id> identifier var label
 %type <nd> lit_string lit_number
@@ -61,8 +61,7 @@ static void yyerror(parser_state *p, const char *s);
         op_rasgn
         op_lambda     /* -> */
         op_lambda2    /* )-> */
-        op_lambda3    /* ->{*/
-        op_lambda4    /* )->{*/
+        op_lambda3    /* )->{*/
         op_plus
         op_minus
         op_mult
@@ -92,7 +91,7 @@ static void yyerror(parser_state *p, const char *s);
 
 %nonassoc op_LOWEST
 
-%right op_lambda op_lambda2 op_lambda3 op_lambda4
+%right op_lambda op_lambda2 op_lambda3
 %right keyword_else
 %right keyword_if
 %left  op_amper
@@ -201,7 +200,11 @@ topstmt         : /* namespace statement:
                 | stmt
                 ;
 
-stmts           : opt_terms stmt_list opt_terms
+stmts           : stmt_list opt_terms
+                    {
+                      $$ = $1;
+                    }
+                | terms stmt_list opt_terms
                     {
                       $$ = $2;
                     }
@@ -281,7 +284,7 @@ stmt            : var '=' expr
                     {
                       $$ = node_return_new($2);
                     }
-                | keyword_if condition if_body opt_else
+                | keyword_if condition stmt opt_else
                     {
                       $$ = node_if_new($2, $3, $4);
                     }
@@ -371,21 +374,9 @@ expr            : expr op_plus expr
                     {
                       $$ = node_lambda_new($2, $4);
                     }
-                | '(' opt_f_args op_lambda4 stmts '}'
+                | '(' opt_f_args op_lambda3 stmts '}'
                     {
                       $$ = node_lambda_new($2, $4);
-                    }
-                | identifier op_lambda expr
-                    {
-                      $$ = node_args_new();
-                      node_args_add($$, $1);
-                      $$ = node_lambda_new($$, $3);
-                    }
-                | identifier op_lambda3 stmts '}'
-                    {
-                      $$ = node_args_new();
-                      node_args_add($$, $1);
-                      $$ = node_lambda_new($$, $3);
                     }
                 | primary
                 ;
@@ -400,21 +391,7 @@ opt_else        : /* none */                   %prec keyword_else
                     {
                       $$ = NULL;
                     }
-                | keyword_else if_body         %prec keyword_else
-                    {
-                      $$ = $2;
-                    }
-                ;
-
-if_body         : stmt                         %prec keyword_if
-                | '{' stmts '}'                %prec keyword_if
-                    {
-                      $$ = $2;
-                    }
-                ;
-
-argif_body      : arg                          %prec keyword_if
-                | '{' stmts '}'                %prec keyword_if
+                | keyword_else stmt            %prec keyword_else
                     {
                       $$ = $2;
                     }
@@ -432,7 +409,7 @@ opt_args        : /* none */
 
 
 arg             : expr
-                | keyword_if condition argif_body keyword_else argif_body
+                | keyword_if condition arg keyword_else arg
                     {
                       $$ = node_if_new($2, $3, $5);
                     }
@@ -520,26 +497,26 @@ opt_block       : /* none */
                     {
                       $$ = NULL;
                     }
-                | '{' stmts '}'
-                    {
-                      $$ = node_lambda_new(NULL, $2);
-                    }
                 | block
                 ;
 
-block           : '{' bparam stmts '}'
+block           : '{' stmts '}'
+                    {
+                      $$ = node_block_new($2);
+                    }
+                | '{' bparam stmts '}'
                     {
                       $$ = node_lambda_new($2, $3);
                     }
                 ;
 
-bparam          : op_or
+bparam          : op_lambda
                     {
                       $$ = NULL;
                     }
-                |  op_bar opt_f_args op_bar
+                | f_args op_lambda
                     {
-                      $$ = $2;
+                      $$ = $1;
                     }
                 ;
 
