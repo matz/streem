@@ -143,10 +143,7 @@ num_le(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 static int
 num_number(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
-  double x;
-
-  strm_get_args(strm, argc, args, "f", &x);
-  *ret = strm_flt_value(x);
+  strm_get_args(strm, argc, args, "N", ret);
   return STRM_OK;
 }
 
