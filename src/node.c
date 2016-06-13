@@ -24,7 +24,7 @@ int yyparse(parser_state*);
   type1* _v = (type1*)v;\
   if (_v->len == _v->max) {\
     _v->max = _v->len + 10;\
-    _v->data = realloc(_v->data, sizeof(type1) * _v->max);\
+    _v->data = realloc(_v->data, sizeof(type2) * _v->max);\
   }\
   _v->data[_v->len] = data;\
   _v->len++;
