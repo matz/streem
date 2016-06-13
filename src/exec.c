@@ -174,33 +174,151 @@ ary_get(strm_stream* strm, strm_value ary, int argc, strm_value* argv, strm_valu
 }
 
 static int
+pattern_match(strm_stream* strm, strm_state* state, node* npat, int argc, strm_value* argv);
+
+static int
+pmatch(strm_stream* strm, strm_state* state, node* pat, strm_value val)
+{
+  switch (pat->type) {
+  case NODE_IDENT:
+    {
+      node_ident* ni = (node_ident*)pat;
+      return strm_var_set(state, node_to_sym(ni->name), val);
+    }
+  case NODE_STR:
+    {
+      if (strm_string_p(val)) {
+        if (strm_str_eq(strm_value_str(val), node_to_str(((node_str*)pat)->value)))
+          return STRM_OK;
+      }
+    }
+    break;
+  case NODE_INT:
+    {
+      strm_int n = ((node_int*)pat)->value;
+
+      if (strm_int_p(val)) {
+        if (n == strm_value_int(val))
+          return STRM_OK;
+        return STRM_NG;
+      }
+      if (strm_flt_p(val)) {
+        if (n == strm_value_flt(val))
+          return STRM_OK;
+        return STRM_NG;
+      }
+    }
+    break;
+  case NODE_FLOAT:
+    if (strm_number_p(val)) {
+      if ((((node_float*)pat)->value) == strm_value_flt(val))
+        return STRM_OK;
+      return STRM_NG;
+    }
+    break;
+  case NODE_PATTERN:
+    if (strm_array_p(val)) {
+      strm_array ary = strm_value_ary(val);
+      return pattern_match(strm, state, pat, strm_ary_len(ary), strm_ary_ptr(ary));
+    }
+    break;
+  case NODE_CONS:
+    if (strm_array_p(val)) {
+      strm_array ary = strm_value_ary(val);
+      node_cons* cons = (node_cons*)pat;
+      node_nodes* pp = (node_nodes*)cons->car;
+      node* pr = cons->cdr;
+      strm_value *p = strm_ary_ptr(ary);
+
+      if (strm_ary_len(ary) < pp->len) return STRM_NG;
+      if (pattern_match(strm, state, (node*)pp, pp->len, p) == STRM_NG)
+        return STRM_NG;
+      if (pmatch(strm, state, pr, strm_ary_new(p+pp->len, strm_ary_len(ary)-pp->len)) == STRM_NG)
+        return STRM_NG;
+      return STRM_OK;
+    }
+    break;
+  default:
+    break;
+  }
+  return STRM_NG;
+}
+
+static int
+pattern_match(strm_stream* strm, strm_state* state, node* npat, int argc, strm_value* argv)
+{
+  node_nodes* pat = (node_nodes*)npat;
+  int i;
+
+  if (pat == NULL) {
+    if (argc == 0) return STRM_OK;
+    return STRM_NG;
+  }
+  if (pat->len != argc) return STRM_NG;
+  for (i=0; i<pat->len; i++) {
+    if (pmatch(strm, state, pat->data[i], argv[i]) == STRM_NG)
+      return STRM_NG;
+  }
+  return STRM_OK;
+}
+
+static int
 lambda_call(strm_stream* strm, strm_value func, int argc, strm_value* argv, strm_value* ret)
 {
   struct strm_lambda* lambda = strm_value_lambda(func);
-  node_lambda* nlbd = lambda->body;
-  node_args* args = (node_args*)nlbd->args;
   strm_state c = {0};
   int i, n;
   node_error* exc;
 
   c.prev = lambda->state;
-  if (args == NULL) {
-    if (argc > 0) goto argerr;
-  }
-  else if (args->len != argc) {
-  argerr:
-    if (strm) {
-      strm_raise(strm, "wrong number of arguments");
-      strm->exc->fname = nlbd->fname;
-      strm->exc->lineno = nlbd->lineno;
+  if (lambda->body->type == NODE_LAMBDA) {
+    node_lambda* nlmbd = (node_lambda*)lambda->body;
+    node_args* args = (node_args*)nlmbd->args;
+
+    if (args == NULL) {
+      if (argc > 0) goto argerr;
     }
-    return STRM_NG;
+    else if (args->len != argc) {
+    argerr:
+      strm_raise(strm, "wrong number of arguments");
+      goto err;
+    }
+    for (i=0; i<argc; i++) {
+      n = strm_var_set(&c, node_to_sym(args->data[i]), argv[i]);
+      if (n) return n;
+    }
+    n = exec_expr(strm, &c, nlmbd->body, ret);
   }
-  for (i=0; i<argc; i++) {
-    n = strm_var_set(&c, node_to_sym(args->data[i]), argv[i]);
-    if (n) return n;
+  else if (lambda->body->type == NODE_PLAMBDA) {
+    node_plambda* plmbd = (node_plambda*)lambda->body;
+    int nexec = 0;
+
+    while (plmbd) {
+      if (pattern_match(strm, &c, plmbd->pat, argc, argv) == STRM_OK) {
+        strm_value cond;
+
+        if (plmbd->cond) {
+          n = exec_expr(strm, &c, plmbd->cond, &cond);
+          if (n == STRM_OK && strm_value_bool(cond)) {
+            nexec++;
+            n = exec_expr(strm, &c, plmbd->body, ret);
+            break;
+          }
+        }
+        else {
+          nexec++;
+          n = exec_expr(strm, &c, plmbd->body, ret);
+          break;
+        }
+      }
+      c.env = NULL;
+      plmbd = (node_plambda*)plmbd->next;
+    }
+    if (nexec == 0) {
+      strm_raise(strm, "match failure");
+      goto err;
+    }
   }
-  n = exec_expr(strm, &c, nlbd->compstmt, ret);
   if (n == STRM_NG && strm) {
     exc = strm->exc;
     if (exc && exc->type == NODE_ERROR_RETURN) {
@@ -209,6 +327,12 @@ lambda_call(strm_stream* strm, strm_value func, int argc, strm_value* argv, strm
     }
   }
   return n;
+ err:
+  if (strm && strm->exc) {
+    strm->exc->fname = lambda->body->fname;
+    strm->exc->lineno = lambda->body->lineno;
+  }
+  return STRM_NG;
 }
 
 static struct strm_genfunc*
@@ -435,6 +559,7 @@ exec_expr(strm_stream* strm, strm_state* state, node* np, strm_value* val)
     }
     break;
   case NODE_LAMBDA:
+  case NODE_PLAMBDA:
     {
       struct strm_lambda* lambda = malloc(sizeof(struct strm_lambda));
 
@@ -754,7 +879,7 @@ blk_exec(strm_stream* strm, strm_value data)
     strm_var_set(&c, node_to_sym(args->data[0]), data);
   }
 
-  n = exec_expr(strm, &c, lambda->body->compstmt, &ret);
+  n = exec_expr(strm, &c, lambda->body->body, &ret);
   exc = strm->exc;
   if (exc) {
     if (exc->type == NODE_ERROR_RETURN) {

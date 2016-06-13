@@ -28,7 +28,8 @@ node_lineinfo(parser_state* p, node* node)
 
 %type <nd> program topstmts topstmt stmts stmt_list stmt
 %type <nd> expr condition block primary opt_else
-%type <nd> arg args opt_args opt_block f_args opt_f_args bparam
+%type <nd> case_body cparam pattern pterm bparam
+%type <nd> arg args opt_args opt_block f_args opt_f_args
 %type <id> identifier var label
 %type <nd> lit_string lit_number
 
@@ -44,7 +45,7 @@ static void yyerror(parser_state *p, const char *s);
 %token
         keyword_if
         keyword_else
-        keyword_do
+        keyword_case
         keyword_emit
         keyword_skip
         keyword_return
@@ -502,6 +503,66 @@ opt_block       : /* none */
                 | block
                 ;
 
+pterm           : identifier
+                    {
+                      $$ = node_ident_new($1);
+                    }
+                | lit_number
+                | lit_string
+                | '[' ']'
+                    {
+                      $$ = node_pattern_new();
+                    }
+                | '[' pattern ']'
+                    {
+                      $$ = $2;
+                    }
+                | '[' pattern op_bar pterm ']'
+                    {
+                      $$ = node_cons_new($2, $4);
+                    }
+                ;
+
+pattern         : pterm
+                    {
+                      $$ = node_pattern_new();
+                      node_pattern_add($$, $1);
+                    }
+                | pattern ',' pterm
+                    {
+                      $$ = $1;
+                      node_pattern_add($$, $3);
+                    }
+                ;
+
+cparam         : op_lambda
+                    {
+                      $$ = node_plambda_new(NULL, NULL);
+                    }
+                | keyword_if expr op_lambda
+                    {
+                      $$ = node_plambda_new(NULL, $2);
+                    }
+                | pattern op_lambda
+                    {
+                      $$ = node_plambda_new($1, NULL);
+                    }
+                | pattern keyword_if expr op_lambda
+                    {
+                      $$ = node_plambda_new($1, $3);
+                    }
+                ;
+
+case_body       : keyword_case cparam stmts
+                    {
+                      $$ = node_plambda_body($2, $3);
+                    }
+                | case_body keyword_case cparam stmts
+                    {
+                      $$ = node_plambda_add($1, node_plambda_body($3, $4));
+                    }
+                ;
+
 block           : '{' stmts '}'
                     {
                       $$ = node_block_new($2);
@@ -509,6 +570,10 @@ block           : '{' stmts '}'
                 | '{' bparam stmts '}'
                     {
                       $$ = node_lambda_new($2, $3);
+                    }
+                | '{' case_body '}'
+                    {
+                      $$ = $2;
                     }
                 ;
 

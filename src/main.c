@@ -89,7 +89,40 @@ dump_node(node* np, int indent) {
   case NODE_LAMBDA:
     printf("LAMBDA:\n");
     dump_node(((node_lambda*)np)->args, indent+1);
-    dump_node(((node_lambda*)np)->compstmt, indent+1);
+    dump_node(((node_lambda*)np)->body, indent+1);
+    break;
+  case NODE_PLAMBDA:
+    printf("PLAMBDA:\n");
+    dump_node(((node_plambda*)np)->pat, indent+1);
+    if (((node_plambda*)np)->cond) {
+      for (i = 0; i < indent+2; i++)
+        putchar(' ');
+      printf("IF:\n");
+      dump_node(((node_plambda*)np)->cond, indent+2);
+    }
+    dump_node(((node_plambda*)np)->body, indent+1);
+    if (((node_plambda*)np)->next) {
+      dump_node(((node_plambda*)np)->next, indent);
+    }
+    break;
+  case NODE_PATTERN:
+    printf("PATTERN:\n");
+    {
+      node_nodes* ary = (node_nodes*)np;
+      for (i = 0; i < ary->len; i++)
+        dump_node(ary->data[i], indent+1);
+    }
+    break;
+  case NODE_CONS:
+    printf("CONS:\n");
+    {
+      node_cons* cons = (node_cons*)np;
+      dump_node(cons->car, indent+1);
+      for (i = 0; i < indent+1; i++)
+        putchar(' ');
+      printf("REST:\n");
+      dump_node(cons->cdr, indent+2);
+    }
     break;
   case NODE_CALL:
     printf("CALL:\n");

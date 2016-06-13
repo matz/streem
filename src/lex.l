@@ -59,6 +59,7 @@ TZONE  "Z"|[+-][0-9]+(":"[0-9]+)?
 if                  LEX_RETURN(keyword_if);
 {TRAIL}else{TRAIL}  LEX_RETURN(keyword_else);
 skip{TRAIL}         LEX_RETURN(keyword_skip);
+case{TRAIL}         LEX_RETURN(keyword_case);
 emit                LEX_RETURN(keyword_emit);
 return              LEX_RETURN(keyword_return);
 namespace           LEX_RETURN(keyword_namespace);

@@ -41,6 +41,9 @@ typedef enum {
   NODE_PAIR,
   NODE_CFUNC,
   NODE_LAMBDA,
+  NODE_PLAMBDA,
+  NODE_PATTERN,
+  NODE_CONS,
   NODE_IDENT,
   NODE_LET,
   NODE_IF,
@@ -123,6 +126,12 @@ typedef struct {
 
 typedef struct {
   NODE_HEADER;
+  node* car;
+  node* cdr;
+} node_cons;
+
+typedef struct {
+  NODE_HEADER;
   node* cond;
   node* then;
   node* opt_else;
@@ -154,9 +163,17 @@ typedef struct {
 typedef struct node_lambda {
   NODE_HEADER;
   node* args;
-  node* compstmt;
+  node* body;
   int block;
 } node_lambda;
+
+typedef struct node_plambda {
+  NODE_HEADER;
+  node* pat;
+  node* cond;
+  node* body;
+  node* next;
+} node_plambda;
 
 typedef struct {
   NODE_HEADER;
@@ -201,6 +218,12 @@ extern node* node_nodes_concat(node*, node*);
 extern node* node_pair_new(node_string, node*);
 extern node* node_args_new();
 extern void node_args_add(node*, node_string);
+extern node* node_pattern_new();
+extern void node_pattern_add(node*, node*);
+extern node* node_cons_new(node*,node*);
+extern node* node_plambda_new(node*,node*);
+extern node* node_plambda_body(node*,node*);
+extern node* node_plambda_add(node*,node*);
 extern node* node_ns_new(node_string, node*);
 extern node* node_import_new(node_string);
 extern node* node_let_new(node_string, node*);

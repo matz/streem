@@ -196,6 +196,58 @@ node_args_free(node* a)
 }
 
 node*
+node_pattern_new()
+{
+  VALUES_NEW(node_nodes, NODE_PATTERN, {});
+}
+
+void
+node_pattern_add(node* v, node* data)
+{
+  VALUES_ADD(node_nodes,v,node*);
+}
+
+node*
+node_cons_new(node* head, node* tail)
+{
+  node_cons* cons = malloc(sizeof(node_cons));
+  cons->type = NODE_CONS;
+  cons->car = head;
+  cons->cdr = tail;
+  return (node*)cons;
+}
+
+node*
+node_plambda_new(node* pat, node* cond)
+{
+  node_plambda* lambda = malloc(sizeof(node_plambda));
+  lambda->type = NODE_PLAMBDA;
+  lambda->pat = pat;
+  lambda->cond = cond;
+  lambda->body = NULL;
+  return (node*)lambda;
+}
+
+node*
+node_plambda_body(node* n, node* body)
+{
+  node_plambda* lambda = (node_plambda*)n;
+  lambda->body = body;
+  return (node*)lambda;
+}
+
+node*
+node_plambda_add(node* n, node* lambda)
+{
+  node_plambda* l = (node_plambda*)n;
+  while (l->next) {
+    l = (node_plambda*)l->next;
+  }
+  l->next = lambda;
+  return n;
+}
+
+node*
 node_ns_new(node_string name, node* body)
 {
   node_ns* newns = malloc(sizeof(node_ns));
@@ -241,7 +293,7 @@ node_lambda_alloc(node* args, node* compstmt, int block)
   node_lambda* lambda = malloc(sizeof(node_lambda));
   lambda->type = NODE_LAMBDA;
   lambda->args = args;
-  lambda->compstmt = compstmt;
+  lambda->body = compstmt;
   lambda->block = block;
   lambda->fname = compstmt ? compstmt->fname : NULL;
   lambda->lineno = compstmt ? compstmt->lineno : 0;
@@ -273,7 +325,7 @@ node_method_new(node* args, node* compstmt)
     node_args_add(args, node_str_new("self", 4));
   }
   lambda->args = args;
-  lambda->compstmt = compstmt;
+  lambda->body = compstmt;
   return (node*)lambda;
 }
 
@@ -487,7 +539,7 @@ cond_body(node* body)
   if (body->type == NODE_LAMBDA) {
     node_lambda* lambda = (node_lambda*)body;
     if (lambda->block) {
-      return lambda->compstmt;
+      return lambda->body;
     }
   }
   return body;
@@ -610,7 +662,7 @@ node_free(node* np) {
     break;
   case NODE_LAMBDA:
     node_args_free(((node_lambda*)np)->args);
-    node_free(((node_lambda*)np)->compstmt);
+    node_free(((node_lambda*)np)->body);
     free(np);
     break;
   case NODE_CALL:
