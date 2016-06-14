@@ -177,13 +177,22 @@ static int
 pattern_match(strm_stream* strm, strm_state* state, node* npat, int argc, strm_value* argv);
 
 static int
+pattern_placeholder_p(node_string name){
+  if (name->len == 1 && name->buf[0] == '_')
+    return TRUE;
+  return FALSE;
+}
+
+static int
 pmatch(strm_stream* strm, strm_state* state, node* pat, strm_value val)
 {
   switch (pat->type) {
   case NODE_IDENT:
     {
       node_ident* ni = (node_ident*)pat;
-      return strm_var_set(state, node_to_sym(ni->name), val);
+      if (pattern_placeholder_p(ni->name))
+        return STRM_OK;
+      return strm_var_match(state, node_to_sym(ni->name), val);
     }
   case NODE_STR:
     {

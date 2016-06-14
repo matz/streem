@@ -78,6 +78,20 @@ strm_var_get(strm_state* state, strm_string name, strm_value* val)
 }
 
 int
+strm_var_match(strm_state* state, strm_string name, strm_value val)
+{
+  if (state && state->env) {
+    strm_value v0;
+    if (env_get((strm_env*)state->env, name, &v0) == 0) {
+      if (strm_value_eq(v0, val))
+        return STRM_OK;
+      return STRM_NG;
+    }
+  }
+  return strm_var_set(state, name, val);
+}
+
+int
 strm_env_copy(strm_state* s1, strm_state* s2)
 {
   strm_env *e1 = s1->env;

@@ -3,3 +3,10 @@ each2 = {
   case [x|y],f -> f(x); each2(y,f)
 }
 each2([1,2,3,4]) {x-> print(x)}
+
+same = {
+case x,x -> true   # comparison in match
+case _,_ -> false  # fallback
+}
+print(same(1,1))
+print(same(1,2))
