@@ -686,65 +686,6 @@ exec_rbk(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   return STRM_OK;
 }
 
-struct split_data {
-  strm_value sep;
-};
-
-static int
-iter_split(strm_stream* strm, strm_value data)
-{
-  struct split_data* d = strm->data;
-  const char* s;
-  strm_int slen;
-  const char* t;
-  const char* p;
-  const char* pend;
-  char c;
-
-  if (!strm_string_p(data)) {
-    return STRM_NG;
-  }
-  s = strm_str_ptr(d->sep);
-  slen = strm_str_len(d->sep);
-  c = s[0];
-  t = p = strm_str_ptr(data);
-  pend = p + strm_str_len(data) - slen;
-  while (p<pend) {
-    if (*p == c) {
-      if (memcmp(p, s, slen) == 0) {
-        if (!(slen == 1 && c == ' ' && (p-t) == 0)) {
-          strm_emit(strm, strm_str_new(t, p-t), NULL);
-        }
-        t = p + slen;
-      }
-    }
-    p++;
-  }
-  pend = strm_str_ptr(data) + strm_str_len(data);
-  strm_emit(strm, strm_str_new(t, pend-t), NULL);
-  return STRM_OK;
-}
-
-static int
-exec_split(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
-{
-  struct split_data* d;
-  strm_string sep;
-
-  strm_get_args(strm, argc, args, "|S", &sep);
-  if (argc == 0) {
-    sep = strm_str_lit(" ");
-  }
-  if (strm_str_len(sep) < 1) {
-    strm_raise(strm, "separator string too short");
-    return STRM_NG;
-  }
-  d = malloc(sizeof(struct split_data));
-  d->sep = sep;
-  *ret = strm_stream_value(strm_stream_new(strm_filter, iter_split, NULL, (void*)d));
-  return STRM_OK;
-}
-
 struct slice_data {
   strm_int n;
   strm_int i;
@@ -878,7 +819,6 @@ strm_iter_init(strm_state* state)
   strm_var_def(state, "max", strm_cfunc_value(exec_max));
   strm_var_def(state, "reduce", strm_cfunc_value(exec_reduce));
   strm_var_def(state, "reduce_by_key", strm_cfunc_value(exec_rbk));
-  strm_var_def(state, "split", strm_cfunc_value(exec_split));
 
   strm_var_def(state, "slice", strm_cfunc_value(exec_slice));
   strm_var_def(state, "consec", strm_cfunc_value(exec_consec));
