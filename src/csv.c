@@ -325,7 +325,7 @@ sv_accept(strm_stream* strm, strm_value data)
         }
       }
     }
-    strm_emit(strm, strm_str_value(ary), NULL);
+    strm_emit(strm, strm_ary_value(ary), NULL);
   }
   return STRM_OK;
 }
