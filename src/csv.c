@@ -8,7 +8,7 @@
 #include "strm.h"
 
 static int
-count_fields(strm_string line)
+count_fields(strm_string line, char sep)
 {
   const char *ptr = strm_str_ptr(line);
   const char *pend = ptr + strm_str_len(line);
@@ -31,7 +31,9 @@ count_fields(strm_string line)
       quoted = 1;
       continue;
     case ',':
-      cnt++;
+    case '\t':
+      if (*ptr == sep)
+        cnt++;
       continue;
     default:
       continue;
@@ -169,6 +171,7 @@ struct csv_data {
   strm_array headers;
   enum csv_type *types;
   strm_string prev;
+  char sep;
   int n;
 };
 
@@ -181,7 +184,7 @@ csv_type(strm_value v)
 }
 
 static int
-csv_accept(strm_stream* strm, strm_value data)
+sv_accept(strm_stream* strm, strm_value data)
 {
   strm_array ary;
   strm_string line = strm_value_str(data);
@@ -195,6 +198,7 @@ csv_accept(strm_stream* strm, strm_value data)
   enum csv_type ftype;
   enum csv_type* types;
   struct csv_data *cd = strm->data;
+  char sep = cd->sep;
 
   if (cd->prev) {
     strm_int len = strm_str_len(cd->prev)+strm_str_len(line)+1;
@@ -207,7 +211,7 @@ csv_accept(strm_stream* strm, strm_value data)
     free(tmp);
     cd->prev = strm_str_null;
   }
-  fieldcnt = count_fields(line);
+  fieldcnt = count_fields(line, cd->sep);
   if (fieldcnt == -1) {
     cd->prev = line;
     return STRM_NG;
@@ -248,6 +252,8 @@ csv_accept(strm_stream* strm, strm_value data)
       }
       continue;
     case ',':
+    case '\t':
+      if (*ptr != sep) continue;
       *bp = csv_value(fbeg, ptr-fbeg, ftype);
       if (!strm_string_p(*bp)) all_str = 0;
       bp++;
@@ -325,7 +331,7 @@ csv_accept(strm_stream* strm, strm_value data)
 }
 
 static int
-csv_finish(strm_stream* strm, strm_value data)
+sv_finish(strm_stream* strm, strm_value data)
 {
   struct csv_data *cd = strm->data;
 
@@ -343,7 +349,7 @@ csv_finish(strm_stream* strm, strm_value data)
 }
 
 static int
-csv(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+sv(strm_stream* strm, int argc, strm_value* args, strm_value* ret, char sep)
 {
   strm_stream *t;
   struct csv_data *cd;
@@ -354,11 +360,24 @@ csv(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   cd->headers = strm_ary_null;
   cd->types = NULL;
   cd->prev = strm_str_null;
+  cd->sep = sep;
   cd->n = 0;
 
-  t = strm_stream_new(strm_filter, csv_accept, csv_finish, (void*)cd);
+  t = strm_stream_new(strm_filter, sv_accept, sv_finish, (void*)cd);
   *ret = strm_stream_value(t);
   return STRM_OK;
+}
+
+static int
+csv(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  return sv(strm, argc, args, ret, ',');
+}
+
+static int
+tsv(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  return sv(strm, argc, args, ret, '\t');
 }
 
 static int
@@ -380,6 +399,7 @@ void
 strm_csv_init(strm_state* state)
 {
   strm_var_def(state, "csv", strm_cfunc_value(csv));
+  strm_var_def(state, "tsv", strm_cfunc_value(tsv));
 
   strm_var_def(strm_ns_string, "number", strm_cfunc_value(str_number));
 }
