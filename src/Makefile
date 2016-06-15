@@ -4,7 +4,7 @@ CC = gcc
 TOP = ..
 TARGET = $(TOP)/bin/streem
 CDEFS = -DNO_LOCKFREE_QUEUE
-CFLAGS = -g -ggdb -Wall $(CDEFS)
+CFLAGS = -std=gnu99 -g -ggdb -Wall $(CDEFS)
 LIBS = -lpthread -lm
 
 ifeq (Windows_NT,$(OS))
