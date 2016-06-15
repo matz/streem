@@ -374,14 +374,11 @@ strm_funcall(strm_stream* strm, strm_value func, int argc, strm_value* argv, str
     else if (strm_lambda_p(func)) {
       return lambda_call(strm, func, argc, argv, ret);
     }
-    else {
-      strm_raise(strm, "not a function");
-      return STRM_NG;
-    }
+    break;
   default:
-    strm_raise(strm, "not a function");
     break;
   }
+  strm_raise(strm, "not a function");
   return STRM_NG;
 }
 
@@ -809,6 +806,26 @@ exec_exit(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   return STRM_OK;
 }
 
+static int
+exec_match(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  strm_value func;
+
+  if (argc < 2) {
+      strm_raise(strm, "wrong number of arguments");
+      return STRM_NG;
+  }
+  func = args[argc-1];
+  if (strm_lambda_p(func)) {
+    struct strm_lambda* lambda = strm_value_lambda(func);
+    if (lambda->body->type == NODE_LAMBDA) {
+      strm_raise(strm, "not a case function");
+      return STRM_NG;
+    }
+  }
+  return strm_funcall(strm, func, argc-1, args, ret);
+}
+
 void
 strm_raise(strm_stream* strm, const char* msg)
 {
@@ -843,6 +860,7 @@ node_init(strm_state* state)
   strm_var_def(state, "fread", strm_cfunc_value(exec_fread));
   strm_var_def(state, "fwrite", strm_cfunc_value(exec_fwrite));
   strm_var_def(state, "exit", strm_cfunc_value(exec_exit));
+  strm_var_def(state, "match", strm_cfunc_value(exec_match));
 }
 
 static strm_state top_state = {0};
