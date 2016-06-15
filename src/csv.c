@@ -368,16 +368,86 @@ sv(strm_stream* strm, int argc, strm_value* args, strm_value* ret, char sep)
   return STRM_OK;
 }
 
+/* CSV: comma separated values */
 static int
 csv(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   return sv(strm, argc, args, ret, ',');
 }
 
+/* TSV: tab separated values */
 static int
 tsv(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   return sv(strm, argc, args, ret, '\t');
+}
+
+static int
+ltsv_accept(strm_stream* strm, strm_value data)
+{
+  if (!strm_string_p(data)) {
+    strm_raise(strm, "ltsv: string required");
+    return STRM_NG;
+  }
+
+  const char* p = strm_str_ptr(data);
+  strm_int len = strm_str_len(data);
+  const char* pend = p+len;
+  const char* s = p;
+  int nval = 0;
+
+  /* count number of values in line */
+  while (p<pend) {
+    s = memchr(p, '\t', pend-p);
+    nval++;
+    if (s == NULL) break;
+    p = s+1;
+  }
+
+  strm_array ary = strm_ary_new(NULL, nval);
+  strm_value* v = strm_ary_ptr(ary);
+  strm_array hdr = strm_ary_new(NULL, nval);
+  strm_value* h = strm_ary_ptr(hdr);
+
+  p = strm_str_ptr(data);
+  for (int i=0; i<nval; i++) {
+    strm_string str;
+    const char* rend = memchr(p, '\t', pend-p);;
+
+    if (rend == NULL) rend = pend;
+    /* retrieve label */
+    s = memchr(p, ':', rend-p);
+    if (s == NULL) s = rend;
+    str = strm_str_intern(p, s-p);
+    h[i] = strm_str_value(str);
+    p = s+1;
+    /* retrieve value */
+    if (p<rend) {
+      v[i] = csv_value(p, rend-p, TYPE_UNSPC);
+    }
+    else {
+      str = strm_str_new(NULL, 0);
+      v[i] = strm_str_value(str);
+    }
+    p = rend+1;
+  }
+
+  strm_ary_headers(ary) = hdr;
+  strm_emit(strm, strm_ary_value(ary), NULL);
+  return STRM_OK;
+}
+
+/* LTSV: labeled tab separated values (see ltsv.org) */
+static int
+ltsv(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  strm_stream *t;
+
+  strm_get_args(strm, argc, args, "");
+
+  t = strm_stream_new(strm_filter, ltsv_accept, NULL, NULL);
+  *ret = strm_stream_value(t);
+  return STRM_OK;
 }
 
 static int
@@ -400,6 +470,7 @@ strm_csv_init(strm_state* state)
 {
   strm_var_def(state, "csv", strm_cfunc_value(csv));
   strm_var_def(state, "tsv", strm_cfunc_value(tsv));
+  strm_var_def(state, "ltsv", strm_cfunc_value(ltsv));
 
   strm_var_def(strm_ns_string, "number", strm_cfunc_value(str_number));
 }
