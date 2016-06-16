@@ -801,6 +801,72 @@ exec_consec(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   return STRM_OK;
 }
 
+struct take_data {
+  int n;
+};
+
+static int
+iter_take(strm_stream* strm, strm_value data)
+{
+  struct take_data* d = strm->data;
+
+  strm_emit(strm, data, NULL);
+  d->n--;
+  if (d->n == 0) {
+    strm_stream_close(strm);
+  }
+  return STRM_OK;
+}
+
+static int
+exec_take(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  struct take_data* d;
+  strm_int n;
+
+  strm_get_args(strm, argc, args, "i", &n);
+  if (n < 0) {
+    strm_raise(strm, "negative iteration");
+    return STRM_NG;
+  }
+  d = malloc(sizeof(struct take_data));
+  if (!d) return STRM_NG;
+  d->n = n;
+  *ret = strm_stream_value(strm_stream_new(strm_filter, iter_take, NULL, (void*)d));
+  return STRM_OK;
+}
+
+static int
+iter_drop(strm_stream* strm, strm_value data)
+{
+  struct take_data* d = strm->data;
+
+  if (d->n > 0) {
+    d->n--;
+    return STRM_OK;
+  }
+  strm_emit(strm, data, NULL);
+  return STRM_OK;
+}
+
+static int
+exec_drop(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  struct take_data* d;
+  strm_int n;
+
+  strm_get_args(strm, argc, args, "i", &n);
+  if (n < 0) {
+    strm_raise(strm, "negative iteration");
+    return STRM_NG;
+  }
+  d = malloc(sizeof(struct take_data));
+  if (!d) return STRM_NG;
+  d->n = n;
+  *ret = strm_stream_value(strm_stream_new(strm_filter, iter_drop, NULL, (void*)d));
+  return STRM_OK;
+}
+
 void strm_stat_init(strm_state* state);
 
 void
@@ -822,6 +888,8 @@ strm_iter_init(strm_state* state)
 
   strm_var_def(state, "slice", strm_cfunc_value(exec_slice));
   strm_var_def(state, "consec", strm_cfunc_value(exec_consec));
+  strm_var_def(state, "take", strm_cfunc_value(exec_take));
+  strm_var_def(state, "drop", strm_cfunc_value(exec_drop));
 
   strm_var_def(strm_ns_array, "each", strm_cfunc_value(ary_each));
   strm_var_def(strm_ns_array, "map", strm_cfunc_value(ary_map));

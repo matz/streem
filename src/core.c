@@ -119,6 +119,7 @@ task_exec(strm_stream* strm, struct strm_task* task)
   strm_value data = task->data;
 
   free(task);
+  if (strm->mode == strm_killed) return;
   if ((*func)(strm, data) == STRM_NG) {
     if (strm_option_verbose) {
       strm_eprint(strm);
