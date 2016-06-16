@@ -417,10 +417,14 @@ ltsv_accept(strm_stream* strm, strm_value data)
     if (rend == NULL) rend = pend;
     /* retrieve label */
     s = memchr(p, ':', rend-p);
-    if (s == NULL) s = rend;
-    str = strm_str_intern(p, s-p);
-    h[i] = strm_str_value(str);
-    p = s+1;
+    if (s == NULL) {
+      h[i] = strm_nil_value();
+    }
+    else {
+      str = strm_str_intern(p, s-p);
+      h[i] = strm_str_value(str);
+      p = s+1;
+    }
     /* retrieve value */
     if (p<rend) {
       v[i] = csv_value(p, rend-p, TYPE_UNSPC);
