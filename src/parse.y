@@ -509,6 +509,18 @@ pterm           : identifier
                     }
                 | lit_number
                 | lit_string
+                | keyword_nil
+                    {
+                      $$ = node_nil();
+                    }
+                | keyword_true
+                    {
+                      $$ = node_true();
+                    }
+                | keyword_false
+                    {
+                      $$ = node_false();
+                    }
                 | '[' ']'
                     {
                       $$ = node_pattern_new();

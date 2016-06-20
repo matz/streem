@@ -218,6 +218,14 @@ pmatch(strm_stream* strm, strm_state* state, node* pat, strm_value val)
       }
     }
     break;
+  case NODE_NIL:
+    if (strm_nil_p(val))
+      return STRM_OK;
+    return STRM_NG;
+  case NODE_BOOL:
+    if (strm_value_bool(val) == ((node_bool*)pat)->value)
+      return STRM_OK;
+    return STRM_NG;
   case NODE_FLOAT:
     if (strm_number_p(val)) {
       if ((((node_float*)pat)->value) == strm_value_flt(val))
