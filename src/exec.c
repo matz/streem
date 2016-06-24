@@ -234,25 +234,10 @@ pmatch(strm_stream* strm, strm_state* state, node* pat, strm_value val)
     }
     break;
   case NODE_PATTERN:
+  case NODE_DECONS:
     if (strm_array_p(val)) {
       strm_array ary = strm_value_ary(val);
       return pattern_match(strm, state, pat, strm_ary_len(ary), strm_ary_ptr(ary));
-    }
-    break;
-  case NODE_CONS:
-    if (strm_array_p(val)) {
-      strm_array ary = strm_value_ary(val);
-      node_cons* cons = (node_cons*)pat;
-      node_nodes* pp = (node_nodes*)cons->car;
-      node* pr = cons->cdr;
-      strm_value *p = strm_ary_ptr(ary);
-
-      if (strm_ary_len(ary) < pp->len) return STRM_NG;
-      if (pattern_match(strm, state, (node*)pp, pp->len, p) == STRM_NG)
-        return STRM_NG;
-      if (pmatch(strm, state, pr, strm_ary_new(p+pp->len, strm_ary_len(ary)-pp->len)) == STRM_NG)
-        return STRM_NG;
-      return STRM_OK;
     }
     break;
   default:
@@ -270,6 +255,31 @@ pattern_match(strm_stream* strm, strm_state* state, node* npat, int argc, strm_v
   if (pat == NULL) {
     if (argc == 0) return STRM_OK;
     return STRM_NG;
+  }
+  if (npat->type == NODE_DECONS) {
+    node_decons* cons = (node_decons*)pat;
+    node_nodes* head = (node_nodes*)cons->head;
+    node_nodes* tail = (node_nodes*)cons->tail;
+    node* rest = cons->mid;
+    strm_int hlen = head ? head->len : 0;
+
+    if (argc < hlen) return STRM_NG;
+    if (head) {
+      if (pattern_match(strm, state, (node*)head, hlen, argv) == STRM_NG)
+        return STRM_NG;
+    }
+    if (tail == NULL) {
+      if (pmatch(strm, state, rest, strm_ary_new(argv+hlen, argc-hlen)) == STRM_NG)
+        return STRM_NG;
+    }
+    else {
+      if (argc < hlen+tail->len) return STRM_NG;
+      if (pattern_match(strm, state, rest, argc-hlen-tail->len, argv+hlen) == STRM_NG)
+        return STRM_NG;
+      if (pattern_match(strm, state, (node*)tail, tail->len, argv+argc-tail->len) == STRM_NG)
+        return STRM_NG;
+    }
+    return STRM_OK;
   }
   if (pat->len != argc) return STRM_NG;
   for (i=0; i<pat->len; i++) {
@@ -509,14 +519,59 @@ exec_expr(strm_stream* strm, strm_state* state, node* np, strm_value* val)
     {
       node_array* v0 = (node_array*)np;
       strm_array arr = strm_ary_new(NULL, v0->len);
-      strm_value *ptr = (strm_value*)strm_ary_ptr(arr);
-      int i=0;
+      strm_value *ptr = strm_ary_ptr(arr);
+      int splat = FALSE;
 
-      for (i = 0; i < v0->len; i++, ptr++) {
-        n = exec_expr(strm, state, v0->data[i], ptr);
-        if (n) return n;
+      for (int i = 0; i < v0->len; i++) {
+        if (v0->data[i]->type == NODE_SPLAT) {
+          node_splat* s = (node_splat*)v0->data[i];
+          n = exec_expr(strm, state, s->node, &ptr[i]);
+          if (n) return n;
+          if (!strm_array_p(ptr[i])) {
+            strm_raise(strm, "splat requires array");
+            return STRM_NG;
+          }
+          splat = TRUE;
+        }
+        else {
+          n = exec_expr(strm, state, v0->data[i], &ptr[i]);
+          if (n) return n;
+        }
       }
-      if (v0->headers) {
+      if (splat) {
+        int len = v0->len;
+
+        if (v0->headers) {
+          strm_raise(strm, "label(s) and splat(s) in an array");
+          return STRM_NG;
+        }
+        for (int i = 0; i < v0->len; i++) {
+          if (v0->data[i]->type == NODE_SPLAT) {
+            strm_array a = strm_value_ary(ptr[i]);
+            len += strm_ary_len(a)-1;
+          }
+        }
+        if (len > v0->len) {
+          strm_value* nptr;
+
+          arr = strm_ary_new(NULL, len);
+          nptr = strm_ary_ptr(arr);
+          for (int i = 0; i < v0->len; i++) {
+            if (v0->data[i]->type == NODE_SPLAT) {
+              strm_array a = strm_value_ary(ptr[i]);
+              int alen = strm_ary_len(a);
+              strm_value* aptr = strm_ary_ptr(a);
+              for (int j=0; j<alen; j++) {
+                *nptr++ = aptr[j];
+              }
+            }
+            else {
+              *nptr++ = ptr[i];
+            }
+          }
+        }
+      }
+      else if (v0->headers) {
         strm_ary_headers(arr) = ary_headers(v0->headers, v0->len);
       }
       if (v0->ns) {
@@ -593,17 +648,33 @@ exec_expr(strm_stream* strm, strm_state* state, node* np, strm_value* val)
       node_call* ncall = (node_call*)np;
       int i;
       node_nodes* v0 = (node_nodes*)ncall->args;
-      strm_value *args = malloc(sizeof(strm_value)*v0->len);
+      strm_value *args;
+      int splat = FALSE;
 
       for (i = 0; i < v0->len; i++) {
-        n = exec_expr(strm, state, v0->data[i], &args[i]);
-        if (n == STRM_NG) {
-          free(args);
-          return n;
+        if (v0->data[i]->type == NODE_SPLAT) {
+          splat = TRUE;
+          break;
+        }
+      }
+      if (splat) {
+        strm_value aary;
+        n = exec_expr(strm, state, ncall->args, &aary);
+        args = strm_ary_ptr(aary);
+        i = strm_ary_len(aary);
+      }
+      else {
+        args = malloc(sizeof(strm_value)*v0->len);
+        for (i = 0; i < v0->len; i++) {
+          n = exec_expr(strm, state, v0->data[i], &args[i]);
+          if (n == STRM_NG) {
+            free(args);
+            return n;
+          }
         }
       }
       n = exec_call(strm, state, node_to_sym(ncall->ident), i, args, val);
-      free(args);
+      if (!splat) free(args);
       return n;
     }
     break;
@@ -614,20 +685,35 @@ exec_expr(strm_stream* strm, strm_state* state, node* np, strm_value* val)
       strm_value func;
       node_nodes* v0 = (node_nodes*)ncall->args;
       strm_value *args;
+      int splat = FALSE;
 
       if (exec_expr(strm, state, ncall->func, &func) == STRM_NG) {
         return STRM_NG;
       }
-      args = malloc(sizeof(strm_value)*v0->len);
       for (i = 0; i < v0->len; i++) {
-        n = exec_expr(strm, state, v0->data[i], &args[i]);
-        if (n == STRM_NG) {
-          free(args);
-          return n;
+        if (v0->data[i]->type == NODE_SPLAT) {
+          splat = TRUE;
+          break;
+        }
+      }
+      if (splat) {
+        strm_value aary;
+        n = exec_expr(strm, state, ncall->args, &aary);
+        args = strm_ary_ptr(aary);
+        i = strm_ary_len(aary);
+      }
+      else {
+        args = malloc(sizeof(strm_value)*v0->len);
+        for (i = 0; i < v0->len; i++) {
+          n = exec_expr(strm, state, v0->data[i], &args[i]);
+          if (n == STRM_NG) {
+            free(args);
+            return n;
+          }
         }
       }
       n = strm_funcall(strm, func, i, args, val);
-      free(args);
+      if (!splat) free(args);
       return n;
     }
     break;
@@ -722,6 +808,7 @@ exec_expr(strm_stream* strm, strm_state* state, node* np, strm_value* val)
     *val = strm_str_value(node_to_str(((node_str*)np)->value));
     return STRM_OK;
   default:
+    strm_raise(strm, "unknown node");
     break;
   }
   return STRM_NG;

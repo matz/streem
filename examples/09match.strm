@@ -1,6 +1,6 @@
 each2 = {
   case [], f -> []
-  case [x|y],f -> f(x); each2(y,f)
+  case [x,*y],f -> f(x); each2(y,f)
 }
 each2([1,2,3,4]) {x-> print(x)}
 

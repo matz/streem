@@ -208,13 +208,23 @@ node_pattern_add(node* v, node* data)
 }
 
 node*
-node_cons_new(node* head, node* tail)
+node_decons_new(node* head, node* mid, node* tail)
 {
-  node_cons* cons = malloc(sizeof(node_cons));
-  cons->type = NODE_CONS;
-  cons->car = head;
-  cons->cdr = tail;
+  node_decons* cons = malloc(sizeof(node_decons));
+  cons->type = NODE_DECONS;
+  cons->head = head;
+  cons->mid = mid;
+  cons->tail = tail;
   return (node*)cons;
+}
+
+node*
+node_splat_new(node* n)
+{
+  node_splat* splat = malloc(sizeof(node_splat));
+  splat->type = NODE_SPLAT;
+  splat->node = n;
+  return (node*)splat;
 }
 
 node*

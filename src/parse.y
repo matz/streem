@@ -28,7 +28,7 @@ node_lineinfo(parser_state* p, node* node)
 
 %type <nd> program topstmts topstmt stmts stmt_list stmt
 %type <nd> expr condition block primary opt_else
-%type <nd> case_body cparam pattern pterm bparam
+%type <nd> case_body cparam pattern patlist pterm bparam
 %type <nd> arg args opt_args opt_block f_args opt_f_args
 %type <id> identifier var label
 %type <nd> lit_string lit_number
@@ -414,8 +414,11 @@ arg             : expr
                     {
                       $$ = node_pair_new($1, $2);
                     }
+                | op_mult expr
+                    {
+                      $$ = node_splat_new($2);
+                    }
                 ;
-
 
 args            : arg
                     {
@@ -529,21 +532,36 @@ pterm           : identifier
                     {
                       $$ = $2;
                     }
-                | '[' pattern op_bar pterm ']'
-                    {
-                      $$ = node_cons_new($2, $4);
-                    }
                 ;
 
-pattern         : pterm
+patlist         : pterm
                     {
                       $$ = node_pattern_new();
                       node_pattern_add($$, $1);
                     }
-                | pattern ',' pterm
+                | patlist ',' pterm
                     {
                       $$ = $1;
                       node_pattern_add($$, $3);
+                    }
+                ;
+
+pattern         : patlist
+                | patlist  ',' op_mult pterm
+                    {
+                      $$ = node_decons_new($1, $4, NULL);
+                    }
+                | patlist ',' op_mult pterm ',' patlist
+                    {
+                      $$ = node_decons_new($1, $4, $6);
+                    }
+                | op_mult pterm
+                    {
+                      $$ = node_decons_new(NULL, $2, NULL);
+                    }
+                | op_mult pterm ',' patlist
+                    {
+                      $$ = node_decons_new(NULL, $2, $4);
                     }
                 ;
 

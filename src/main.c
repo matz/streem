@@ -113,15 +113,26 @@ dump_node(node* np, int indent) {
         dump_node(ary->data[i], indent+1);
     }
     break;
-  case NODE_CONS:
-    printf("CONS:\n");
+  case NODE_SPLAT:
+    printf("SPLAT:\n");
     {
-      node_cons* cons = (node_cons*)np;
-      dump_node(cons->car, indent+1);
+      node_splat* splat = (node_splat*)np;
+      dump_node(splat->node, indent+1);
+    }
+    break;
+  case NODE_DECONS:
+    printf("DECONS:\n");
+    {
+      node_decons* cons = (node_decons*)np;
+      dump_node(cons->head, indent+1);
       for (i = 0; i < indent+1; i++)
         putchar(' ');
       printf("REST:\n");
-      dump_node(cons->cdr, indent+2);
+      dump_node(cons->mid, indent+2);
+      for (i = 0; i < indent+1; i++)
+        putchar(' ');
+      printf("TAIL:\n");
+      dump_node(cons->tail, indent+2);
     }
     break;
   case NODE_CALL:
@@ -133,6 +144,17 @@ dump_node(node* np, int indent) {
       print_str(s);
     }
     dump_node(((node_call*)np)->args, indent+2);
+    break;
+  case NODE_FCALL:
+    printf("FCALL:\n");
+    for (i = 0; i < indent+1; i++)
+      putchar(' ');
+    printf("FUNC:\n");
+    dump_node(((node_fcall*)np)->func, indent+2);
+    for (i = 0; i < indent+1; i++)
+      putchar(' ');
+    printf("ARGS:\n");
+    dump_node(((node_fcall*)np)->args, indent+2);
     break;
   case NODE_GENFUNC:
     printf("GENFUNC: ");
