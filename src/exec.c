@@ -252,10 +252,7 @@ pattern_match(strm_stream* strm, strm_state* state, node* npat, int argc, strm_v
   node_nodes* pat = (node_nodes*)npat;
   int i;
 
-  if (pat == NULL) {
-    if (argc == 0) return STRM_OK;
-    return STRM_NG;
-  }
+  if (pat == NULL) return STRM_OK; /* case else */
   if (npat->type == NODE_DECONS) {
     node_decons* cons = (node_decons*)pat;
     node_nodes* head = (node_nodes*)cons->head;

@@ -567,11 +567,11 @@ pattern         : patlist
 
 cparam         : op_lambda
                     {
-                      $$ = node_plambda_new(NULL, NULL);
+                      $$ = node_plambda_new(node_pattern_new(), NULL);
                     }
                 | keyword_if expr op_lambda
                     {
-                      $$ = node_plambda_new(NULL, $2);
+                      $$ = node_plambda_new(node_pattern_new(), $2);
                     }
                 | pattern op_lambda
                     {
@@ -604,6 +604,11 @@ block           : '{' stmts '}'
                 | '{' case_body '}'
                     {
                       $$ = $2;
+                    }
+                | '{' case_body keyword_else op_lambda stmts '}'
+                    {
+                      node* e = node_plambda_new(NULL, NULL);
+                      $$ = node_plambda_add($2, node_plambda_body(e, $5));
                     }
                 ;
 
