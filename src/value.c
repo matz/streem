@@ -219,6 +219,7 @@ strm_value_eq(strm_value a, strm_value b)
   if (a == b) return TRUE;
   if (strm_value_tag(a) != strm_value_tag(b)) goto typediff;
   switch (strm_value_tag(a)) {
+  case STRM_TAG_ARRAY:
   case STRM_TAG_STRUCT:
     return strm_ary_eq(a, b);
   case STRM_TAG_STRING_O:
