@@ -42,8 +42,9 @@ typedef enum {
   NODE_CFUNC,
   NODE_LAMBDA,
   NODE_PLAMBDA,
-  NODE_PATTERN,
-  NODE_DECONS,
+  NODE_PARRAY,
+  NODE_PSTRUCT,
+  NODE_PSPLAT,
   NODE_SPLAT,
   NODE_IDENT,
   NODE_LET,
@@ -130,7 +131,7 @@ typedef struct {
   node* head;
   node* mid;
   node* tail;
-} node_decons;
+} node_psplat;
 
 typedef struct {
   NODE_HEADER;
@@ -227,7 +228,7 @@ extern node* node_args_new();
 extern void node_args_add(node*, node_string);
 extern node* node_pattern_new();
 extern void node_pattern_add(node*, node*);
-extern node* node_decons_new(node*,node*,node*);
+extern node* node_psplat_new(node*,node*,node*);
 extern node* node_splat_new(node*);
 extern node* node_plambda_new(node*,node*);
 extern node* node_plambda_body(node*,node*);

@@ -105,25 +105,26 @@ dump_node(node* np, int indent) {
       dump_node(((node_plambda*)np)->next, indent);
     }
     break;
-  case NODE_PATTERN:
-    printf("PATTERN:\n");
+  case NODE_PARRAY:
+    printf("PARRAY:\n");
     {
       node_nodes* ary = (node_nodes*)np;
       for (i = 0; i < ary->len; i++)
         dump_node(ary->data[i], indent+1);
     }
     break;
-  case NODE_SPLAT:
-    printf("SPLAT:\n");
+  case NODE_PSTRUCT:
+    printf("PSTRUCT:\n");
     {
-      node_splat* splat = (node_splat*)np;
-      dump_node(splat->node, indent+1);
+      node_nodes* ary = (node_nodes*)np;
+      for (i = 0; i < ary->len; i++)
+        dump_node(ary->data[i], indent+1);
     }
     break;
-  case NODE_DECONS:
-    printf("DECONS:\n");
+  case NODE_PSPLAT:
+    printf("PSPLAT:\n");
     {
-      node_decons* cons = (node_decons*)np;
+      node_psplat* cons = (node_psplat*)np;
       dump_node(cons->head, indent+1);
       for (i = 0; i < indent+1; i++)
         putchar(' ');
@@ -133,6 +134,13 @@ dump_node(node* np, int indent) {
         putchar(' ');
       printf("TAIL:\n");
       dump_node(cons->tail, indent+2);
+    }
+    break;
+  case NODE_SPLAT:
+    printf("SPLAT:\n");
+    {
+      node_splat* splat = (node_splat*)np;
+      dump_node(splat->node, indent+1);
     }
     break;
   case NODE_CALL:

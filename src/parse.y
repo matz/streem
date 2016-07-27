@@ -28,8 +28,8 @@ node_lineinfo(parser_state* p, node* node)
 
 %type <nd> program topstmts topstmt_list topstmt stmts stmt_list stmt
 %type <nd> expr condition block primary opt_else
-%type <nd> case_body cparam pattern patlist pterm bparam
-%type <nd> arg args opt_args opt_block f_args opt_f_args
+%type <nd> case_body cparam pattern pary pstruct pterm
+%type <nd> bparam arg args opt_args opt_block f_args opt_f_args
 %type <id> identifier var label
 %type <nd> lit_string lit_number
 
@@ -536,42 +536,71 @@ pterm           : identifier
                     }
                 | '[' ']'
                     {
-                      $$ = node_pattern_new();
+                      $$ = node_pattern_new(NODE_PARRAY);
+                    }
+                | '[' '@' identifier ']'
+                    {
+                      $$ = node_ns_new($3, node_pattern_new(NODE_PARRAY));
                     }
                 | '[' pattern ']'
                     {
                       $$ = $2;
                     }
+                | '[' '@' identifier pattern ']'
+                    {
+                      $$ = node_ns_new($3, $4);
+                    }
+                | pterm '@' identifier
+                    {
+                      $$ = node_ns_new($3, $1);
+                    }
                 ;
 
-patlist         : pterm
+pary            : pterm
                     {
-                      $$ = node_pattern_new();
+                      $$ = node_pattern_new(NODE_PARRAY);
                       node_pattern_add($$, $1);
                     }
-                | patlist ',' pterm
+                | pary ',' pterm
                     {
                       $$ = $1;
                       node_pattern_add($$, $3);
                     }
                 ;
 
-pattern         : patlist
-                | patlist  ',' op_mult pterm
+pstruct         : label pterm
                     {
-                      $$ = node_decons_new($1, $4, NULL);
+                      $$ = node_pattern_new(NODE_PSTRUCT);
+                      node_pattern_add($$, node_pair_new($1, $2));
                     }
-                | patlist ',' op_mult pterm ',' patlist
+                | pstruct ',' label pterm
                     {
-                      $$ = node_decons_new($1, $4, $6);
+                      $$ = $1;
+                      node_pattern_add($$, node_pair_new($3, $4));
+                    }
+                ;
+
+pattern         : pary
+                | pary  ',' op_mult pterm
+                    {
+                      $$ = node_psplat_new($1, $4, NULL);
+                    }
+                | pary ',' op_mult pterm ',' pary
+                    {
+                      $$ = node_psplat_new($1, $4, $6);
                     }
                 | op_mult pterm
                     {
-                      $$ = node_decons_new(NULL, $2, NULL);
+                      $$ = node_psplat_new(NULL, $2, NULL);
                     }
-                | op_mult pterm ',' patlist
+                | op_mult pterm ',' pary
                     {
-                      $$ = node_decons_new(NULL, $2, $4);
+                      $$ = node_psplat_new(NULL, $2, $4);
+                    }
+                | pstruct
+                | pstruct  ',' op_mult pterm
+                    {
+                      $$ = node_psplat_new($1, $4, NULL);
                     }
                 ;
 

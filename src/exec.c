@@ -175,12 +175,47 @@ ary_get(strm_stream* strm, strm_value ary, int argc, strm_value* argv, strm_valu
 
 static int
 pattern_match(strm_stream* strm, strm_state* state, node* npat, int argc, strm_value* argv);
+static int
+pmatch(strm_stream* strm, strm_state* state, node* pat, strm_value val);
 
 static int
 pattern_placeholder_p(node_string name){
   if (name->len == 1 && name->buf[0] == '_')
     return TRUE;
   return FALSE;
+}
+
+static int
+pmatch_struct(strm_stream* strm, strm_state* state, node* pat, strm_value val, uint64_t* tbl, strm_int* len)
+{
+  node_nodes* pstr = (node_nodes*)pat;
+  strm_array ary = strm_value_ary(val);
+  struct strm_array* a = strm_ary_struct(ary);
+  strm_value* headers;
+
+  if (!a->headers) return STRM_NG;
+  if (pstr->len > a->len) return STRM_NG;
+  headers = strm_ary_ptr(a->headers);
+  for (int i=0; i<pstr->len; i++) {
+    node_pair* npair = (node_pair*)pstr->data[i];
+    strm_string key;
+
+    assert(npair->type == NODE_PAIR);
+    key = node_to_sym(npair->key);
+    for (int j=0; i<a->len; j++) {
+      if (headers[j] == key) {
+        if (pmatch(strm, state, npair->value, a->ptr[j]) == STRM_NG)
+          return STRM_NG;
+        if (tbl) {
+          uint64_t n = 1<<(j%64);
+          if (tbl[j/64] & n) (*len)--;
+          tbl[j/64] |= n;
+        }
+        break;
+      }
+    }
+  }
+  return STRM_OK;
 }
 
 static int
@@ -233,13 +268,61 @@ pmatch(strm_stream* strm, strm_state* state, node* pat, strm_value val)
       return STRM_NG;
     }
     break;
-  case NODE_PATTERN:
-  case NODE_DECONS:
+  case NODE_NS:
+    {
+      node_ns* ns = (node_ns*)pat;
+      strm_state* s1 = strm_ns_find(state, node_to_sym(ns->name));
+      strm_state* s2 = strm_value_ns(val);
+
+      if (s1 != s2) return STRM_NG;
+      return pmatch(strm, state, ns->body, val);
+    }
+    break;
+  case NODE_PARRAY:
     if (strm_array_p(val)) {
       strm_array ary = strm_value_ary(val);
       return pattern_match(strm, state, pat, strm_ary_len(ary), strm_ary_ptr(ary));
     }
     break;
+  case NODE_PSPLAT:
+    if (strm_array_p(val)) {
+      strm_array ary = strm_value_ary(val);
+      node_psplat* psp = (node_psplat*)pat;
+
+      if (psp->head && psp->head->type == NODE_PSTRUCT) {
+        node_nodes* pstr = (node_nodes*)psp->head;
+        strm_int len = pstr->len;
+        uint64_t buf = 0;
+        uint64_t *tbl = &buf;
+        if (len > 64) {
+          tbl = malloc(len/64+1);
+          memset(tbl, 0, len/64+1);
+        }
+        if (pmatch_struct(strm, state, psp->head, val, tbl, &len) == STRM_NG) return STRM_NG;
+        assert(psp->tail == NULL);
+        {
+          struct strm_array* a = strm_ary_struct(ary);
+          strm_value* hdr = strm_ary_ptr(a->headers);
+          strm_array splat = strm_ary_new(NULL, a->len-len);
+          strm_array nhdr = strm_ary_new(NULL, a->len-len);
+          int n = 0;
+
+          for (int i=0; i<a->len; i++) {
+            if (tbl[i/64] & (1<<(i%64))) continue;
+            strm_ary_ptr(nhdr)[n] = hdr[i];
+            strm_ary_ptr(splat)[n] = a->ptr[i];
+            n++;
+          }
+          strm_ary_headers(splat) = nhdr;
+          return pmatch(strm, state, psp->mid, strm_ary_value(splat));
+        }
+      }
+      return pattern_match(strm, state, pat, strm_ary_len(ary), strm_ary_ptr(ary));
+    }
+    break;
+  case NODE_PSTRUCT:
+    if (!strm_array_p(val)) return STRM_NG;
+    return pmatch_struct(strm, state, pat, val, NULL, NULL);
   default:
     break;
   }
@@ -253,11 +336,11 @@ pattern_match(strm_stream* strm, strm_state* state, node* npat, int argc, strm_v
   int i;
 
   if (pat == NULL) return STRM_OK; /* case else */
-  if (npat->type == NODE_DECONS) {
-    node_decons* cons = (node_decons*)pat;
-    node_nodes* head = (node_nodes*)cons->head;
-    node_nodes* tail = (node_nodes*)cons->tail;
-    node* rest = cons->mid;
+  if (npat->type == NODE_PSPLAT) {
+    node_psplat* psp = (node_psplat*)pat;
+    node_nodes* head = (node_nodes*)psp->head;
+    node_nodes* tail = (node_nodes*)psp->tail;
+    node* rest = psp->mid;
     strm_int hlen = head ? head->len : 0;
 
     if (argc < hlen) return STRM_NG;

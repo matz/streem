@@ -196,9 +196,9 @@ node_args_free(node* a)
 }
 
 node*
-node_pattern_new()
+node_pattern_new(node_type type) /* type: either NODE_PARRAY or NODE_PSTRUCT */
 {
-  VALUES_NEW(node_nodes, NODE_PATTERN, {});
+  VALUES_NEW(node_nodes, type, {});
 }
 
 void
@@ -208,23 +208,14 @@ node_pattern_add(node* v, node* data)
 }
 
 node*
-node_decons_new(node* head, node* mid, node* tail)
+node_psplat_new(node* head, node* mid, node* tail)
 {
-  node_decons* cons = malloc(sizeof(node_decons));
-  cons->type = NODE_DECONS;
+  node_psplat* cons = malloc(sizeof(node_psplat));
+  cons->type = NODE_PSPLAT;
   cons->head = head;
   cons->mid = mid;
   cons->tail = tail;
   return (node*)cons;
-}
-
-node*
-node_splat_new(node* n)
-{
-  node_splat* splat = malloc(sizeof(node_splat));
-  splat->type = NODE_SPLAT;
-  splat->node = n;
-  return (node*)splat;
 }
 
 node*
@@ -255,6 +246,15 @@ node_plambda_add(node* n, node* lambda)
   }
   l->next = lambda;
   return n;
+}
+
+node*
+node_splat_new(node* n)
+{
+  node_splat* splat = malloc(sizeof(node_splat));
+  splat->type = NODE_SPLAT;
+  splat->node = n;
+  return (node*)splat;
 }
 
 node*

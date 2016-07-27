@@ -85,7 +85,7 @@ false               LEX_RETURN(keyword_false);
 
 {TRAIL}\.{TRAIL} LEX_RETURN('.');
 [(\[{,;:]{TRAIL} LEX_RETURN(yytext[0]);
-[)\]}]           LEX_RETURN(yytext[0]);
+[)\]}@]          LEX_RETURN(yytext[0]);
 "\n"             LEX_RETURN('\n');
 "#"[^\n]*"\n"    LEX_RETURN('\n');
 
