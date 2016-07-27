@@ -231,6 +231,7 @@ strm_state* strm_ns_new(strm_state*);
 strm_state* strm_ns_find(strm_state*, strm_string);
 strm_state* strm_ns_get(strm_string);
 strm_state* strm_value_ns(strm_value);
+strm_string strm_ns_name(strm_state*);
 
 extern strm_state* strm_ns_array;
 extern strm_state* strm_ns_string;

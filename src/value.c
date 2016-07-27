@@ -339,11 +339,27 @@ strm_inspect(strm_value v)
     return str_dump(str, str_dump_len(str));
   }
   else if (strm_array_p(v)) {
+    strm_state* ns = strm_value_ns(v);
     char *buf = malloc(32);
     strm_int i, bi = 0, capa = 32;
     strm_array a = strm_value_ary(v);
 
     buf[bi++] = '[';
+    if (ns) {
+      strm_string name = strm_ns_name(ns);
+      strm_int nlen = strm_str_len(name);
+
+      if (name != strm_str_null) {
+        buf[bi++] = '@';
+        if (bi+nlen+2 > capa) {
+          capa *= 2;
+          buf = realloc(buf, capa);
+        }
+        memcpy(buf+bi, strm_str_ptr(name), nlen);
+        bi += nlen;
+        buf[bi++] = ' ';
+      }
+    }
     for (i=0; i<strm_ary_len(a); i++) {
       strm_string str = strm_inspect(strm_ary_ptr(a)[i]);
       strm_string key = (strm_ary_headers(a) &&
