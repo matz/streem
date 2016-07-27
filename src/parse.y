@@ -26,7 +26,7 @@ node_lineinfo(parser_state* p, node* node)
   node_string id;
 }
 
-%type <nd> program topstmts topstmt stmts stmt_list stmt
+%type <nd> program topstmts topstmt_list topstmt stmts stmt_list stmt
 %type <nd> expr condition block primary opt_else
 %type <nd> case_body cparam pattern patlist pterm bparam
 %type <nd> arg args opt_args opt_block f_args opt_f_args
@@ -108,17 +108,27 @@ static void yyerror(parser_state *p, const char *s);
 %token op_HIGHEST
 
 %%
-program         : opt_terms topstmts opt_terms
+program         : topstmts
                     {
-                      p->lval = $2;
-                    }
-                | opt_terms
-                    {
-                      p->lval = NULL;
+                      p->lval = $1;
                     }
                 ;
 
-topstmts        : topstmt
+topstmts        : topstmt_list opt_terms
+                    {
+                      $$ = $1;
+                    }
+                | terms topstmt_list opt_terms
+                    {
+                      $$ = $2;
+                    }
+                | opt_terms
+                    {
+                      $$ = NULL;
+                    }
+                ;
+
+topstmt_list    : topstmt
                     {
                       $$ = node_nodes_new();
                       node_lineinfo(p, $$);
@@ -127,7 +137,7 @@ topstmts        : topstmt
                         node_lineinfo(p, $1);
                       }
                     }
-                | topstmts terms topstmt
+                | topstmt_list terms topstmt
                     {
                       $$ = $1;
                       if ($3) {
@@ -469,7 +479,7 @@ primary         : lit_number
                     {
                       $$ = node_false();
                     }
-                | keyword_new identifier '(' opt_args ')' opt_block
+                | keyword_new identifier '[' opt_args ']' opt_block
                     {
                       $$ = node_obj_new($4, $2);
                     }

@@ -460,7 +460,9 @@ exec_expr(strm_stream* strm, strm_state* state, node* np, strm_value* val)
         strm_raise(strm, "failed to create namespace");
         return STRM_NG;
       }
-      return exec_expr(strm, s, ns->body, val);
+      if (ns->body)
+        return exec_expr(strm, s, ns->body, val);
+      return STRM_OK;
     }
 
   case NODE_IMPORT:

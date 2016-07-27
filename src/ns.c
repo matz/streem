@@ -5,6 +5,21 @@ KHASH_MAP_INIT_INT64(ns, strm_state*);
 static khash_t(ns) *nstbl;
 static strm_state szero = {0};
                    
+strm_string
+strm_ns_name(strm_state* state)
+{
+  khiter_t k;
+
+  if (!nstbl) return strm_str_null;
+  for (k = kh_begin(nstbl); k != kh_end(nstbl); ++k) {
+    if (kh_exist(nstbl, k)) {
+      if (kh_value(nstbl, k) == state)
+        return kh_key(nstbl, k);
+    }
+  }
+  return strm_str_null;
+}
+
 strm_state*
 strm_ns_get(strm_string name)
 {
@@ -51,5 +66,3 @@ strm_ns_find(strm_state* state, strm_string name)
   }
   return s;
 }
-
-
