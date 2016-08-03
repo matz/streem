@@ -218,7 +218,15 @@ struct node_error;
 typedef struct strm_state {
   void *env;
   struct strm_state *prev;
+  uint32_t flags;
 } strm_state;
+
+/* user defined namespace that can create instances */
+#define STRM_NS_UDEF 1
+#define STRM_NS_UDEF_SET(ns)  ((ns)->flags |= STRM_NS_UDEF)
+#define STRM_NS_UDEF_GET(ns)  ((ns)->flags & STRM_NS_UDEF)
+#define STRM_NS_ALLOC_ERR(ns) ((ns) == NULL)
+#define STRM_NS_EXIST_ERR(ns) ((ns) == (void*)-1)
 
 int strm_var_set(strm_state*, strm_string, strm_value);
 int strm_var_def(strm_state*, const char*, strm_value);
@@ -227,8 +235,8 @@ int strm_var_match(strm_state*, strm_string, strm_value);
 int strm_env_copy(strm_state*, strm_state*);
 
 /* ----- Namespaces */
-strm_state* strm_ns_new(strm_state*);
-strm_state* strm_ns_find(strm_state*, strm_string);
+strm_state* strm_ns_new(strm_state*, const char*);
+strm_state* strm_ns_create(strm_state*, strm_string);
 strm_state* strm_ns_get(strm_string);
 strm_state* strm_value_ns(strm_value);
 strm_string strm_ns_name(strm_state*);

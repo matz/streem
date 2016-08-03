@@ -271,7 +271,7 @@ pmatch(strm_stream* strm, strm_state* state, node* pat, strm_value val)
   case NODE_NS:
     {
       node_ns* ns = (node_ns*)pat;
-      strm_state* s1 = strm_ns_find(state, node_to_sym(ns->name));
+      strm_state* s1 = strm_ns_get(node_to_sym(ns->name));
       strm_state* s2 = strm_value_ns(val);
 
       if (s1 != s2) return STRM_NG;
@@ -537,12 +537,19 @@ exec_expr(strm_stream* strm, strm_state* state, node* np, strm_value* val)
   case NODE_NS:
     {
       node_ns* ns = (node_ns*)np;
-      strm_state* s = strm_ns_find(state, node_to_sym(ns->name));
+      strm_string name = node_to_sym(ns->name);
+      strm_state* s = strm_ns_create(state, name);
 
       if (!s) {
-        strm_raise(strm, "failed to create namespace");
+        if (strm_ns_get(name)) {
+          strm_raise(strm, "namespace already exists");
+        }
+        else {
+          strm_raise(strm, "failed to create namespace");
+        }
         return STRM_NG;
       }
+      STRM_NS_UDEF_SET(s);
       if (ns->body)
         return exec_expr(strm, s, ns->body, val);
       return STRM_OK;
@@ -657,7 +664,12 @@ exec_expr(strm_stream* strm, strm_state* state, node* np, strm_value* val)
         strm_ary_headers(arr) = ary_headers(v0->headers, v0->len);
       }
       if (v0->ns) {
-        strm_ary_ns(arr) = strm_ns_get(node_to_sym(v0->ns));
+        strm_state* ns = strm_ns_get(node_to_sym(v0->ns));
+        if (!STRM_NS_UDEF_GET(ns)) {
+          strm_raise(strm, "instantiating primitive class");
+          return STRM_NG;
+        }
+        strm_ary_ns(arr) = ns;
       }
       else {
         strm_ary_ns(arr) = strm_str_null;

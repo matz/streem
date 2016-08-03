@@ -431,7 +431,7 @@ str_plus(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 void
 strm_string_init(strm_state* state)
 {
-  strm_ns_string = strm_ns_new(NULL);
+  strm_ns_string = strm_ns_new(NULL, "string");
   strm_var_def(strm_ns_string, "length", strm_cfunc_value(str_length));
   strm_var_def(strm_ns_string, "split", strm_cfunc_value(str_split));
   strm_var_def(strm_ns_string, "+", strm_cfunc_value(str_plus));

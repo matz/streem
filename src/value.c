@@ -357,7 +357,9 @@ strm_inspect(strm_value v)
         }
         memcpy(buf+bi, strm_str_ptr(name), nlen);
         bi += nlen;
-        buf[bi++] = ' ';
+        if (strm_ary_len(a) > 0) {
+          buf[bi++] = ' ';
+        }
       }
     }
     for (i=0; i<strm_ary_len(a); i++) {

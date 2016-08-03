@@ -413,7 +413,7 @@ txn_str(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 void
 strm_kvs_init(strm_state* state)
 {
-  ns_kvs = strm_ns_new(NULL);
+  ns_kvs = strm_ns_new(NULL, "kvs");
   strm_var_def(ns_kvs, "get", strm_cfunc_value(kvs_get));
   strm_var_def(ns_kvs, "put", strm_cfunc_value(kvs_put));
   strm_var_def(ns_kvs, "update", strm_cfunc_value(kvs_update));
@@ -421,7 +421,7 @@ strm_kvs_init(strm_state* state)
   strm_var_def(ns_kvs, "close", strm_cfunc_value(kvs_close));
   strm_var_def(ns_kvs, "string", strm_cfunc_value(kvs_str));
 
-  ns_txn = strm_ns_new(NULL);
+  ns_txn = strm_ns_new(NULL, "kvs_txn");
   strm_var_def(ns_txn, "get", strm_cfunc_value(txn_get));
   strm_var_def(ns_txn, "put", strm_cfunc_value(txn_put));
   strm_var_def(ns_txn, "update", strm_cfunc_value(txn_update));

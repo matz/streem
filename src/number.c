@@ -152,7 +152,7 @@ strm_state* strm_ns_number;
 void
 strm_number_init(strm_state* state)
 {
-  strm_ns_number = strm_ns_new(NULL);
+  strm_ns_number = strm_ns_new(NULL, "number");
   strm_var_def(strm_ns_number, "+", strm_cfunc_value(num_plus));
   strm_var_def(strm_ns_number, "-", strm_cfunc_value(num_minus));
   strm_var_def(strm_ns_number, "*", strm_cfunc_value(num_mult));

@@ -32,17 +32,7 @@ strm_ns_get(strm_string name)
 }
 
 strm_state*
-strm_ns_new(strm_state* state)
-{
-  strm_state* s = malloc(sizeof(strm_state));
-  if (!s) return NULL;
-  *s = szero;
-  s->prev = state;
-  return s;
-}
-
-strm_state*
-strm_ns_find(strm_state* state, strm_string name)
+strm_ns_create(strm_state* state, strm_string name)
 {
   strm_state* s = strm_ns_get(name);
 
@@ -53,16 +43,27 @@ strm_ns_find(strm_state* state, strm_string name)
     if (!nstbl) {
       nstbl = kh_init(ns);
     }
-    s = malloc(sizeof(strm_state));
-    if (!s) return NULL;
     k = kh_put(ns, nstbl, (intptr_t)name, &r);
     if (r < 0) {                /* r<0 operation failed */
-      free(s);
-      return NULL;
+      return NULL;              
     }
-    *s = szero;
-    s->prev = state;
+    if (r == 0) {               /* r=0 ns already exists */
+      if (kh_value(nstbl, k))
+        return NULL;
+    }
+    s = malloc(sizeof(strm_state));
+    if (s) {
+      *s = szero;
+      s->prev = state;
+    }
     kh_value(nstbl, k) = s;
   }
   return s;
+}
+
+strm_state*
+strm_ns_new(strm_state* state, const char* name)
+{
+  strm_string s = strm_str_new(name, strlen(name));
+  return strm_ns_create(state, s);
 }

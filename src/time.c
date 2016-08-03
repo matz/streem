@@ -589,7 +589,7 @@ strm_time_init(strm_state* state)
   strm_var_def(state, "now", strm_cfunc_value(time_now));
   strm_var_def(state, "time", strm_cfunc_value(time_time));
 
-  ns_time = strm_ns_new(NULL);
+  ns_time = strm_ns_new(NULL, "time");
   strm_var_def(ns_time, "+", strm_cfunc_value(time_plus));
   strm_var_def(ns_time, "-", strm_cfunc_value(time_minus));
   strm_var_def(ns_time, "string", strm_cfunc_value(time_str));
