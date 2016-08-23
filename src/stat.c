@@ -393,63 +393,7 @@ ary_correl(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   return STRM_OK;
 }
 
-void xorshift64init(void);
-uint64_t xorshift64star(void);
-
-struct sample_data {
-  strm_int i;
-  strm_int len;
-  strm_value samples[0];
-};
-
-static int
-iter_sample(strm_stream* strm, strm_value data)
-{
-  struct sample_data* d = strm->data;
-  uint64_t r;
-
-  if (d->i < d->len) {
-    d->samples[d->i++] = data;
-    return STRM_OK;
-  }
-  xorshift64init();
-  r = xorshift64star()%(d->i);
-  if (r < d->len) {
-    d->samples[r] = data;
-  }
-  d->i++;
-  return STRM_OK;
-}
-
-static int
-finish_sample(strm_stream* strm, strm_value data)
-{
-  struct sample_data* d = strm->data;
-  strm_int i, len=d->len;
-
-  for (i=0; i<len; i++) {
-    strm_emit(strm, d->samples[i], NULL);
-  }
-  free(d);
-  return STRM_OK;
-}
-
-static int
-exec_sample(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
-{
-  struct sample_data* d;
-  strm_int len;
-
-  strm_get_args(strm, argc, args, "i", &len);
-  d = malloc(sizeof(struct sample_data)+sizeof(strm_value)*len);
-  if (!d) return STRM_NG;
-  d->len = len;
-  d->i = 0;
-  *ret = strm_stream_value(strm_stream_new(strm_filter, iter_sample,
-                                           finish_sample, (void*)d));
-  return STRM_OK;
-}
-
+void strm_rand_init(strm_state* state);
 void strm_sort_init(strm_state* state);
 
 void
@@ -460,7 +404,6 @@ strm_stat_init(strm_state* state)
   strm_var_def(state, "stdev", strm_cfunc_value(exec_stdev));
   strm_var_def(state, "variance", strm_cfunc_value(exec_variance));
   strm_var_def(state, "correl", strm_cfunc_value(exec_correl));
-  strm_var_def(state, "sample", strm_cfunc_value(exec_sample));
 
   strm_var_def(strm_ns_array, "sum", strm_cfunc_value(ary_sum));
   strm_var_def(strm_ns_array, "average", strm_cfunc_value(ary_avg));
@@ -468,5 +411,6 @@ strm_stat_init(strm_state* state)
   strm_var_def(strm_ns_array, "variance", strm_cfunc_value(ary_var));
   strm_var_def(strm_ns_array, "correl", strm_cfunc_value(ary_correl));
 
+  strm_rand_init(state);
   strm_sort_init(state);
 }

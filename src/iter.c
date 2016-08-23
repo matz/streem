@@ -48,63 +48,6 @@ exec_seq(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   return STRM_OK;
 }
 
-#include <sys/time.h>
-
-static uint64_t x; /* the state must be seeded with a nonzero value. */
-
-void
-xorshift64init(void)
-{
-  struct timeval tv;
-  static int init = 0;
-
-  if (init == 0) {
-    init = 1;
-    gettimeofday(&tv, NULL);
-    x ^= (uint32_t)tv.tv_usec;
-    x ^= x >> 11; x ^= x << 17; x ^= x >> 4;
-    x *= 2685821657736338717LL;
-  }
-}
-
-uint64_t
-xorshift64star(void)
-{
-  x ^= x >> 12; /* a */
-  x ^= x << 25; /* b */
-  x ^= x >> 27; /* c */
-  return x * UINT64_C(2685821657736338717);
-}
-
-static int
-gen_rand(strm_stream* strm, strm_value data)
-{
-  strm_int n = (strm_int)(intptr_t)strm->data;
-  uint64_t r = xorshift64star();
-
-  strm_emit(strm, strm_int_value(r % n), gen_rand);
-  return STRM_OK;
-}
-
-static int
-fin_rand(strm_stream* strm, strm_value data)
-{
-  free(strm->data);
-  return STRM_OK;
-}
-
-static int
-exec_rand(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
-{
-  strm_int n;
-
-  strm_get_args(strm, argc, args, "i", &n);
-  xorshift64init();
-  *ret = strm_stream_value(strm_stream_new(strm_producer, gen_rand, fin_rand,
-                                       (void*)(intptr_t)n));
-  return STRM_OK;
-}
-
 struct repeat_data {
   strm_value v;
   strm_int count;
@@ -873,7 +816,6 @@ void
 strm_iter_init(strm_state* state)
 {
   strm_var_def(state, "seq", strm_cfunc_value(exec_seq));
-  strm_var_def(state, "rand", strm_cfunc_value(exec_rand));
   strm_var_def(state, "repeat", strm_cfunc_value(exec_repeat));
   strm_var_def(state, "cycle", strm_cfunc_value(exec_cycle));
   strm_var_def(state, "each", strm_cfunc_value(exec_each));
