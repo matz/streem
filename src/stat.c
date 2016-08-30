@@ -164,10 +164,18 @@ ary_avg(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   return ary_sum_avg(strm, argc, args, ret, TRUE);
 }
 
+enum stdev_mode {
+  mode_stdev,
+  mode_variance,
+  mode_mean_stdev,
+  mode_mean_variance,
+};
+
 struct stdev_data {
   strm_int num;
   double s1, s2;
   strm_value func;
+  enum stdev_mode mode;
 };
 
 static int
@@ -198,26 +206,45 @@ iter_stdevf(strm_stream* strm, strm_value data)
   return STRM_OK;
 }
 
+static strm_value
+float2(double m, double s)
+{
+  strm_value buf[2];
+
+  buf[0] = strm_float_value(m);
+  buf[1] = strm_float_value(s);
+  return strm_ary_new(buf, 2);
+}
+
 static int
 stdev_finish(strm_stream* strm, strm_value data)
 {
   struct stdev_data* d = strm->data;
-  double s = sqrt(d->s2 / (d->num-1));
-  strm_emit(strm, strm_float_value(s), NULL);
+  double s;
+
+  switch (d->mode) {
+  case mode_stdev:
+    s = sqrt(d->s2 / (d->num-1));
+    strm_emit(strm, strm_float_value(s), NULL);
+    break;
+  case mode_variance:
+    s = d->s2 / (d->num-1);
+    strm_emit(strm, strm_float_value(s), NULL);
+    break;
+  case mode_mean_stdev:
+    s = sqrt(d->s2 / (d->num-1));
+    strm_emit(strm, float2(d->s1, s), NULL);
+    break;
+  case mode_mean_variance:
+    s = d->s2 / (d->num-1);
+    strm_emit(strm, float2(d->s1, s), NULL);
+    break;
+  }
   return STRM_OK;
 }
 
 static int
-var_finish(strm_stream* strm, strm_value data)
-{
-  struct stdev_data* d = strm->data;
-  double s = d->s2 / (d->num-1);
-  strm_emit(strm, strm_float_value(s), NULL);
-  return STRM_OK;
-}
-
-static int
-exec_var_stdev(strm_stream* strm, int argc, strm_value* args, strm_value* ret, int stdev)
+exec_var_stdev(strm_stream* strm, int argc, strm_value* args, strm_value* ret, enum stdev_mode mode)
 {
   struct stdev_data* d;
   strm_value func;
@@ -227,14 +254,13 @@ exec_var_stdev(strm_stream* strm, int argc, strm_value* args, strm_value* ret, i
   if (!d) return STRM_NG;
   d->num = 0;
   d->s1 = d->s2 = 0.0;
+  d->mode = mode;
   if (argc == 0) {
-    *ret = strm_stream_value(strm_stream_new(strm_filter, iter_stdev,
-                                             stdev ? stdev_finish : var_finish, (void*)d));
+    *ret = strm_stream_value(strm_stream_new(strm_filter, iter_stdev, stdev_finish, (void*)d));
   }
   else {
     d->func = func;
-    *ret = strm_stream_value(strm_stream_new(strm_filter, iter_stdevf,
-                                             stdev ? stdev_finish : var_finish, (void*)d));
+    *ret = strm_stream_value(strm_stream_new(strm_filter, iter_stdevf, stdev_finish, (void*)d));
   }
   return STRM_OK;
 }
@@ -242,13 +268,25 @@ exec_var_stdev(strm_stream* strm, int argc, strm_value* args, strm_value* ret, i
 static int
 exec_stdev(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
-  return exec_var_stdev(strm, argc, args, ret, TRUE);
+  return exec_var_stdev(strm, argc, args, ret, mode_stdev);
 }
 
 static int
 exec_variance(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
-  return exec_var_stdev(strm, argc, args, ret, FALSE);
+  return exec_var_stdev(strm, argc, args, ret, mode_variance);
+}
+
+static int
+exec_mean_stdev(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  return exec_var_stdev(strm, argc, args, ret, mode_mean_stdev);
+}
+
+static int
+exec_mean_variance(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  return exec_var_stdev(strm, argc, args, ret, mode_mean_variance);
 }
 
 static int
@@ -401,8 +439,11 @@ strm_stat_init(strm_state* state)
 {
   strm_var_def(state, "sum", strm_cfunc_value(exec_sum));
   strm_var_def(state, "average", strm_cfunc_value(exec_avg));
+  strm_var_def(state, "mean", strm_cfunc_value(exec_avg));
   strm_var_def(state, "stdev", strm_cfunc_value(exec_stdev));
   strm_var_def(state, "variance", strm_cfunc_value(exec_variance));
+  strm_var_def(state, "mean_stdev", strm_cfunc_value(exec_mean_stdev));
+  strm_var_def(state, "mean_variance", strm_cfunc_value(exec_mean_variance));
   strm_var_def(state, "correl", strm_cfunc_value(exec_correl));
 
   strm_var_def(strm_ns_array, "sum", strm_cfunc_value(ary_sum));
