@@ -66,7 +66,6 @@ xorshift128(uint32_t seed[4])
 
 struct rand_data {
   uint32_t seed[4];
-  strm_int limit;
 };
 
 static int
@@ -74,23 +73,22 @@ gen_rand(strm_stream* strm, strm_value data)
 {
   struct rand_data* d = strm->data;
   uint32_t r = xorshift128(d->seed);
+  double f = r*(1.0/4294967295.0);
 
-  strm_emit(strm, strm_int_value(r % d->limit), gen_rand);
+  strm_emit(strm, strm_flt_value(f), gen_rand);
   return STRM_OK;
 }
 
 static int
 exec_rand(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
-  strm_int n;
   struct rand_data* d;
   const char* s;
   strm_int len;
 
-  strm_get_args(strm, argc, args, "i|s", &n, &s, &len);
+  strm_get_args(strm, argc, args, "|s", &s, &len);
   d = malloc(sizeof(struct rand_data));
   if (!d) return STRM_NG;
-  d->limit = n;
   if (argc == 2) {
     if (len != sizeof(d->seed)) {
       strm_raise(strm, "seed size differ");
