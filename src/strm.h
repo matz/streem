@@ -158,6 +158,7 @@ typedef enum {
   strm_producer,
   strm_filter,
   strm_consumer,
+  strm_dying,
   strm_killed,
 } strm_stream_mode;
 

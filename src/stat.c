@@ -211,6 +211,7 @@ float2(double m, double s)
 {
   strm_value buf[2];
 
+  fprintf(stderr, "f2[%f, %f]\n", m, s);
   buf[0] = strm_float_value(m);
   buf[1] = strm_float_value(s);
   return strm_ary_new(buf, 2);

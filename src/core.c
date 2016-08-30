@@ -47,21 +47,46 @@ strm_task_add(strm_stream* strm, struct strm_task* task)
 void
 strm_task_push(strm_stream* strm, strm_callback func, strm_value data)
 {
+  if (strm->mode == strm_killed || strm->mode == strm_dying)
+    return;
   strm_task_add(strm, strm_task_new(func, data));
 }
 
 void
 strm_emit(strm_stream* strm, strm_value data, strm_callback func)
 {
+  if (strm->mode == strm_dying) return;
   if (!strm_nil_p(data)) {
     if (strm->dst) {
       strm_task_push(strm->dst, strm->dst->start_func, data);
+      if (strm->dst->mode == strm_killed) {
+        strm->dst = NULL;
+      }
     }
     if (strm->rest) {
       int i;
 
       for (i=0; i<strm->rsize; i++) {
         strm_task_push(strm->rest[i], strm->rest[i]->start_func, data);
+      }
+    }
+
+    /* termination check */
+    if (strm->dst == NULL) {
+      int closed = TRUE;
+      if (strm->rest) {
+        int i;
+
+        for (i=0; i<strm->rsize; i++) {
+          if (strm->rest[i]->mode != strm_killed) {
+            closed = FALSE;
+            break;
+          }
+        }
+      }
+      if (closed) {
+        strm->mode = strm_dying;
+        return;
       }
     }
   }
@@ -124,6 +149,9 @@ task_exec(strm_stream* strm, struct strm_task* task)
     if (strm_option_verbose) {
       strm_eprint(strm);
     }
+  }
+  if (strm->mode == strm_dying) {
+    strm_stream_close(strm);
   }
 }
 
