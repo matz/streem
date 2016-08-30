@@ -339,7 +339,7 @@ strm_inspect(strm_value v)
     return str_dump(str, str_dump_len(str));
   }
   else if (strm_array_p(v)) {
-    strm_state* ns = strm_value_ns(v);
+    strm_state* ns = strm_ary_ns(v);
     char *buf = malloc(32);
     strm_int i, bi = 0, capa = 32;
     strm_array a = strm_value_ary(v);
