@@ -81,7 +81,7 @@ gen_rand(strm_stream* strm, strm_value data)
   struct rand_data* d = strm->data;
   double f = rand_float(d->seed);
 
-  strm_emit(strm, strm_flt_value(f), gen_rand);
+  strm_emit(strm, strm_float_value(f), gen_rand);
   return STRM_OK;
 }
 
@@ -155,7 +155,7 @@ gen_rnorm(strm_stream* strm, strm_value data)
   struct rnorm_data* d = strm->data;
   double f = rand_normal(d);
 
-  strm_emit(strm, strm_flt_value(f), gen_rnorm);
+  strm_emit(strm, strm_float_value(f), gen_rnorm);
   return STRM_OK;
 }
 

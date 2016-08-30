@@ -12,7 +12,7 @@ num_plus(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
     return STRM_OK;
   }
   if (strm_number_p(x) && strm_number_p(y)) {
-    *ret = strm_flt_value(strm_value_flt(x)+strm_value_flt(y));
+    *ret = strm_float_value(strm_value_float(x)+strm_value_float(y));
     return STRM_OK;
   }
   return STRM_NG;
@@ -26,8 +26,8 @@ num_minus(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
       *ret = strm_int_value(-strm_value_int(args[0]));
       return STRM_OK;
     }
-    if (strm_flt_p(args[0])) {
-      *ret = strm_flt_value(-strm_value_flt(args[0]));
+    if (strm_float_p(args[0])) {
+      *ret = strm_float_value(-strm_value_float(args[0]));
       return STRM_OK;
     }
   }
@@ -40,7 +40,7 @@ num_minus(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
       return STRM_OK;
     }
     if (strm_number_p(x) && strm_number_p(y)) {
-      *ret = strm_flt_value(strm_value_flt(x)-strm_value_flt(y));
+      *ret = strm_float_value(strm_value_float(x)-strm_value_float(y));
       return STRM_OK;
     }
   }
@@ -57,7 +57,7 @@ num_mult(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
     *ret = strm_int_value(strm_value_int(x)*strm_value_int(y));
     return STRM_OK;
   }
-  *ret = strm_flt_value(strm_value_flt(x)*strm_value_flt(y));
+  *ret = strm_float_value(strm_value_float(x)*strm_value_float(y));
   return STRM_OK;
 }
 
@@ -67,7 +67,7 @@ num_div(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   double x, y;
 
   strm_get_args(strm, argc, args, "ff", &x, &y);
-  *ret = strm_flt_value(x/y);
+  *ret = strm_float_value(x/y);
   return STRM_OK;
 }
 
@@ -92,8 +92,8 @@ num_mod(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
     *ret = strm_int_value(strm_value_int(x)%y);
     return STRM_OK;
   }
-  if (strm_flt_p(x)) {
-    *ret = strm_flt_value(fmod(strm_value_flt(x), y));
+  if (strm_float_p(x)) {
+    *ret = strm_float_value(fmod(strm_value_float(x), y));
     return STRM_OK;
   }
   return STRM_NG;

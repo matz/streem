@@ -175,7 +175,7 @@ strm_parse_args(strm_stream* strm, int argc, strm_value* argv, const char* forma
             strm_raise(strm, "number required");
             return STRM_NG;
           }
-          *p = strm_value_flt(ff);
+          *p = strm_value_float(ff);
         }
       }
       break;

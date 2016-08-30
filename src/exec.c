@@ -246,8 +246,8 @@ pmatch(strm_stream* strm, strm_state* state, node* pat, strm_value val)
           return STRM_OK;
         return STRM_NG;
       }
-      if (strm_flt_p(val)) {
-        if (n == strm_value_flt(val))
+      if (strm_float_p(val)) {
+        if (n == strm_value_float(val))
           return STRM_OK;
         return STRM_NG;
       }
@@ -263,7 +263,7 @@ pmatch(strm_stream* strm, strm_state* state, node* pat, strm_value val)
     return STRM_NG;
   case NODE_FLOAT:
     if (strm_number_p(val)) {
-      if ((((node_float*)pat)->value) == strm_value_flt(val))
+      if ((((node_float*)pat)->value) == strm_value_float(val))
         return STRM_OK;
       return STRM_NG;
     }
@@ -883,7 +883,7 @@ exec_expr(strm_stream* strm, strm_state* state, node* np, strm_value* val)
     *val = strm_int_value(((node_int*)np)->value);
     return STRM_OK;
   case NODE_FLOAT:
-    *val = strm_flt_value(((node_float*)np)->value);
+    *val = strm_float_value(((node_float*)np)->value);
     return STRM_OK;
   case NODE_TIME:
     {

@@ -428,7 +428,7 @@ time_plus(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
     strm_raise(strm, "number required");
     return STRM_NG;
   }
-  num_to_timeval(strm_value_flt(args[1]), &tv);
+  num_to_timeval(strm_value_float(args[1]), &tv);
   timeradd(&t1->tv, &tv, &tv2);
   return time_alloc(&tv2, t1->utc_offset, ret);
 }
@@ -446,15 +446,15 @@ time_minus(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
     return STRM_NG;
   }
   if (strm_number_p(args[1])) {
-    d = strm_value_flt(args[1]);
-    args[1] = strm_flt_value(-d);
+    d = strm_value_float(args[1]);
+    args[1] = strm_float_value(-d);
     return time_plus(strm, argc, args, ret);
   }
   t1 = get_time(args[0]);
   t2 = get_time(args[1]);
   timersub(&t1->tv, &t2->tv, &tv);
   d = timeval_to_num(&tv);
-  *ret = strm_flt_value(d);
+  *ret = strm_float_value(d);
   return STRM_OK;
 }
 
@@ -543,7 +543,7 @@ time_num(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
     *ret = strm_int_value(t->tv.tv_sec);
   }
   else {
-    *ret = strm_flt_value(timeval_to_num(&t->tv));
+    *ret = strm_float_value(timeval_to_num(&t->tv));
   }
   return STRM_OK;
 }

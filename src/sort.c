@@ -5,8 +5,8 @@
 static int
 num_cmp(strm_value x, strm_value y)
 {
-  double a = strm_value_flt(x);
-  double b = strm_value_flt(y);
+  double a = strm_value_float(x);
+  double b = strm_value_float(y);
   if(a > b)
     return 1;
   else if(a < b)
@@ -237,7 +237,7 @@ sortby_cmp(const void* a_p, const void* b_p)
   double a, b;
 
   if (strm_number_p(av->v)) {
-    a = strm_value_flt(av->v);
+    a = strm_value_float(av->v);
   }
   else {
     if (strm_number_p(bv->v)) {
@@ -246,7 +246,7 @@ sortby_cmp(const void* a_p, const void* b_p)
     return 0;
   }
   if (strm_number_p(bv->v)) {
-    b = strm_value_flt(bv->v);
+    b = strm_value_float(bv->v);
   }
   else {
     return -1;
@@ -417,10 +417,10 @@ quick_median(strm_value *p, int len)
   if (len%2 == 0 && strm_number_p(v)) {
     strm_int next = len/2;
     if (strm_number_p(p[next])) {
-       double x = strm_value_flt(v);
-       double y = strm_value_flt(p[next]);
+       double x = strm_value_float(v);
+       double y = strm_value_float(p[next]);
 
-       return strm_flt_value((x + y)/2);
+       return strm_float_value((x + y)/2);
     }
   }
   return v;

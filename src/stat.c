@@ -17,7 +17,7 @@ iter_sum(strm_stream* strm, strm_value data)
   if (!strm_number_p(data)) {
     return STRM_NG;
   }
-  f = strm_value_flt(data);
+  f = strm_value_float(data);
   y = f - d->c;
   t = d->sum + y;
   d->c = (t - d->sum) - y;
@@ -48,7 +48,7 @@ iter_sumf(strm_stream* strm, strm_value data)
   double f, y, t;
 
   data = convert_number(strm, data, d->func);
-  f = strm_value_flt(data);
+  f = strm_value_float(data);
   y = f - d->c;
   t = d->sum + y;
   d->c = (t - d->sum) - y;
@@ -62,7 +62,7 @@ sum_finish(strm_stream* strm, strm_value data)
 {
   struct sum_data* d = strm->data;
 
-  strm_emit(strm, strm_flt_value(d->sum), NULL);
+  strm_emit(strm, strm_float_value(d->sum), NULL);
   return STRM_OK;
 }
 
@@ -71,7 +71,7 @@ avg_finish(strm_stream* strm, strm_value data)
 {
   struct sum_data* d = strm->data;
 
-  strm_emit(strm, strm_flt_value(d->sum/d->num), NULL);
+  strm_emit(strm, strm_float_value(d->sum/d->num), NULL);
   return STRM_OK;
 }
 
@@ -124,7 +124,7 @@ ary_sum_avg(strm_stream* strm, int argc, strm_value* args, strm_value* ret, int 
   strm_get_args(strm, argc, args, "a|v", &v, &len, &func);
   if (argc == 0) {
     for (i=0; i<len; i++) {
-      double y = strm_value_flt(v[i]) - c;
+      double y = strm_value_float(v[i]) - c;
       double t = sum + y;
       c = (t - sum) - y;
       sum =  t;
@@ -136,7 +136,7 @@ ary_sum_avg(strm_stream* strm, int argc, strm_value* args, strm_value* ret, int 
       double f, y, t;
 
       val = convert_number(strm, v[i], func);
-      f = strm_value_flt(val);
+      f = strm_value_float(val);
       y = f - c;
       t = sum + y;
       c = (t - sum) - y;
@@ -144,10 +144,10 @@ ary_sum_avg(strm_stream* strm, int argc, strm_value* args, strm_value* ret, int 
     }
   }
   if (avg) {
-    *ret = strm_flt_value(sum/len);
+    *ret = strm_float_value(sum/len);
   }
   else {
-    *ret = strm_flt_value(sum);
+    *ret = strm_float_value(sum);
   }
   return STRM_OK;
 }
@@ -174,7 +174,7 @@ static int
 iter_stdev(strm_stream* strm, strm_value data)
 {
   struct stdev_data* d = strm->data;
-  double x = strm_value_flt(data);
+  double x = strm_value_float(data);
 
   d->num++;
   x -= d->s1;
@@ -190,7 +190,7 @@ iter_stdevf(strm_stream* strm, strm_value data)
   double x;
 
   data = convert_number(strm, data, d->func);
-  x = strm_value_flt(data);
+  x = strm_value_float(data);
   d->num++;
   x -= d->s1;
   d->s1 += x/d->num;
@@ -203,7 +203,7 @@ stdev_finish(strm_stream* strm, strm_value data)
 {
   struct stdev_data* d = strm->data;
   double s = sqrt(d->s2 / (d->num-1));
-  strm_emit(strm, strm_flt_value(s), NULL);
+  strm_emit(strm, strm_float_value(s), NULL);
   return STRM_OK;
 }
 
@@ -212,7 +212,7 @@ var_finish(strm_stream* strm, strm_value data)
 {
   struct stdev_data* d = strm->data;
   double s = d->s2 / (d->num-1);
-  strm_emit(strm, strm_flt_value(s), NULL);
+  strm_emit(strm, strm_float_value(s), NULL);
   return STRM_OK;
 }
 
@@ -264,7 +264,7 @@ ary_var_stdev(strm_stream* strm, int argc, strm_value* args, strm_value* ret, in
   s1 = s2 = 0.0;
   if (argc == 0) {
     for (i=0; i<len; i++) {
-      double x = strm_value_flt(v[i]);
+      double x = strm_value_float(v[i]);
       x -= s1;
       s1 += x/(i+1);
       s2 += i * x * x / (i+1);
@@ -276,7 +276,7 @@ ary_var_stdev(strm_stream* strm, int argc, strm_value* args, strm_value* ret, in
       double x;
 
       val = convert_number(strm, v[i], func);
-      x = strm_value_flt(val);
+      x = strm_value_float(val);
       x -= s1;
       s1 += x/(i+1);
       s2 += i * x * x / (i+1);
@@ -286,7 +286,7 @@ ary_var_stdev(strm_stream* strm, int argc, strm_value* args, strm_value* ret, in
   if (stdev) {
     s2 = sqrt(s2);
   }
-  *ret = strm_flt_value(s2);
+  *ret = strm_float_value(s2);
   return STRM_OK;
 }
 
@@ -325,8 +325,8 @@ iter_correl(strm_stream* strm, strm_value data)
     return STRM_NG;
   }
   d->n++;
-  dx = strm_value_flt(v[0]) - d->sx; d->sx += dx / d->n;
-  dy = strm_value_flt(v[1]) - d->sy; d->sy += dy / d->n;
+  dx = strm_value_float(v[0]) - d->sx; d->sx += dx / d->n;
+  dy = strm_value_float(v[1]) - d->sy; d->sy += dy / d->n;
   d->sxx += (d->n-1) * dx * dx / d->n;
   d->syy += (d->n-1) * dy * dy / d->n;
   d->sxy += (d->n-1) * dx * dy / d->n;
@@ -342,7 +342,7 @@ correl_finish(strm_stream* strm, strm_value data)
   double sxx = sqrt(d->sxx / d->n);
   double syy = sqrt(d->syy / d->n);
   double sxy = d->sxy / (d->n * sxx * syy);
-  strm_emit(strm, strm_flt_value(sxy), NULL);
+  strm_emit(strm, strm_float_value(sxy), NULL);
   return STRM_OK;
 }
 
@@ -380,8 +380,8 @@ ary_correl(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
       continue;
     }
     dv = strm_ary_ptr(data);
-    dx = strm_value_flt(dv[0]) - sx; sx += dx / (i+1);
-    dy = strm_value_flt(dv[1]) - sy; sy += dy / (i+1);
+    dx = strm_value_float(dv[0]) - sx; sx += dx / (i+1);
+    dy = strm_value_float(dv[1]) - sy; sy += dy / (i+1);
     sxx += i * dx * dx / (i+1);
     syy += i * dy * dy / (i+1);
     sxy += i * dx * dy / (i+1);
@@ -389,7 +389,7 @@ ary_correl(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   sxx = sqrt(sxx / (len-1));
   syy = sqrt(syy / (len-1));
   sxy /= (len-1) * sxx * syy;
-  *ret = strm_flt_value(sxy);
+  *ret = strm_float_value(sxy);
   return STRM_OK;
 }
 

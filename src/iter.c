@@ -16,7 +16,7 @@ gen_seq(strm_stream* strm, strm_value data)
     strm_stream_close(strm);
     return STRM_OK;
   }
-  strm_emit(strm, strm_flt_value(d->n), gen_seq);
+  strm_emit(strm, strm_float_value(d->n), gen_seq);
   d->n += d->inc;
   return STRM_OK;
 }
@@ -430,7 +430,7 @@ iter_minmax(strm_stream* strm, strm_value data)
   else {
     e = data;
   }
-  num = strm_value_flt(e);
+  num = strm_value_float(e);
   if (d->start) {
     d->start = FALSE;
     d->num = num;

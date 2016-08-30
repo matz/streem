@@ -53,7 +53,7 @@ enum csv_type {
   TYPE_TIME,                   /* time */
   TYPE_ESC,                    /* escaped_string */
   TYPE_INT,                    /* integer */
-  TYPE_FLT,                    /* float */
+  TYPE_FLOAT,                  /* float */
 };
 
 static strm_value
@@ -136,11 +136,11 @@ csv_value(const char* p, strm_int len, enum csv_type ftype)
         pow *= 10;
         break;
       case '.':
-        if (type == TYPE_FLT) { /* second dot */
+        if (type == TYPE_FLOAT) { /* second dot */
           type = TYPE_TIME;
           break;
         }
-        type = TYPE_FLT;
+        type = TYPE_FLOAT;
         f = i;
         i = 0;
         pow = 1;
@@ -158,9 +158,9 @@ csv_value(const char* p, strm_int len, enum csv_type ftype)
   switch (type) {
   case TYPE_INT:
     return strm_int_value(i);
-  case TYPE_FLT:
+  case TYPE_FLOAT:
     f += i / pow;
-    return strm_flt_value(f);
+    return strm_float_value(f);
   default:
     return csv_string(p, len, ftype);
   }

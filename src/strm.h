@@ -59,13 +59,13 @@ typedef int32_t strm_int;
 strm_value strm_cfunc_value(strm_cfunc);
 strm_value strm_bool_value(int);
 strm_value strm_int_value(strm_int);
-strm_value strm_flt_value(double);
+strm_value strm_float_value(double);
 strm_value strm_nil_value(void);
 
 strm_cfunc strm_value_cfunc(strm_value);
 strm_int strm_value_int(strm_value);
 int strm_value_bool(strm_value);
-double strm_value_flt(strm_value);
+double strm_value_float(strm_value);
 
 int strm_value_eq(strm_value, strm_value);
 int strm_nil_p(strm_value);
@@ -78,7 +78,7 @@ int strm_string_p(strm_value);
 
 /* internal functions */
 int strm_int_p(strm_value);
-int strm_flt_p(strm_value);
+int strm_float_p(strm_value);
 
 enum strm_ptr_type {
   STRM_PTR_STREAM,

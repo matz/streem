@@ -28,7 +28,7 @@ strm_int_value(int32_t i)
 }
 
 strm_value
-strm_flt_value(double f)
+strm_float_value(double f)
 {
   union {
     double f;
@@ -116,14 +116,14 @@ strm_to_int(strm_value v)
 }
 
 int
-strm_flt_p(strm_value v)
+strm_float_p(strm_value v)
 {
   /* confirm for nan/+inf/-inf */
   return v == STRM_TAG_NAN || (v & STRM_TAG_NAN) != STRM_TAG_NAN;
 }
 
 static inline double
-strm_to_flt(strm_value v)
+strm_to_float(strm_value v)
 {
   union {
     double f;
@@ -141,8 +141,8 @@ strm_value_int(strm_value v)
   case STRM_TAG_INT:
     return strm_to_int(v);
   default:
-    if (strm_flt_p(v))
-      return strm_to_flt(v);
+    if (strm_float_p(v))
+      return strm_to_float(v);
     assert(strm_value_tag(v) == STRM_TAG_INT);
     break;
   }
@@ -152,16 +152,16 @@ strm_value_int(strm_value v)
 
 
 double
-strm_value_flt(strm_value v)
+strm_value_float(strm_value v)
 {
   if (strm_int_p(v)) {
     return (double)strm_to_int(v);
   }
-  else if (strm_flt_p(v)) {
-    return strm_to_flt(v);
+  else if (strm_float_p(v)) {
+    return strm_to_float(v);
   }
   else {
-    assert(strm_flt_p(v));
+    assert(strm_float_p(v));
   }
   /* not reached */
   return 0.0;
@@ -177,7 +177,7 @@ strm_value_cfunc(strm_value v)
 int
 strm_number_p(strm_value v)
 {
-  if (strm_int_p(v) || strm_flt_p(v))
+  if (strm_int_p(v) || strm_float_p(v))
     return TRUE;
   else
     return FALSE;
@@ -232,7 +232,7 @@ strm_value_eq(strm_value a, strm_value b)
   typediff:
   default:
     if (strm_number_p(a) && strm_number_p(b)) {
-      return strm_value_flt(a) == strm_value_flt(b);
+      return strm_value_float(a) == strm_value_float(b);
     }
     return FALSE;
   }
@@ -473,8 +473,8 @@ strm_to_str(strm_value v)
       return strm_str_new(buf, n);
     }
   default:
-    if (strm_flt_p(v)) {
-      n = sprintf(buf, "%.14g", strm_to_flt(v));
+    if (strm_float_p(v)) {
+      n = sprintf(buf, "%.14g", strm_to_float(v));
       return strm_str_new(buf, n);
     }
     n = sprintf(buf, "<%p>", strm_value_vptr(v));

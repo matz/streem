@@ -110,7 +110,7 @@ ary_minmax(strm_stream* strm, int argc, strm_value* args, strm_value* ret, int m
   else {
     e = v[0];
   }
-  num = strm_value_flt(e);
+  num = strm_value_float(e);
   for (i=1; i<len; i++) {
     if (argc == 2) {
       if (strm_funcall(strm, func, 1, &v[i], &e) == STRM_NG) {
@@ -120,7 +120,7 @@ ary_minmax(strm_stream* strm, int argc, strm_value* args, strm_value* ret, int m
     else {
       e = v[0];
     }
-    f = strm_value_flt(e);
+    f = strm_value_float(e);
     if (min) {
       if (num > f) {
         num = f;
