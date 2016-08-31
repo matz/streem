@@ -3,6 +3,7 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <fcntl.h>
+#include <math.h>
 
 
 static void
@@ -64,6 +65,12 @@ xorshift128(uint32_t seed[4])
   return w;
 }
 
+static double
+rand_float(uint32_t seed[4])
+{
+  return xorshift128(seed)*(1.0/4294967295.0);
+}
+
 struct rand_data {
   uint32_t seed[4];
 };
@@ -72,8 +79,7 @@ static int
 gen_rand(strm_stream* strm, strm_value data)
 {
   struct rand_data* d = strm->data;
-  uint32_t r = xorshift128(d->seed);
-  double f = r*(1.0/4294967295.0);
+  double f = rand_float(d->seed);
 
   strm_emit(strm, strm_flt_value(f), gen_rand);
   return STRM_OK;
@@ -111,6 +117,70 @@ rand_seed(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   strm_get_args(strm, argc, args, "");
   xorshift128init(seed);
   *ret = strm_str_new((const char*)seed, sizeof(seed));
+  return STRM_OK;
+}
+
+struct rnorm_data {
+  uint32_t seed[4];
+  int has_spare;
+  double spare;
+};
+
+/* generateGaussianNoise using Marsaglia polar method */
+static double
+rand_normal(struct rnorm_data* d)
+{
+  double u, v, s;
+
+  if(d->has_spare) {
+    d->has_spare = FALSE;
+    return d->spare;
+  }
+
+  d->has_spare = TRUE;
+  do {
+    u = rand_float(d->seed) * 2.0 - 1.0;
+    v = rand_float(d->seed) * 2.0 - 1.0;
+    s = u * u + v * v;
+  } while (s >= 1.0 || s == 0.0);
+
+  s = sqrt(-2.0 * log(s) / s);
+  d->spare = v * s;
+  return u * s;
+}
+
+static int
+gen_rnorm(strm_stream* strm, strm_value data)
+{
+  struct rnorm_data* d = strm->data;
+  double f = rand_normal(d);
+
+  strm_emit(strm, strm_flt_value(f), gen_rnorm);
+  return STRM_OK;
+}
+
+static int
+exec_rnorm(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  struct rnorm_data* d;
+  const char* s;
+  strm_int len;
+
+  strm_get_args(strm, argc, args, "|s", &s, &len);
+  d = malloc(sizeof(struct rnorm_data));
+  if (!d) return STRM_NG;
+  if (argc == 2) {
+    if (len != sizeof(d->seed)) {
+      strm_raise(strm, "seed size differ");
+      return STRM_NG;
+    }
+    memcpy(d->seed, s, len);
+  }
+  else {
+    xorshift128init(d->seed);
+  }
+  d->has_spare = TRUE;
+  *ret = strm_stream_value(strm_stream_new(strm_producer, gen_rnorm, NULL, (void*)d));
   return STRM_OK;
 }
 
@@ -174,5 +244,6 @@ strm_rand_init(strm_state* state)
 {
   strm_var_def(state, "rand_seed", strm_cfunc_value(rand_seed));
   strm_var_def(state, "rand", strm_cfunc_value(exec_rand));
+  strm_var_def(state, "rand_norm", strm_cfunc_value(exec_rnorm));
   strm_var_def(state, "sample", strm_cfunc_value(exec_sample));
 }
