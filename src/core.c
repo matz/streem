@@ -244,11 +244,11 @@ strm_stream_close(strm_stream* strm)
   strm_stream_mode mode = strm->mode;
 
   if (mode == strm_killed) return;
+  strm_atomic_dec(strm->refcnt);
+  if (strm->refcnt > 0) return;
   if (!strm_atomic_cas(strm->mode, mode, strm_killed)) {
     return;
   }
-  strm_atomic_dec(strm->refcnt);
-  if (strm->refcnt > 0) return;
   if (strm->close_func) {
     if ((*strm->close_func)(strm, strm_nil_value()) == STRM_NG)
       return;
