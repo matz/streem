@@ -3,15 +3,12 @@
 #include "pollfd.h"
 #include <errno.h>
 #ifndef _WIN32
+# include <sys/uio.h>
 # include <sys/socket.h>
 #else
 # include <ws2tcpip.h>
 #endif
 #include <sys/stat.h>
-
-#ifdef STRM_USE_WRITEV
-#include <sys/uio.h>
-#endif
 
 static pthread_t io_worker;
 static int io_wait_num = 0;
@@ -297,11 +294,23 @@ write_cb(strm_stream* strm, strm_value data)
   struct write_data *d = (struct write_data*)strm->data;
   strm_string p = strm_to_str(data);
 
+#ifndef _WIN32
+  struct iovec buf[2];
+
+  buf[0].iov_base = (void*)strm_str_ptr(p);
+  buf[0].iov_len = strm_str_len(p);
+  buf[1].iov_base = (void*)"\n";
+  buf[1].iov_len = 1;
+  if (writev(fileno(d->f), buf, 2) < 0) {
+    return STRM_NG;
+  }
+#else
   fwrite(strm_str_ptr(p), strm_str_len(p), 1, d->f);
   fputs("\n", d->f);
   if (d->io->mode & STRM_IO_FLUSH) {
     fflush(d->f);
   }
+#endif
   return STRM_OK;
 }
 
