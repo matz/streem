@@ -179,7 +179,7 @@ exec_rnorm(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   else {
     xorshift128init(d->seed);
   }
-  d->has_spare = TRUE;
+  d->has_spare = FALSE;
   *ret = strm_stream_value(strm_stream_new(strm_producer, gen_rnorm, NULL, (void*)d));
   return STRM_OK;
 }
