@@ -12,6 +12,7 @@
 /* signal handling */
 static int refcnt = 0;
 static int winch = FALSE;
+static int interrupt = FALSE;
 
 static void
 sigupdate(int sig, void* arg)
@@ -88,7 +89,7 @@ show_yaxis(struct bar_data* d)
   move_cursor(1,2);
   printf("\x1b[0m");
   for (int i=0; i<d->llen; i++) {
-    move_cursor(i+3, d->dlen+1);
+    move_cursor(i+2, d->dlen+1);
     if (i == 0) {
       printf("├ %d   ", d->max);
     }
@@ -107,7 +108,7 @@ show_bar(struct bar_data* d, int i, int n)
   double f = d->data[i] / d->max * d->llen;
 
   for (int line=0; line<d->llen; line++) {
-    move_cursor(d->llen+2-line, n);
+    move_cursor(d->llen+1-line, n);
     if (line < f) {
       printf("\x1b[7m ");
     }
@@ -157,6 +158,13 @@ iter_bar(strm_stream* strm, strm_value data)
   struct bar_data* d = strm->data;
   double f, max = 1.0;
 
+  if (interrupt) {
+    interrupt = FALSE;
+    strm_unsignal(SIGINT, sigupdate);
+    move_cursor(d->row-1, 1);
+    show_cursor();
+    exit(1);
+  }
   if (!strm_number_p(data)) {
     strm_raise(strm, "invalid data");
     return STRM_NG;
@@ -199,6 +207,7 @@ fin_bar(strm_stream* strm, strm_value data)
   strm_atomic_inc(refcnt);
   if (refcnt <= 0) {
     strm_unsignal(SIGWINCH, sigupdate);
+    strm_unsignal(SIGINT, sigupdate);
   }
   return STRM_OK;
 }
@@ -219,6 +228,7 @@ exec_bgraph(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   if (refcnt == 0) {
     strm_atomic_inc(refcnt);
     strm_signal(SIGWINCH, sigupdate, &winch);
+    strm_signal(SIGINT, sigupdate, &interrupt);
   }
   if (init_bar(d) == STRM_NG) return STRM_NG;
   *ret = strm_stream_value(strm_stream_new(strm_consumer, iter_bar,
