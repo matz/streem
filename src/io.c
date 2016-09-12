@@ -18,6 +18,7 @@ static int epoll_fd;
 #define STRM_IO_NOFILL 2
 
 #define STRM_IO_MMAP   4
+
 /* should undef STRM_IO_MMAP on platform without mmap(2) */
 #ifdef _WIN32
 # undef STRM_IO_MMAP
@@ -264,10 +265,13 @@ strm_readio(strm_io io)
       /* try mmap if STRM_IO_MMAP is defined */
       flags |= STRM_IO_NOWAIT;
 #ifdef STRM_IO_MMAP
-      buf->buf = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, buf->fd, 0);
-      if (buf->buf != MAP_FAILED) {
-        buf->beg = buf->buf;
-        buf->end = buf->buf + st.st_size;
+      void* map = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, buf->fd, 0);
+      if (map == MAP_FAILED) {
+        buf->beg = buf->end = buf->buf;
+      }
+      else {
+        buf->buf = buf->beg = map;
+        buf->end = map + st.st_size;
         flags |= STRM_IO_NOFILL;
         /* enqueue task without waiting */
         cb = readline_cb;
