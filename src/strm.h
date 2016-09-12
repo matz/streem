@@ -287,4 +287,10 @@ struct strm_genfunc {
 int strm_time_p(strm_value);
 strm_value strm_time_new(long sec, long usec, int offset);
 int strm_time_parse_time(const char* s, strm_int len, long* sec, long* usec, int* offset);
+
+/* ----- signal */
+typedef void (*strm_sighandler_t)(int, void*);
+int strm_signal(int sig, strm_sighandler_t func, void* arg);
+int strm_unsignal(int sig, strm_sighandler_t func);
 #endif
+
