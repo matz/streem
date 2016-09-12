@@ -10,6 +10,7 @@ void strm_csv_init(strm_state* state);
 void strm_kvs_init(strm_state* state);
 void strm_time_init(strm_state* state);
 void strm_math_init(strm_state* state);
+void strm_graph_init(strm_state* state);
 
 void
 strm_init(strm_state* state)
@@ -24,4 +25,5 @@ strm_init(strm_state* state)
   strm_kvs_init(state);
   strm_time_init(state);
   strm_math_init(state);
+  strm_graph_init(state);
 }
