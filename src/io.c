@@ -276,6 +276,10 @@ strm_readio(strm_io io)
         /* enqueue task without waiting */
         cb = readline_cb;
       }
+#else
+      /* stdio_read (epoll) does not work for regular files */
+      cb = read_cb;
+      buf->beg = buf->end = buf->buf;
 #endif
     }
     else {
