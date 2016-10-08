@@ -118,7 +118,7 @@ false               LEX_RETURN(keyword_false);
 {DATE}("T"{TIME}{TZONE}?)? {
   lval->nd = node_time_new(yytext, yyleng);
   if (lval->nd == NULL) yyerror(p, "bad time format");
-  LEX_RETURN(lit_string);
+  LEX_RETURN(lit_time);
 };
 
 \"([^\\\"]|\\.)*\"      {
@@ -128,7 +128,7 @@ false               LEX_RETURN(keyword_false);
 
 :{WORD} {
   lval->nd = node_string_new(yytext+1, yyleng-1);
-  LEX_RETURN(lit_string);
+  LEX_RETURN(lit_symbol);
 };
 
 \"([^\\\"]|\\.)*\": {

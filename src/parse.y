@@ -30,8 +30,8 @@ node_lineinfo(parser_state* p, node* node)
 %type <nd> expr condition block primary opt_else
 %type <nd> case_body cparam pattern pary pstruct pterm
 %type <nd> bparam arg args opt_args opt_block f_args opt_f_args
-%type <id> identifier var label
-%type <nd> lit_string lit_number
+%type <id> identifier var label fname
+%type <nd> lit_string lit_symbol lit_number lit_time
 
 %pure-parser
 %parse-param {parser_state *p}
@@ -81,7 +81,9 @@ static void yyerror(parser_state *p, const char *s);
         op_colon2
 
 %token
+        lit_time
         lit_number
+        lit_symbol
         lit_string
         identifier
         label
@@ -192,7 +194,7 @@ topstmt         : /* namespace statement:
                     method foo(self, args) {
                       statements
                     } */
-                  keyword_method identifier '(' opt_f_args ')' '{' stmts '}'
+                  keyword_method fname '(' opt_f_args ')' '{' stmts '}'
                     {
                       $$ = node_let_new($2, node_method_new($4, $7));
                     }
@@ -204,7 +206,7 @@ topstmt         : /* namespace statement:
 
                     method foo(self, args) = expr
                    */
-                  keyword_method identifier '(' opt_f_args ')' '=' expr
+                  keyword_method fname '(' opt_f_args ')' '=' expr
                     {
                       $$ = node_let_new($2, node_method_new($4, $7));
                     }
@@ -259,7 +261,7 @@ stmt            : var '=' expr
                     }
 
                     define a function named foo. */
-                  keyword_def identifier '(' opt_f_args ')' '{' stmts '}'
+                  keyword_def fname '(' opt_f_args ')' '{' stmts '}'
                     {
                       $$ = node_let_new($2, node_lambda_new($4, $7));
                     }
@@ -267,7 +269,7 @@ stmt            : var '=' expr
                     def foo(args) = expr
 
                     define a function named foo. */
-                  keyword_def identifier '(' opt_f_args ')' '=' expr
+                  keyword_def fname '(' opt_f_args ')' '=' expr
                     {
                       $$ = node_let_new($2, node_lambda_new($4, $7));
                     }
@@ -275,7 +277,7 @@ stmt            : var '=' expr
                     def foo = expr
 
                     define a function named foo. */
-                  keyword_def identifier '=' expr
+                  keyword_def fname '=' expr
                     {
                       $$ = node_let_new($2, node_lambda_new(NULL, $4));
                     }
@@ -299,6 +301,13 @@ stmt            : var '=' expr
                 ;
 
 var             : identifier
+                ;
+
+fname           : identifier
+                | lit_string
+                    {
+                      $$ = ((node_str*)$1)->value;
+                    }
                 ;
 
 expr            : expr op_plus expr
@@ -444,7 +453,9 @@ args            : arg
 
 primary         : lit_number
                 | lit_string
-                | identifier
+                | lit_symbol
+                | lit_time
+                | var
                     {
                       $$ = node_ident_new($1);
                     }
@@ -483,19 +494,19 @@ primary         : lit_number
                     {
                       $$ = node_obj_new($4, $2);
                     }
-                | identifier block
+                | fname block
                     {
                       $$ = node_call_new($1, NULL, NULL, $2);
                     }
-                | identifier '(' opt_args ')' opt_block
+                | fname '(' opt_args ')' opt_block
                     {
                       $$ = node_call_new($1, NULL, $3, $5);
                     }
-                | primary '.' identifier '(' opt_args ')' opt_block
+                | primary '.' fname '(' opt_args ')' opt_block
                     {
                       $$ = node_call_new($3, $1, $5, $7);
                     }
-                | primary '.' identifier opt_block
+                | primary '.' fname opt_block
                     {
                       $$ = node_call_new($3, $1, NULL, $4);
                     }
@@ -503,7 +514,7 @@ primary         : lit_number
                     {
                       $$ = node_fcall_new($1, $4, $6);
                     }
-                | op_amper identifier
+                | op_amper fname
                     {
                       $$ = node_genfunc_new($2);
                     }
@@ -516,7 +527,7 @@ opt_block       : /* none */
                 | block
                 ;
 
-pterm           : identifier
+pterm           : var
                     {
                       $$ = node_ident_new($1);
                     }
@@ -668,12 +679,12 @@ opt_f_args      : /* no args */
                 | f_args
                 ;
 
-f_args          : identifier
+f_args          : var
                     {
                       $$ = node_args_new();
                       node_args_add($$, $1);
                     }
-                | f_args ',' identifier
+                | f_args ',' var
                     {
                       $$ = $1;
                       node_args_add($$, $3);
