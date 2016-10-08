@@ -479,7 +479,7 @@ primary         : lit_number
                     {
                       $$ = node_false();
                     }
-                | keyword_new identifier '[' opt_args ']' opt_block
+                | keyword_new identifier '[' opt_args ']'
                     {
                       $$ = node_obj_new($4, $2);
                     }
