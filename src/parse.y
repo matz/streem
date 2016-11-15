@@ -97,8 +97,8 @@ static void yyerror(parser_state *p, const char *s);
 %right op_lambda op_lambda2 op_lambda3
 %right keyword_else
 %right keyword_if
-%left  op_amper
 %left  op_bar
+%left  op_amper
 %left  op_or
 %left  op_and
 %nonassoc  op_eq op_neq
