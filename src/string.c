@@ -350,9 +350,9 @@ str_length(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 static int
 str_split(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
-  strm_string str;
   const char* s;
   strm_int slen;
+  const char* b;
   const char* t;
   const char* p;
   strm_int plen;
@@ -371,7 +371,7 @@ str_split(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 
   /* count number of split strings */
   c = s[0];
-  t = p;
+  b = t = p;
   pend = p + plen - slen;
   n = 0;
   while (p<pend) {
@@ -391,8 +391,7 @@ str_split(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   ary = strm_ary_new(NULL, n);
   sps = strm_ary_ptr(ary);
   c = s[0];
-  t = p = strm_str_ptr(str);
-  pend = p + strm_str_len(str) - slen;
+  p = t = b;
   i = 0;
   while (p<pend) {
     if (*p == c) {
@@ -405,7 +404,7 @@ str_split(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
     }
     p++;
   }
-  pend = strm_str_ptr(str) + strm_str_len(str);
+  pend = b + plen;
   sps[i++] = strm_str_new(t, pend-t);
   *ret = strm_ary_value(ary);
   return STRM_OK;
