@@ -106,7 +106,6 @@ strm_parse_args(strm_stream* strm, int argc, strm_value* argv, const char* forma
         pl = va_arg(ap, strm_int*);
         if (i < argc) {
           ss = argv[arg_i];
-          i++;
           if (!strm_string_p(ss)) {
             strm_raise(strm, "string required");
             return STRM_NG;
