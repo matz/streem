@@ -229,6 +229,7 @@ exec_concat(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 void
 strm_latch_init(strm_state* state)
 {
+  strm_var_def(state, "&", strm_cfunc_value(exec_zip));
   strm_var_def(state, "zip", strm_cfunc_value(exec_zip));
   strm_var_def(state, "concat", strm_cfunc_value(exec_concat));
 }
