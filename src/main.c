@@ -2,6 +2,19 @@
 #include "node.h"
 #include <stdio.h>
 
+#define STREEM_EXT ".strm"
+
+static int
+ends_with(const char* str, const char* suffix) {
+  size_t suffix_len = strlen(suffix);
+  size_t str_len = strlen(str);
+  if (suffix_len > str_len) {
+    return FALSE;
+  }
+
+  return !strcmp(&str[str_len-suffix_len], suffix);
+}
+
 static void
 fprint_str(node_string str, FILE *f)
 {
@@ -307,7 +320,9 @@ main(int argc, const char**argv)
   }
   else {
     for (i=1; i<argc; i++) {
-      n += node_parse_file(&state, argv[i]);
+      if (ends_with(argv[i], STREEM_EXT)) {
+        n += node_parse_file(&state, argv[i]);        
+      }
     }
   }
 
