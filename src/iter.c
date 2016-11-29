@@ -582,11 +582,12 @@ iter_rbk(strm_stream* strm, strm_value data)
     kh_value(d->tbl, i) = v;
   }
   else {
-    strm_value args[2];
+    strm_value args[3];
 
-    args[0] = kh_value(d->tbl, i);
-    args[1] = v;
-    if (strm_funcall(strm, d->func, 2, args, &v) == STRM_NG) {
+    args[0] = k;
+    args[1] = kh_value(d->tbl, i);
+    args[2] = v;
+    if (strm_funcall(strm, d->func, 3, args, &v) == STRM_NG) {
       return STRM_NG;
     }
     kh_value(d->tbl, i) = v;
