@@ -46,7 +46,6 @@ TZONE  "Z"|[+-][0-9]+(":"[0-9]+)?
 ">="{TRAIL} LEX_RETURN(op_ge);
 "&&"{TRAIL} LEX_RETURN(op_and);
 "||"{TRAIL} LEX_RETURN(op_or);
-"|"{TRAIL}  LEX_RETURN(op_bar);
 "&"{TRAIL}  LEX_RETURN(op_amper);
 "<-"{TRAIL} LEX_RETURN(op_lasgn);
 "=>"{TRAIL} LEX_RETURN(op_rasgn);
@@ -83,6 +82,7 @@ false               LEX_RETURN(keyword_false);
   LEX_RETURN(label);
 };
 
+{TRAIL}"|"{TRAIL}  LEX_RETURN(op_bar);
 {TRAIL}\.{TRAIL} LEX_RETURN('.');
 [(\[{,;:]{TRAIL} LEX_RETURN(yytext[0]);
 [)\]}@]          LEX_RETURN(yytext[0]);
