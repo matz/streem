@@ -487,14 +487,14 @@ exec_call(strm_stream* strm, strm_state* state, strm_string name, int argc, strm
   strm_value m;
 
   if (argc > 0) {
-    strm_state* ns = strm_value_ns(argv[0]);
-    if (ns) {
-      if (ns == strm_ns_array && argc == 1 && strm_array_p(argv[0])) {
-        m = strm_str_value(name);
-        n = ary_get(strm, argv[0], 1, &m, ret);
-        if (n == STRM_OK) return STRM_OK;
-      }
-      else {
+    if (argc == 1 && strm_array_p(argv[0])) {
+      m = strm_str_value(name);
+      n = ary_get(strm, argv[0], 1, &m, ret);
+      if (n == STRM_OK) return STRM_OK;
+    }
+    else {
+      strm_state* ns = strm_value_ns(argv[0]);
+      if (ns) {
         n = strm_var_get(ns, name, &m);
       }
     }
