@@ -495,6 +495,7 @@ exec_call(strm_stream* strm, strm_state* state, strm_string name, int argc, strm
           m = strm_str_value(name);
           n = ary_get(strm, argv[0], 1, &m, ret);
           if (n == STRM_OK && argc == 1) return STRM_OK;
+          m = *ret;
         }
       }
     }
