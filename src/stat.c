@@ -12,15 +12,17 @@ static int
 iter_sum(strm_stream* strm, strm_value data)
 {
   struct sum_data* d = strm->data;
-  double f, y, t;
+  double x, t;
 
   if (!strm_number_p(data)) {
     return STRM_NG;
   }
-  f = strm_value_float(data);
-  y = f - d->c;
-  t = d->sum + y;
-  d->c = (t - d->sum) - y;
+  x = strm_value_float(data);
+  t = d->sum + x;
+  if (fabs(d->sum) >= fabs(x))
+    d->c += ((d->sum - t) + x);
+  else
+    d->c += ((x - t) + d->sum);
   d->sum = t;
   d->num++;
   return STRM_OK;
@@ -45,13 +47,15 @@ static int
 iter_sumf(strm_stream* strm, strm_value data)
 {
   struct sum_data* d = strm->data;
-  double f, y, t;
+  double x, t;
 
   data = convert_number(strm, data, d->func);
-  f = strm_value_float(data);
-  y = f - d->c;
-  t = d->sum + y;
-  d->c = (t - d->sum) - y;
+  x = strm_value_float(data);
+  t = d->sum + x;
+  if (fabs(d->sum) >= fabs(x))
+    d->c += ((d->sum - t) + x);
+  else
+    d->c += ((x - t) + d->sum);
   d->sum = t;
   d->num++;
   return STRM_OK;
@@ -62,7 +66,7 @@ sum_finish(strm_stream* strm, strm_value data)
 {
   struct sum_data* d = strm->data;
 
-  strm_emit(strm, strm_float_value(d->sum), NULL);
+  strm_emit(strm, strm_float_value(d->sum+d->c), NULL);
   return STRM_OK;
 }
 
@@ -71,7 +75,7 @@ avg_finish(strm_stream* strm, strm_value data)
 {
   struct sum_data* d = strm->data;
 
-  strm_emit(strm, strm_float_value(d->sum/d->num), NULL);
+  strm_emit(strm, strm_float_value((d->sum+d->c)/d->num), NULL);
   return STRM_OK;
 }
 
