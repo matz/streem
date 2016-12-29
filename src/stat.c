@@ -34,11 +34,11 @@ convert_number(strm_stream* strm, strm_value data, strm_value func)
   strm_value val;
 
   if (strm_funcall(strm, func, 1, &data, &val) == STRM_NG) {
-    return STRM_NG;
+    return strm_nil_value();
   }
   if (!strm_number_p(val)) {
     strm_raise(strm, "number required");
-    return STRM_NG;
+    return strm_nil_value();
   }
   return val;
 }
@@ -50,6 +50,9 @@ iter_sumf(strm_stream* strm, strm_value data)
   double x, t;
 
   data = convert_number(strm, data, d->func);
+  if (!strm_number_p(data)) {
+    return STRM_NG;
+  }
   x = strm_value_float(data);
   t = d->sum + x;
   if (fabs(d->sum) >= fabs(x))
@@ -128,8 +131,13 @@ ary_sum_avg(strm_stream* strm, int argc, strm_value* args, strm_value* ret, int 
   strm_get_args(strm, argc, args, "a|v", &v, &len, &func);
   if (argc == 1) {
     for (i=0; i<len; i++) {
-      double x = strm_value_float(v[i]);
-      double t = sum + x;
+      double x, t;
+
+      if (!strm_number_p(v[i])) {
+        return STRM_NG;
+      }
+      x = strm_value_float(v[i]);
+      t = sum + x;
       if (fabs(sum) >= fabs(x))
         c += ((sum - t) + x);
       else
@@ -143,6 +151,9 @@ ary_sum_avg(strm_stream* strm, int argc, strm_value* args, strm_value* ret, int 
       double x, t;
 
       val = convert_number(strm, v[i], func);
+      if (!strm_number_p(val)) {
+        return STRM_NG;
+      }
       x = strm_value_float(val);
       t = sum + x;
       if (fabs(sum) >= fabs(x))
@@ -195,6 +206,7 @@ iter_mvavg(strm_stream* strm, strm_value data)
     data = convert_number(strm, data, d->func);
   }
   if (!strm_number_p(data)) {
+    strm_raise(strm, "number required");
     return STRM_NG;
   }
   d->data[d->i++] = strm_value_float(data);
@@ -279,6 +291,9 @@ iter_stdevf(strm_stream* strm, strm_value data)
   double x;
 
   data = convert_number(strm, data, d->func);
+  if (!strm_number_p(data)) {
+    return STRM_NG;
+  }
   x = strm_value_float(data);
   d->num++;
   x -= d->s1;
@@ -396,6 +411,9 @@ ary_var_stdev(strm_stream* strm, int argc, strm_value* args, strm_value* ret, in
       double x;
 
       val = convert_number(strm, v[i], func);
+      if (!strm_number_p(val)) {
+        return STRM_NG;
+      }
       x = strm_value_float(val);
       x -= s1;
       s1 += x/(i+1);
