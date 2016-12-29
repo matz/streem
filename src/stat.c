@@ -126,27 +126,33 @@ ary_sum_avg(strm_stream* strm, int argc, strm_value* args, strm_value* ret, int 
   strm_value func;
 
   strm_get_args(strm, argc, args, "a|v", &v, &len, &func);
-  if (argc == 0) {
+  if (argc == 1) {
     for (i=0; i<len; i++) {
-      double y = strm_value_float(v[i]) - c;
-      double t = sum + y;
-      c = (t - sum) - y;
+      double x = strm_value_float(v[i]);
+      double t = sum + x;
+      if (fabs(sum) >= fabs(x))
+        c += ((sum - t) + x);
+      else
+        c += ((x - t) + sum);
       sum =  t;
     }
   }
   else {
     for (i=0; i<len; i++) {
       strm_value val;
-      double f, y, t;
+      double x, t;
 
       val = convert_number(strm, v[i], func);
-      f = strm_value_float(val);
-      y = f - c;
-      t = sum + y;
-      c = (t - sum) - y;
+      x = strm_value_float(val);
+      t = sum + x;
+      if (fabs(sum) >= fabs(x))
+        c += ((sum - t) + x);
+      else
+        c += ((x - t) + sum);
       sum =  t;
     }
   }
+  sum += c;
   if (avg) {
     *ret = strm_float_value(sum/len);
   }
