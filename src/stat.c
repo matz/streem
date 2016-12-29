@@ -174,6 +174,77 @@ ary_avg(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   return ary_sum_avg(strm, argc, args, ret, TRUE);
 }
 
+struct mvavg_data {
+  strm_int num;
+  strm_int i;
+  strm_int filled;
+  strm_value func;
+  strm_int func_p;
+  double data[0];
+};
+
+static int
+iter_mvavg(strm_stream* strm, strm_value data)
+{
+  struct mvavg_data* d = strm->data;
+  double sum = 0;
+  double c = 0;
+  strm_int i, len = d->num;
+
+  if (d->func_p) {
+    data = convert_number(strm, data, d->func);
+  }
+  if (!strm_number_p(data)) {
+    return STRM_NG;
+  }
+  d->data[d->i++] = strm_value_float(data);
+  if (d->i == d->num) {
+    d->filled = TRUE;
+    d->i = 0;
+  }
+  if (!d->filled) {
+    strm_emit(strm, strm_nil_value(), NULL);
+    return STRM_OK;
+  }
+  for (i=0; i<len; i++) {
+    double x = d->data[i];
+    double t = sum + x;
+    if (fabs(sum) >= fabs(x))
+      c += ((sum - t) + x);
+    else
+      c += ((x - t) + sum);
+    sum =  t;
+  }
+  strm_emit(strm, strm_float_value((sum+c)/d->num), NULL);
+  return STRM_OK;
+}
+
+static int
+exec_mvavg(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  struct mvavg_data* d;
+  strm_int n;
+  strm_value func;
+
+  strm_get_args(strm, argc, args, "i|v", &n, &func);
+  d = malloc(sizeof(struct mvavg_data)+n*sizeof(double));
+  if (!d) return STRM_NG;
+  d->num = n;
+  d->i = 0;
+  d->filled = FALSE;
+  if (argc == 1) {
+    d->func = strm_nil_value();
+    d->func_p = FALSE;
+  }
+  else {
+    d->func = func;
+    d->func_p = TRUE;
+  }
+  *ret = strm_stream_value(strm_stream_new(strm_filter, iter_mvavg,
+                                           NULL, (void*)d));
+  return STRM_OK;
+}
+
 enum stdev_mode {
   mode_stdev,
   mode_variance,
@@ -451,6 +522,8 @@ strm_stat_init(strm_state* state)
   strm_var_def(state, "sum", strm_cfunc_value(exec_sum));
   strm_var_def(state, "average", strm_cfunc_value(exec_avg));
   strm_var_def(state, "mean", strm_cfunc_value(exec_avg));
+  strm_var_def(state, "moving_average", strm_cfunc_value(exec_mvavg));
+  strm_var_def(state, "rolling_mean", strm_cfunc_value(exec_mvavg));
   strm_var_def(state, "stdev", strm_cfunc_value(exec_stdev));
   strm_var_def(state, "variance", strm_cfunc_value(exec_variance));
   strm_var_def(state, "mean_stdev", strm_cfunc_value(exec_mean_stdev));
