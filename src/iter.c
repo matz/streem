@@ -843,17 +843,7 @@ iter_uniqf(strm_stream* strm, strm_value data)
   if (strm_funcall(strm, d->func, 1, &data, &data) == STRM_NG) {
     return STRM_NG;
   }
-  if (!d->init) {
-    d->init = TRUE;
-    d->last = data;
-    strm_emit(strm, data, NULL);
-    return STRM_OK;
-  }
-  if (!strm_value_eq(data, d->last)) {
-    d->last = data;
-    strm_emit(strm, data, NULL);
-  }
-  return STRM_OK;
+  return iter_uniq(strm, data);
 }
 
 static int
