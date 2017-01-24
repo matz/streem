@@ -811,6 +811,69 @@ exec_drop(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   return STRM_OK;
 }
 
+struct uniq_data {
+  strm_value last;
+  strm_value func;
+  int init;
+};
+
+static int
+iter_uniq(strm_stream* strm, strm_value data)
+{
+  struct uniq_data* d = strm->data;
+
+  if (!d->init) {
+    d->init = TRUE;
+    d->last = data;
+    strm_emit(strm, data, NULL);
+    return STRM_OK;
+  }
+  if (!strm_value_eq(data, d->last)) {
+    d->last = data;
+    strm_emit(strm, data, NULL);
+  }
+  return STRM_OK;
+}
+
+static int
+iter_uniqf(strm_stream* strm, strm_value data)
+{
+  struct uniq_data* d = strm->data;
+
+  if (strm_funcall(strm, d->func, 1, &data, &data) == STRM_NG) {
+    return STRM_NG;
+  }
+  if (!d->init) {
+    d->init = TRUE;
+    d->last = data;
+    strm_emit(strm, data, NULL);
+    return STRM_OK;
+  }
+  if (!strm_value_eq(data, d->last)) {
+    d->last = data;
+    strm_emit(strm, data, NULL);
+  }
+  return STRM_OK;
+}
+
+static int
+exec_uniq(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  struct uniq_data* d;
+  strm_value func = strm_nil_value();
+
+  strm_get_args(strm, argc, args, "|v", &func);
+  d = malloc(sizeof(struct take_data));
+  if (!d) return STRM_NG;
+  d->last = strm_nil_value();
+  d->func = func;
+  d->init = FALSE;
+  *ret = strm_stream_value(strm_stream_new(strm_filter,
+                                           strm_nil_p(func) ? iter_uniq : iter_uniqf,
+                                           NULL, (void*)d));
+  return STRM_OK;
+}
+
 void strm_stat_init(strm_state* state);
 
 void
@@ -833,6 +896,7 @@ strm_iter_init(strm_state* state)
   strm_var_def(state, "consec", strm_cfunc_value(exec_consec));
   strm_var_def(state, "take", strm_cfunc_value(exec_take));
   strm_var_def(state, "drop", strm_cfunc_value(exec_drop));
+  strm_var_def(state, "uniq", strm_cfunc_value(exec_uniq));
 
   strm_var_def(strm_ns_array, "each", strm_cfunc_value(ary_each));
   strm_var_def(strm_ns_array, "map", strm_cfunc_value(ary_map));
