@@ -813,6 +813,7 @@ exec_drop(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 
 struct uniq_data {
   strm_value last;
+  strm_value v;
   strm_value func;
   int init;
 };
@@ -839,11 +840,24 @@ static int
 iter_uniqf(strm_stream* strm, strm_value data)
 {
   struct uniq_data* d = strm->data;
+  strm_value val;
 
-  if (strm_funcall(strm, d->func, 1, &data, &data) == STRM_NG) {
+  if (strm_funcall(strm, d->func, 1, &data, &val) == STRM_NG) {
     return STRM_NG;
   }
-  return iter_uniq(strm, data);
+  if (!d->init) {
+    d->init = TRUE;
+    d->last = data;
+    d->v = val;
+    strm_emit(strm, data, NULL);
+    return STRM_OK;
+  }
+  if (!strm_value_eq(val, d->v)) {
+    d->last = data;
+    d->v = val;
+    strm_emit(strm, data, NULL);
+  }
+  return STRM_OK;
 }
 
 static int
