@@ -863,7 +863,7 @@ exec_uniq(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   strm_value func = strm_nil_value();
 
   strm_get_args(strm, argc, args, "|v", &func);
-  d = malloc(sizeof(struct take_data));
+  d = malloc(sizeof(struct uniq_data));
   if (!d) return STRM_NG;
   d->last = strm_nil_value();
   d->func = func;
