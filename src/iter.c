@@ -40,7 +40,7 @@ exec_seq(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   default:
     break;
   }
-  d = malloc(sizeof(struct seq_data));
+  d = malloc(sizeof(*d));
   d->n = start;
   d->inc = inc;
   d->end = end;
@@ -88,7 +88,7 @@ exec_repeat(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
     strm_raise(strm, "invalid count number");
     return STRM_NG;
   }
-  d = malloc(sizeof(struct repeat_data));
+  d = malloc(sizeof(*d));
   d->v = v;
   d->count = n;
   *ret = strm_stream_value(strm_stream_new(strm_producer, gen_repeat, fin_repeat, (void*)d));
@@ -144,7 +144,7 @@ exec_cycle(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
     strm_raise(strm, "invalid count number");
     return STRM_NG;
   }
-  d = malloc(sizeof(struct cycle_data));
+  d = malloc(sizeof(*d));
   d->ary = a;
   d->count = n;
   *ret = strm_stream_value(strm_stream_new(strm_producer, gen_cycle, fin_cycle, (void*)d));
@@ -174,7 +174,7 @@ exec_each(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   strm_value func;
 
   strm_get_args(strm, argc, args, "v", &func);
-  d = malloc(sizeof(struct map_data));
+  d = malloc(sizeof(*d));
   if (!d) return STRM_NG;
   d->func = func;
   *ret = strm_stream_value(strm_stream_new(strm_filter, iter_each, NULL, (void*)d));
@@ -221,7 +221,7 @@ exec_map(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   strm_value func;
 
   strm_get_args(strm, argc, args, "v", &func);
-  d = malloc(sizeof(struct map_data));
+  d = malloc(sizeof(*d));
   if (!d) return STRM_NG;
   d->func = func;
   *ret = strm_stream_value(strm_stream_new(strm_filter, iter_map, NULL, (void*)d));
@@ -322,7 +322,7 @@ exec_flatmap(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   strm_value func;
 
   strm_get_args(strm, argc, args, "v", &func);
-  d = malloc(sizeof(struct map_data));
+  d = malloc(sizeof(*d));
   if (!d) return STRM_NG;
   d->func = func;
   *ret = strm_stream_value(strm_stream_new(strm_filter, iter_flatmap, NULL, (void*)d));
@@ -365,7 +365,7 @@ iter_filter(strm_stream* strm, strm_value data)
 static int
 exec_filter(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
-  struct map_data* d = malloc(sizeof(struct map_data));
+  struct map_data* d = malloc(sizeof(*d));
 
   strm_get_args(strm, argc, args, "v", &d->func);
   *ret = strm_stream_value(strm_stream_new(strm_filter, iter_filter, NULL, (void*)d));
@@ -401,7 +401,7 @@ exec_count(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   struct count_data* d;
 
   strm_get_args(strm, argc, args, "");
-  d = malloc(sizeof(struct count_data));
+  d = malloc(sizeof(*d));
   d->count = 0;
   *ret = strm_stream_value(strm_stream_new(strm_filter, iter_count, count_finish, (void*)d));
   return STRM_OK;
@@ -467,7 +467,7 @@ exec_minmax(strm_stream* strm, int argc, strm_value* args, strm_value* ret, int 
   strm_value func = strm_nil_value();
 
   strm_get_args(strm, argc, args, "|v", &func);
-  d = malloc(sizeof(struct minmax_data));
+  d = malloc(sizeof(*d));
   if (!d) return STRM_NG;
   d->start = TRUE;
   d->min = min;
@@ -535,7 +535,7 @@ exec_reduce(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   strm_value v1, v2;
 
   strm_get_args(strm, argc, args, "v|v", &v1, &v2);
-  d = malloc(sizeof(struct reduce_data));
+  d = malloc(sizeof(*d));
   if (!d) return STRM_NG;
   if (argc == 2) {
     d->init = TRUE;
@@ -623,7 +623,7 @@ exec_rbk(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   strm_get_args(strm, argc, args, "v", &func);
   t = kh_init(rbk);
   if (!t) return STRM_NG;
-  d = malloc(sizeof(struct rbk_data));
+  d = malloc(sizeof(*d));
   d->tbl = t;
   d->func = func;
   *ret = strm_stream_value(strm_stream_new(strm_filter, iter_rbk, rbk_finish, (void*)d));
@@ -673,7 +673,7 @@ exec_slice(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   strm_int n;
 
   strm_get_args(strm, argc, args, "i", &n);
-  d = malloc(sizeof(struct slice_data));
+  d = malloc(sizeof(*d));
   if (!d) return STRM_NG;
   d->n = n;
   d->i = 0;
@@ -732,7 +732,7 @@ exec_consec(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   strm_int n;
 
   strm_get_args(strm, argc, args, "i", &n);
-  d = malloc(sizeof(struct slice_data));
+  d = malloc(sizeof(*d));
   if (!d) return STRM_NG;
   d->n = n;
   d->i = 0;
@@ -773,7 +773,7 @@ exec_take(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
     strm_raise(strm, "negative iteration");
     return STRM_NG;
   }
-  d = malloc(sizeof(struct take_data));
+  d = malloc(sizeof(*d));
   if (!d) return STRM_NG;
   d->n = n;
   *ret = strm_stream_value(strm_stream_new(strm_filter, iter_take, NULL, (void*)d));
@@ -804,7 +804,7 @@ exec_drop(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
     strm_raise(strm, "negative iteration");
     return STRM_NG;
   }
-  d = malloc(sizeof(struct take_data));
+  d = malloc(sizeof(*d));
   if (!d) return STRM_NG;
   d->n = n;
   *ret = strm_stream_value(strm_stream_new(strm_filter, iter_drop, NULL, (void*)d));
@@ -867,7 +867,7 @@ exec_uniq(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   strm_value func = strm_nil_value();
 
   strm_get_args(strm, argc, args, "|v", &func);
-  d = malloc(sizeof(struct uniq_data));
+  d = malloc(sizeof(*d));
   if (!d) return STRM_NG;
   d->last = strm_nil_value();
   d->func = func;
