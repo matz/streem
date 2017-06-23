@@ -426,6 +426,9 @@ lambda_call(strm_stream* strm, strm_value func, int argc, strm_value* argv, strm
       goto err;
     }
   }
+  else {
+    return STRM_NG;
+  }
   if (n == STRM_NG && strm) {
     exc = strm->exc;
     if (exc && exc->type == NODE_ERROR_RETURN) {
