@@ -173,6 +173,7 @@ exec_rnorm(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   if (argc == 2) {
     if (len != sizeof(d->seed)) {
       strm_raise(strm, "seed size differ");
+      free(d);
       return STRM_NG;
     }
     memcpy(d->seed, s, len);
