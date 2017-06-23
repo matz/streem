@@ -344,6 +344,7 @@ strm_inspect(strm_value v)
     strm_int i, bi = 0, capa = 32;
     strm_array a = strm_value_ary(v);
 
+    if (buf == NULL) return STRM_NG;
     buf[bi++] = '[';
     if (ns) {
       strm_string name = strm_ns_name(ns);
@@ -352,8 +353,14 @@ strm_inspect(strm_value v)
       if (name != strm_str_null) {
         buf[bi++] = '@';
         if (bi+nlen+2 > capa) {
+          char* p;
           capa *= 2;
-          buf = realloc(buf, capa);
+          p = realloc(buf, capa);
+          if (p == NULL) {
+            free(buf);
+            return STRM_NG;
+          }
+          buf = p;
         }
         memcpy(buf+bi, strm_str_ptr(name), nlen);
         bi += nlen;

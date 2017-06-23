@@ -88,11 +88,14 @@ int
 epoll_create(int size)
 {
   int i, num = _num_epoll_events++;
+  char* p;
 #ifdef _WIN32
   WSADATA wsa;
   if (num == 0) WSAStartup(MAKEWORD(2, 0), &wsa);
 #endif
-  _epoll_events = realloc(_epoll_events, sizeof(struct epoll_event) * _num_epoll_events);
+  p = realloc(_epoll_events, sizeof(struct epoll_event) * _num_epoll_events);
+  if (p == NULL) return -1;
+  _epoll_events = p;
   memset(&_epoll_events[num], 0, sizeof(struct epoll_event));
   for (i = 0; i < FD_SETSIZE; i++) _epoll_events[num].fds[i] = -1;
   return num;
