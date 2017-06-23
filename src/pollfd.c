@@ -94,7 +94,10 @@ epoll_create(int size)
   if (num == 0) WSAStartup(MAKEWORD(2, 0), &wsa);
 #endif
   p = realloc(_epoll_events, sizeof(struct epoll_event) * _num_epoll_events);
-  if (p == NULL) return -1;
+  if (p == NULL) {
+    free(_epoll_events);
+    return -1;
+  }
   _epoll_events = p;
   memset(&_epoll_events[num], 0, sizeof(struct epoll_event));
   for (i = 0; i < FD_SETSIZE; i++) _epoll_events[num].fds[i] = -1;
