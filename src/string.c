@@ -427,6 +427,69 @@ str_plus(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   return STRM_OK;
 }
 
+// https://github.com/mruby/mruby/blob/1.4.0/src/string.c#L215-L239
+static const char utf8len_codepage[256] =
+{
+  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+  2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
+  3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,4,4,4,4,4,1,1,1,1,1,1,1,1,1,1,1,
+};
+
+static int
+utf8len(const char* p, const char* e)
+{
+  strm_int len;
+  strm_int i;
+
+  len = utf8len_codepage[(unsigned char)*p];
+  if (p + len > e) return 1;
+  for (i = 1; i < len; ++i)
+    if ((p[i] & 0xc0) != 0x80)
+      return 1;
+  return len;
+}
+
+static int
+str_chars(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  const char* str;
+  const char* s;
+  const char* prev = NULL;
+  strm_int slen;
+  strm_array ary;
+  strm_int n = 0;
+  strm_value* sps;
+  strm_int i = 0;
+
+  strm_get_args(strm, argc, args, "s", &str, &slen);
+
+  s = str;
+
+  while (*s) {
+    prev = s;
+    s += utf8len(s, s + slen);
+    n++;
+  }
+
+  ary = strm_ary_new(NULL, n);
+  sps = strm_ary_ptr(ary);
+  s = str;
+
+  while (*s) {
+    prev = s;
+    s += utf8len(s, s + slen);
+    sps[i++] = strm_str_new(prev, s - prev);
+  }
+
+  *ret = strm_ary_value(ary);
+  return STRM_OK;
+}
+
 void
 strm_string_init(strm_state* state)
 {
@@ -434,4 +497,5 @@ strm_string_init(strm_state* state)
   strm_var_def(strm_ns_string, "length", strm_cfunc_value(str_length));
   strm_var_def(strm_ns_string, "split", strm_cfunc_value(str_split));
   strm_var_def(strm_ns_string, "+", strm_cfunc_value(str_plus));
+  strm_var_def(strm_ns_string, "chars", strm_cfunc_value(str_chars));
 }
