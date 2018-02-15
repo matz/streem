@@ -524,7 +524,7 @@ reduce_finish(strm_stream* strm, strm_value data)
   struct reduce_data* d = strm->data;
 
   if (!d->init) return STRM_NG;
-  strm_emit(strm, strm_int_value(d->acc), NULL);
+  strm_emit(strm, d->acc, NULL);
   return STRM_OK;
 }
 
