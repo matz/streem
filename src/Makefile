@@ -4,7 +4,7 @@ CC = gcc
 TOP = ..
 TARGET = $(TOP)/bin/streem
 CDEFS = -DNO_LOCKFREE_QUEUE
-CFLAGS = -std=gnu99 -g -ggdb -Wall $(CDEFS)
+CFLAGS += -std=gnu99 -g -ggdb -Wall $(CDEFS)
 LIBS = -lpthread -lm
 
 ifeq (Windows_NT,$(OS))
@@ -43,7 +43,7 @@ node.o : y.tab.h lex.yy.h
 
 $(TARGET) : $(OBJS)
 	mkdir -p "$$(dirname $(TARGET))"
-	$(CC) $(CFLAGS) $(OBJS) -o $(TARGET) $(LIBS)
+	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJS) -o $(TARGET) $(LIBS)
 
 clean :
 	rm -f y.output y.tab.c y.tab.h
