@@ -471,7 +471,6 @@ str_chars(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   s = str;
 
   while (*s) {
-    prev = s;
     s += utf8len(s, s + slen);
     n++;
   }
