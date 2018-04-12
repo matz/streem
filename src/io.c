@@ -343,7 +343,6 @@ strm_writeio(strm_io io)
   struct write_data *d;
 
   if (io->write_stream) {
-    d = (struct write_data*)io->write_stream->data;
   }
   else {
     d = malloc(sizeof(struct write_data));
