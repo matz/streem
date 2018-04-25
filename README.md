@@ -8,11 +8,36 @@ other functional programming languages.
 
 __Note:__ Streem is still in the design stage. It's not working yet.  Stay tuned.
 
+## Compiling
+
+### Installing dependencies
+
+* bison
+* flex
+* gcc / clang
+
+### Run make
+```
+make
+```
+
 ## Examples
 In Streem, a simple `cat` program looks like this:
 
 ```
 stdin | stdout
+```
+
+You can try it out by (firstly `cd` to streem top directory):
+
+```
+$ bin/streem -e 'stdin | stdout'
+```
+
+or
+
+```
+$ bin/streem examples/01cat.strm
 ```
 
 Streem is a (sort of) DSL for data flows.  Above code means
@@ -38,20 +63,7 @@ The second part in the pipeline (`{x ->...}`) is a function
 object.  If a function object is connected in the pipeline,
 it will be invoked for each element in the stream.
 
-## Compiling
-
-### Installing dependencies
-
-* bison
-* flex
-* gcc / clang
-
-### Run make
-```
-make
-```
-
-Please note that Streem will not run any scripts yet, but you can check parse files and check syntax.
+There are more examples under folder `examples/`. Just play with them!
 
 ## Contributing
 Send a pull request to <http://github.com/matz/streem>.  We consider
