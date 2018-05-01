@@ -342,9 +342,7 @@ strm_writeio(strm_io io)
 {
   struct write_data *d;
 
-  if (io->write_stream) {
-  }
-  else {
+  if (!io->write_stream) {
     d = malloc(sizeof(struct write_data));
 
 #ifdef _WIN32
