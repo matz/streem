@@ -23,6 +23,17 @@ math_sin(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 }
 
 static int
+math_sinh(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  double f;
+
+  strm_get_args(strm, argc, args, "f", &f);
+  f = strm_value_float(args[0]);
+  *ret = strm_float_value(sinh(f));
+  return STRM_OK;
+}
+
+static int
 math_cos(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   double f;
@@ -34,12 +45,34 @@ math_cos(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 }
 
 static int
+math_cosh(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  double f;
+
+  strm_get_args(strm, argc, args, "f", &f);
+  f = strm_value_float(args[0]);
+  *ret = strm_float_value(cosh(f));
+  return STRM_OK;
+}
+
+static int
 math_tan(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   double f;
 
   strm_get_args(strm, argc, args, "f", &f);
   *ret = strm_float_value(tan(f));
+  return STRM_OK;
+}
+
+static int
+math_tanh(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
+{
+  double f;
+
+  strm_get_args(strm, argc, args, "f", &f);
+  f = strm_value_float(args[0]);
+  *ret = strm_float_value(tanh(f));
   return STRM_OK;
 }
 
@@ -85,6 +118,9 @@ strm_math_init(strm_state* state)
   strm_var_def(state, "sin", strm_cfunc_value(math_sin));
   strm_var_def(state, "cos", strm_cfunc_value(math_cos));
   strm_var_def(state, "tan", strm_cfunc_value(math_tan));
+  strm_var_def(state, "sinh", strm_cfunc_value(math_sinh));
+  strm_var_def(state, "cosh", strm_cfunc_value(math_cosh));
+  strm_var_def(state, "tanh", strm_cfunc_value(math_tanh));
   strm_var_def(state, "pow", strm_cfunc_value(math_pow));
   strm_var_def(state, "round", strm_cfunc_value(math_round));
   strm_var_def(state, "ceil", strm_cfunc_value(math_ceil));
