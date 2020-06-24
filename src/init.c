@@ -25,5 +25,7 @@ strm_init(strm_state* state)
   strm_kvs_init(state);
   strm_time_init(state);
   strm_math_init(state);
+  #ifndef _WIN32
   strm_graph_init(state);
+  #endif
 }
