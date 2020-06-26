@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#ifndef _WIN32 
+#ifndef _WIN32
 #include <sys/ioctl.h>
 #include <termios.h>
 #include <unistd.h>
@@ -237,10 +237,12 @@ exec_bgraph(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
                                            fin_bar, (void*)d));
   return STRM_OK;
 }
+#endif
 
 void
 strm_graph_init(strm_state* state)
 {
+#ifndef _WIN32
   strm_var_def(state, "graph_bar", strm_cfunc_value(exec_bgraph));
-}
 #endif
+}
