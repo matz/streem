@@ -82,25 +82,6 @@ math_pow(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 }
 
 static int
-fac(int n)
-{
-  int result = 1;
-  if(n == 0 || n == 1) result = 1;
-  else result = fac(n - 1) * n;
-  return result;
-}
-
-static int
-math_fac(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
-{
-  int i;
-
-  strm_get_args(strm, argc, args, "i", &i);
-  *ret = strm_float_value(fac(i));
-  return STRM_OK;
-}
-
-static int
 GCD(int a, int b)
 {
   return b ? GCD(b, a % b) : a;
@@ -341,6 +322,5 @@ strm_math_init(strm_state* state)
   strm_var_def(state, "hypot", strm_cfunc_value(math_hypot));
   strm_var_def(state, "frexp", strm_cfunc_value(math_frexp));
   strm_var_def(state, "ldexp", strm_cfunc_value(math_ldexp));
-  strm_var_def(state, "factorial", strm_cfunc_value(math_fac));
   strm_var_def(state, "gcd", strm_cfunc_value(math_gcd));
 }
