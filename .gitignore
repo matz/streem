@@ -17,6 +17,7 @@
 a.out
 cscope.out
 gmon.out
+compile_commands.json
 GPATH
 GRTAGS
 GTAGS
