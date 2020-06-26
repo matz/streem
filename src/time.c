@@ -94,8 +94,7 @@ time_localoffset(int force)
     now = time(NULL);
     #ifndef _WIN32
     gmtime_r(&now, &gm);
-    #endif
-    #ifdef _WIN32
+    #else
     gmtime(&now);
     #endif
     localoffset = difftime(now, mktime(&gm));
@@ -227,8 +226,7 @@ strm_time_parse_time(const char* p, strm_int len, long* sec, long* usec, int* of
     tt = time(NULL);
     #ifndef _WIN32
     localtime_r(&tt, &tm2);
-    #endif
-    #ifdef _WIN32
+    #else
     localtime(&tt);
     #endif
     tm.tm_year = tm2.tm_year;
@@ -476,8 +474,7 @@ get_tm(time_t t, int utc_offset, struct tm* tm)
   t += utc_offset;
   #ifndef _WIN32
   gmtime_r(&t, tm);
-  #endif
-  #ifdef _WIN32
+  #else
   gmtime(&t);
   #endif
 }
