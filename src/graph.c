@@ -4,6 +4,8 @@
 #include "atomic.h"
 #include <stdio.h>
 #include <stdlib.h>
+
+#ifndef _WIN32 
 #include <sys/ioctl.h>
 #include <termios.h>
 #include <unistd.h>
@@ -97,7 +99,7 @@ show_yaxis(struct bar_data* d)
       printf("├ 0");
     }
     else {
-      printf("│");
+      printf("|");
     }
   }
 }
@@ -241,3 +243,4 @@ strm_graph_init(strm_state* state)
 {
   strm_var_def(state, "graph_bar", strm_cfunc_value(exec_bgraph));
 }
+#endif

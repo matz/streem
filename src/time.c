@@ -1,7 +1,9 @@
 #define _XOPEN_SOURCE 700
 #include "strm.h"
 #include <time.h>
+#ifndef _WIN32
 #include <sys/time.h>
+#endif
 #include <math.h>
 #include <string.h>
 
@@ -90,7 +92,12 @@ time_localoffset(int force)
     struct tm gm;
 
     now = time(NULL);
+    #ifndef _WIN32
     gmtime_r(&now, &gm);
+    #endif
+    #ifdef _WIN32
+    gmtime(&now);
+    #endif
     localoffset = difftime(now, mktime(&gm));
   }
   return localoffset;
@@ -218,7 +225,12 @@ strm_time_parse_time(const char* p, strm_int len, long* sec, long* usec, int* of
   if (t == NULL) {
     struct tm tm2;
     tt = time(NULL);
+    #ifndef _WIN32
     localtime_r(&tt, &tm2);
+    #endif
+    #ifdef _WIN32
+    localtime(&tt);
+    #endif
     tm.tm_year = tm2.tm_year;
     t = strptime(s, "%b %d", &tm);
   }
@@ -462,7 +474,12 @@ static void
 get_tm(time_t t, int utc_offset, struct tm* tm)
 {
   t += utc_offset;
+  #ifndef _WIN32
   gmtime_r(&t, tm);
+  #endif
+  #ifdef _WIN32
+  gmtime(&t);
+  #endif
 }
 
 static int
