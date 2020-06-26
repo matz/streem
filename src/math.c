@@ -7,7 +7,6 @@ math_sqrt(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   double f;
 
   strm_get_args(strm, argc, args, "f", &f);
-  f = strm_value_float(args[0]);
   *ret = strm_float_value(sqrt(f));
   return STRM_OK;
 }
@@ -18,7 +17,6 @@ math_sin(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   double f;
 
   strm_get_args(strm, argc, args, "f", &f);
-  f = strm_value_float(args[0]);
   *ret = strm_float_value(sin(f));
   return STRM_OK;
 }
@@ -29,7 +27,6 @@ math_sinh(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   double f;
 
   strm_get_args(strm, argc, args, "f", &f);
-  f = strm_value_float(args[0]);
   *ret = strm_float_value(sinh(f));
   return STRM_OK;
 }
@@ -40,7 +37,6 @@ math_cos(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   double f;
 
   strm_get_args(strm, argc, args, "f", &f);
-  f = strm_value_float(args[0]);
   *ret = strm_float_value(cos(f));
   return STRM_OK;
 }
@@ -51,7 +47,6 @@ math_cosh(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   double f;
 
   strm_get_args(strm, argc, args, "f", &f);
-  f = strm_value_float(args[0]);
   *ret = strm_float_value(cosh(f));
   return STRM_OK;
 }
@@ -72,7 +67,6 @@ math_tanh(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   double f;
 
   strm_get_args(strm, argc, args, "f", &f);
-  f = strm_value_float(args[0]);
   *ret = strm_float_value(tanh(f));
   return STRM_OK;
 }
@@ -99,15 +93,14 @@ fac(int n)
 static int
 math_fac(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
-  int f;
+  int i;
 
-  strm_get_args(strm, argc, args, "f", &f);
-  f = strm_value_int(args[0]);
-  *ret = strm_float_value(fac(f));
-  return STRM_OK;		
+  strm_get_args(strm, argc, args, "i", &i);
+  *ret = strm_float_value(fac(i));
+  return STRM_OK;
 }
 
-static int 
+static int
 GCD(int a, int b)
 {
   return b ? GCD(b, a % b) : a;
@@ -118,11 +111,9 @@ math_gcd(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
 {
   int x,y;
 
-  strm_get_args(strm, argc, args, "ff", &x, &y);
-  x = strm_value_int(args[0]);
-  y = strm_value_int(args[1]);
+  strm_get_args(strm, argc, args, "ii", &x, &y);
   *ret = strm_float_value(GCD(x,y));
-  return STRM_OK;		
+  return STRM_OK;
 }
 
 static int
@@ -131,9 +122,8 @@ math_fabs(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   double f;
 
   strm_get_args(strm, argc, args, "f", &f);
-  f = strm_value_float(args[0]);
   *ret = strm_float_value(abs(f));
-  return STRM_OK;	
+  return STRM_OK;
 }
 
 static int
@@ -142,9 +132,8 @@ math_acosh(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   double f;
 
   strm_get_args(strm, argc, args, "f", &f);
-  f = strm_value_float(args[0]);
   *ret = strm_float_value(acosh(f));
-  return STRM_OK;	
+  return STRM_OK;
 }
 
 static int
@@ -153,9 +142,8 @@ math_asinh(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
  double f;
 
   strm_get_args(strm, argc, args, "f", &f);
-  f = strm_value_float(args[0]);
   *ret = strm_float_value(asinh(f));
-  return STRM_OK;	
+  return STRM_OK;
 }
 
 static int
@@ -164,9 +152,8 @@ math_atanh(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   double f;
 
   strm_get_args(strm, argc, args, "f", &f);
-  f = strm_value_float(args[0]);
   *ret = strm_float_value(atanh(f));
-  return STRM_OK;	
+  return STRM_OK;
 }
 
 static int
@@ -175,9 +162,8 @@ math_acos(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   double f;
 
   strm_get_args(strm, argc, args, "f", &f);
-  f = strm_value_float(args[0]);
   *ret = strm_float_value(acos(f));
-  return STRM_OK;		
+  return STRM_OK;
 }
 
 static int
@@ -186,9 +172,8 @@ math_asin(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   double f;
 
   strm_get_args(strm, argc, args, "f", &f);
-  f = strm_value_float(args[0]);
   *ret = strm_float_value(asin(f));
-  return STRM_OK;		
+  return STRM_OK;
 }
 
 static int
@@ -197,9 +182,8 @@ math_atan(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   double f;
 
   strm_get_args(strm, argc, args, "f", &f);
-  f = strm_value_float(args[0]);
   *ret = strm_float_value(atan(f));
-  return STRM_OK;		
+  return STRM_OK;
 }
 
 static int
@@ -208,9 +192,8 @@ math_log(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   double f;
 
   strm_get_args(strm, argc, args, "f", &f);
-  f = strm_value_float(args[0]);
   *ret = strm_float_value(log(f));
-  return STRM_OK;		
+  return STRM_OK;
 }
 
 static int
@@ -219,9 +202,8 @@ math_log10(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   double f;
 
   strm_get_args(strm, argc, args, "f", &f);
-  f = strm_value_float(args[0]);
   *ret = strm_float_value(log10(f));
-  return STRM_OK;		
+  return STRM_OK;
 }
 
 static int
@@ -230,9 +212,8 @@ math_exp(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   double f;
 
   strm_get_args(strm, argc, args, "f", &f);
-  f = strm_value_float(args[0]);
   *ret = strm_float_value(exp(f));
-  return STRM_OK;		
+  return STRM_OK;
 }
 
 static int
@@ -241,9 +222,8 @@ math_log2(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   double f;
 
   strm_get_args(strm, argc, args, "f", &f);
-  f = strm_value_float(args[0]);
   *ret = strm_float_value(log2(f));
-  return STRM_OK;		
+  return STRM_OK;
 }
 
 static int
@@ -252,9 +232,8 @@ math_erfc(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   double f;
 
   strm_get_args(strm, argc, args, "f", &f);
-  f = strm_value_float(args[0]);
   *ret = strm_float_value(erfc(f));
-  return STRM_OK;		
+  return STRM_OK;
 }
 
 static int
@@ -263,9 +242,8 @@ math_cbrt(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   double f;
 
   strm_get_args(strm, argc, args, "f", &f);
-  f = strm_value_float(args[0]);
   *ret = strm_float_value(cbrt(f));
-  return STRM_OK;		
+  return STRM_OK;
 }
 
 static int
