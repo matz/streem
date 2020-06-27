@@ -33,14 +33,6 @@ Return the absolute value of x.
 print(fabs(-2))
 ```
 
-### factorial(x)
-Return x factorial.
-```
-# Output: 24
-# 1 * 2 * 3 * 4
-print(factorial(4))
-```  
-
 ### gcd(x, y)
 Return the greatest common divisor of the x and y.Note x and y must be integers.
 ```
