@@ -66,9 +66,9 @@ it will be invoked for each element in the stream.
 There are more examples under folder `examples/`. Just play with them!
 
 ## Contributing
-Send a pull request to <http://github.com/matz/streem>.  We consider
+Send a pull request to <https://github.com/matz/streem>.  We consider
 you have granted non-exclusive right to your contributed code under
-MIT license.  Use <http://github.com/matz/streem/issues> for
+MIT license.  Use <https://github.com/matz/streem/issues> for
 discussion.
 
 ## License
