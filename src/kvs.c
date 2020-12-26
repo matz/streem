@@ -69,7 +69,7 @@ kvs_put(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   strm_string key = strm_str_intern_str(strm_to_str(args[1]));
   khiter_t i;
   int st;
-  
+
   if (!k) {
     strm_raise(strm, "no kvs given");
     return STRM_NG;
@@ -117,7 +117,7 @@ kvs_update(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
     pthread_mutex_unlock(&k->lock);
     return STRM_NG;
   }
-  
+
   pthread_mutex_lock(&k->lock);
   i = kh_put(kvs, k->kv, key, &st);
   /* st<0: operation failed */

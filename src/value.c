@@ -327,7 +327,7 @@ str_dump(strm_string str, strm_int len)
     p++;
   }
   *s++ = '"';
-  
+
   return strm_str_new(buf, len);
 }
 

@@ -151,6 +151,6 @@ false               LEX_RETURN(keyword_false);
     else {
       fprintf(stderr, "('%c').\n", c);
     }
-    exit(1); 
+    exit(1);
 };
-%% 
+%%

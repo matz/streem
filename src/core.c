@@ -24,7 +24,7 @@ struct strm_task*
 strm_task_new(strm_callback func, strm_value data)
 {
   struct strm_task *t;
- 
+
   t = malloc(sizeof(struct strm_task));
   t->func = func;
   t->data = data;

@@ -127,7 +127,7 @@ static void
 show_graph(struct bar_data* d)
 {
   int n = 1;
-  
+
   show_yaxis(d);
   for (int i=d->offset; i<d->dlen; i++) {
     show_bar(d, i, n++);

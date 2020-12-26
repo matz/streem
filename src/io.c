@@ -256,7 +256,7 @@ strm_readio(strm_io io)
     io->mode |= STRM_IO_READING;
     buf->fd = io->fd;
     buf->io = io;
-#ifdef STRM_IO_MMAP    
+#ifdef STRM_IO_MMAP
     buf->buf = buf->fixed;
 #endif
 
