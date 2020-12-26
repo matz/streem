@@ -77,4 +77,4 @@ discussion.
 
 ## License
 
-MIT license (&copy; 2015-2016 Yukihiro Matsumoto)
+MIT license (&copy; 2015-2021 Yukihiro Matsumoto)
