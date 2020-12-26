@@ -4,7 +4,7 @@
 KHASH_MAP_INIT_INT64(ns, strm_state*);
 static khash_t(ns) *nstbl;
 static strm_state szero = {0};
-                   
+
 strm_string
 strm_ns_name(strm_state* state)
 {
@@ -45,7 +45,7 @@ strm_ns_create(strm_state* state, strm_string name)
     }
     k = kh_put(ns, nstbl, (intptr_t)name, &r);
     if (r < 0) {                /* r<0 operation failed */
-      return NULL;              
+      return NULL;
     }
     if (r == 0) {               /* r=0 ns already exists */
       if (kh_value(nstbl, k))

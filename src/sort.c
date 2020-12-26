@@ -39,7 +39,7 @@ my_qsort_r(void* base_, size_t nmemb, size_t size,
            int (*compar)(const void*, const void*, void*), void* thunk)
 {
   char *base = (char *) base_;
-  
+
   if (nmemb < 10) { /* use O(nmemb^2) algorithm for small enough nmemb */
     size_t i, j;
     for (i = 0; i+1 < nmemb; ++i)
@@ -51,7 +51,7 @@ my_qsort_r(void* base_, size_t nmemb, size_t size,
     size_t i, pivot, npart;
     /* pick median of first/middle/last elements as pivot */
     {
-      const char *a = base, *b = base + (nmemb/2)*size, 
+      const char *a = base, *b = base + (nmemb/2)*size,
         *c = base + (nmemb-1)*size;
       pivot = compar(a,b,thunk) < 0
         ? (compar(b,c,thunk) < 0 ? nmemb/2 :

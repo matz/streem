@@ -39,7 +39,7 @@ strm_queue_add(struct strm_queue* q, void* val)
   struct strm_queue_node *node = (struct strm_queue_node*)malloc(sizeof(struct strm_queue_node));
 
   if (node == NULL) return 0;
-  node->n = val; 
+  node->n = val;
   node->next = NULL;
   pthread_mutex_lock(&q->mutex);
   if (q->tail) {
@@ -58,7 +58,7 @@ strm_queue_get(struct strm_queue* q)
 {
   struct strm_queue_node* t;
   void* n;
-  
+
   pthread_mutex_lock(&q->mutex);
   while (!q->head) {
     pthread_mutex_unlock(&q->mutex);
@@ -82,7 +82,7 @@ strm_queue_free(struct strm_queue* q)
   if (q->head) {
     struct strm_queue_node* t = q->head;
     struct strm_queue_node* tmp;
- 
+
     while (t) {
       tmp = t->next;
       free(t);
@@ -136,7 +136,7 @@ strm_queue_add(struct strm_queue* q, void* val)
 {
   struct strm_queue_node *node = (struct strm_queue_node*)malloc(sizeof(struct strm_queue_node));
 
-  node->n = val; 
+  node->n = val;
   node->next = NULL;
   while (1) {
     struct strm_queue_node *n = q->tail;
