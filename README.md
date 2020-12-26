@@ -1,5 +1,5 @@
 # Streem
-[![Build Status](https://travis-ci.org/matz/streem.svg?branch=master)](https://travis-ci.org/matz/streem)
+[![Build Status](https://github.com/matz/streem/workflows/ci/badge.svg)](https://github.com/matz/streem/actions?query=workflow%3Aci)
 [![Gitter](https://badges.gitter.im/JoinChat.svg)](https://gitter.im/matz/streem?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 Streem is a stream based concurrent scripting language. It is based on a
