@@ -7,12 +7,12 @@ jobs:
     strategy:
       matrix:
         compiler:
-        - gcc
-        - clang
+          - gcc
+          - clang
     steps:
-    - name: Install dependencies
-      run: 'sudo apt install -q ${{ matrix.compiler }} libgc-dev'
-    - name: Checkout
-      uses: actions/checkout@v1
-    - name: Build and test
-      run: 'make test CC=${{ matrix.compiler }}'
+      - name: Install dependencies
+        run: 'sudo apt install -q ${{ matrix.compiler }} libgc-dev'
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Build and test
+        run: 'make test CC=${{ matrix.compiler }}'

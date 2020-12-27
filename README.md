@@ -1,4 +1,5 @@
 # Streem
+
 [![Build Status](https://github.com/matz/streem/workflows/ci/badge.svg)](https://github.com/matz/streem/actions?query=workflow%3Aci)
 [![Gitter](https://badges.gitter.im/JoinChat.svg)](https://gitter.im/matz/streem?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
@@ -17,11 +18,13 @@ __Note:__ Streem is still in the design stage. It's not working yet.  Stay tuned
 * gcc / clang
 
 ### Run make
+
 ```
 make
 ```
 
 ## Examples
+
 In Streem, a simple `cat` program looks like this:
 
 ```
@@ -66,10 +69,12 @@ it will be invoked for each element in the stream.
 There are more examples under folder `examples/`. Just play with them!
 
 ## Contributing
+
 Send a pull request to <https://github.com/matz/streem>.  We consider
 you have granted non-exclusive right to your contributed code under
 MIT license.  Use <https://github.com/matz/streem/issues> for
 discussion.
 
 ## License
+
 MIT license (&copy; 2015-2016 Yukihiro Matsumoto)
