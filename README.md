@@ -34,13 +34,13 @@ stdin | stdout
 You can try it out by (firstly `cd` to streem top directory):
 
 ```shell
-$ bin/streem -e 'stdin | stdout'
+bin/streem -e 'stdin | stdout'
 ```
 
 or
 
 ```shell
-$ bin/streem examples/01cat.strm
+bin/streem examples/01cat.strm
 ```
 
 Streem is a (sort of) DSL for data flows. Above code means
