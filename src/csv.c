@@ -290,7 +290,7 @@ sv_accept(strm_stream* strm, strm_value data)
     if (cd->headers)
       strm_ary_headers(ary) = cd->headers;
     if (!cd->types) {
-      /* first data line (after optinal header line) */
+      /* first data line (after optional header line) */
       if (cd->headers) {
         if (all_str) {          /* data line is all string; emit header line */
           strm_emit(strm, strm_ary_value(cd->headers), NULL);
