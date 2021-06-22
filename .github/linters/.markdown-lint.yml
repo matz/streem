@@ -1,0 +1,4 @@
+# https://github.com/DavidAnson/markdownlint#rules--aliases
+# markdownlint -c .github/linters/.markdown-lint.yml .
+
+MD040: false
