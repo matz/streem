@@ -1,6 +1,6 @@
 # Math
 
-Streem has a lot Mathematical functions defined by the C standard.
+Streem has a lot of Mathematical functions defined by the C standard.
 
 ## Constants
 
@@ -44,7 +44,7 @@ print(fabs(-2))
 
 ### gcd(x, y)
 
-Return the greatest common divisor of the x and y.Note x and y must be integers.
+Return the greatest common divisor of the x and y. Note x and y must be integers.
 
 ```
 Output: 2

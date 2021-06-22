@@ -7,7 +7,7 @@ Streem is a stream based concurrent scripting language. It is based on a
 programming model similar to the shell, with influences from Ruby, Erlang, and
 other functional programming languages.
 
-__Note:__ Streem is still in the design stage. It's not working yet.  Stay tuned.
+__Note:__ Streem is still in the design stage. It's not working yet. Stay tuned.
 
 ## Compiling
 
@@ -19,7 +19,7 @@ __Note:__ Streem is still in the design stage. It's not working yet.  Stay tuned
 
 ### Run make
 
-```
+```shell
 make
 ```
 
@@ -33,17 +33,17 @@ stdin | stdout
 
 You can try it out by (firstly `cd` to streem top directory):
 
-```
+```shell
 $ bin/streem -e 'stdin | stdout'
 ```
 
 or
 
-```
+```shell
 $ bin/streem examples/01cat.strm
 ```
 
-Streem is a (sort of) DSL for data flows.  Above code means
+Streem is a (sort of) DSL for data flows. Above code means
 building data-flow connection between `stdin` and `stdout`.
 Actual data processing will be done in the event loop
 invoked after program execution.
@@ -63,7 +63,7 @@ seq(100) | map{x->
 ```
 
 The second part in the pipeline (`{x ->...}`) is a function
-object.  If a function object is connected in the pipeline,
+object. If a function object is connected in the pipeline,
 it will be invoked for each element in the stream.
 
 There are more examples under folder `examples/`. Just play with them!
@@ -72,7 +72,7 @@ There are more examples under folder `examples/`. Just play with them!
 
 Send a pull request to <https://github.com/matz/streem>.  We consider
 you have granted non-exclusive right to your contributed code under
-MIT license.  Use <https://github.com/matz/streem/issues> for
+MIT license. Use <https://github.com/matz/streem/issues> for
 discussion.
 
 ## License
