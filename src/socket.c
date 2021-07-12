@@ -148,8 +148,10 @@ tcp_socket(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   strm_value srv;
 
 #ifdef _WIN32
+  int sockopt = SO_SYNCHRONOUS_NONALERT;
   WSADATA wsa;
   WSAStartup(MAKEWORD(2, 0), &wsa);
+  setsockopt(INVALID_SOCKET, SOL_SOCKET, SO_OPENTYPE, (char *)&sockopt, sizeof(sockopt));
 #endif
 
   strm_get_args(strm, argc, args, "Sv", &host, &srv);
