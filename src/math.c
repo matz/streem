@@ -103,7 +103,7 @@ math_fabs(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   double f;
 
   strm_get_args(strm, argc, args, "f", &f);
-  *ret = strm_float_value(abs(f));
+  *ret = strm_float_value(fabs(f));
   return STRM_OK;
 }
 
