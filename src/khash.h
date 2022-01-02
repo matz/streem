@@ -144,8 +144,10 @@ typedef unsigned long long khint64_t;
 
 #ifndef kh_inline
 #ifdef _MSC_VER
+#define __maybe_unused
 #define kh_inline __inline
 #else
+#define __maybe_unused  __attribute__((unused))
 #define kh_inline inline
 #endif
 #endif /* kh_inline */
@@ -199,10 +201,10 @@ static const double khash_ac_HASH_UPPER = 0.77;
 	extern khint_t kh_put_##name(kh_##name##_t *h, khkey_t key, int *ret); \
 
 #define KHASH_IMPL(name, SCOPE, khkey_t, khval_t, kh_is_map, __hash_func, __hash_equal) \
-	SCOPE kh_##name##_t *kh_init_##name(void) { \
+	__maybe_unused SCOPE kh_##name##_t *kh_init_##name(void) { \
 		return (kh_##name##_t*)kcalloc(1, sizeof(kh_##name##_t)); \
 	} \
-	SCOPE void kh_destroy_##name(kh_##name##_t *h) \
+	__maybe_unused SCOPE void kh_destroy_##name(kh_##name##_t *h) \
 	{ \
 		if (h) { \
 			kfree((void *)h->keys); kfree(h->flags); \
@@ -210,14 +212,14 @@ static const double khash_ac_HASH_UPPER = 0.77;
 			kfree(h); \
 		} \
 	} \
-	SCOPE void kh_clear_##name(kh_##name##_t *h) \
+	__maybe_unused SCOPE void kh_clear_##name(kh_##name##_t *h) \
 	{ \
 		if (h && h->flags) { \
 			memset(h->flags, 0xaa, khash_ac_fsize(h->n_buckets) * sizeof(khint32_t)); \
 			h->size = h->n_occupied = 0; \
 		} \
 	} \
-	SCOPE khint_t kh_get_##name(const kh_##name##_t *h, khkey_t key) \
+	__maybe_unused SCOPE khint_t kh_get_##name(const kh_##name##_t *h, khkey_t key) \
 	{ \
 		if (h->n_buckets) { \
 			khint_t k, i, last, mask, step = 0; \
@@ -231,7 +233,7 @@ static const double khash_ac_HASH_UPPER = 0.77;
 			return khash_ac_iseither(h->flags, i)? h->n_buckets : i; \
 		} else return 0; \
 	} \
-	SCOPE int kh_resize_##name(kh_##name##_t *h, khint_t new_n_buckets) \
+	__maybe_unused SCOPE int kh_resize_##name(kh_##name##_t *h, khint_t new_n_buckets) \
 	{ /* This function uses 0.25*n_buckets bytes of working space instead of [sizeof(key_t+val_t)+.25]*n_buckets. */ \
 		khint32_t *new_flags = 0; \
 		khint_t j = 1; \
@@ -294,7 +296,7 @@ static const double khash_ac_HASH_UPPER = 0.77;
 		} \
 		return 0; \
 	} \
-	SCOPE khint_t kh_put_##name(kh_##name##_t *h, khkey_t key, int *ret)  \
+	__maybe_unused SCOPE khint_t kh_put_##name(kh_##name##_t *h, khkey_t key, int *ret)  \
 	{ \
 		khint_t x; \
 		if (h->n_occupied >= h->upper_bound) { /* update the hash table */  \
