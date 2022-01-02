@@ -1029,21 +1029,11 @@ strm_raise(strm_stream* strm, const char* msg)
                strm_str_value(strm_str_new(msg, strlen(msg))));
 }
 
-void strm_array_init(strm_state* state);
-void strm_string_init(strm_state* state);
-void strm_latch_init(strm_state* state);
-void strm_iter_init(strm_state* state);
-void strm_socket_init(strm_state* state);
-void strm_csv_init(strm_state* state);
-void strm_kvs_init(strm_state* state);
-
 void strm_init(strm_state*);
 
 static void
-node_init(strm_state* state)
+strm_misc_init(strm_state* state)
 {
-  strm_init(state);
-
   strm_var_def(state, "stdin", strm_io_new(0, STRM_IO_READ));
   strm_var_def(state, "stdout", strm_io_new(1, STRM_IO_WRITE));
   strm_var_def(state, "stderr", strm_io_new(2, STRM_IO_WRITE));
@@ -1056,6 +1046,13 @@ node_init(strm_state* state)
   strm_var_def(state, "fwrite", strm_cfunc_value(exec_fwrite));
   strm_var_def(state, "exit", strm_cfunc_value(exec_exit));
   strm_var_def(state, "match", strm_cfunc_value(exec_match));
+}
+
+static void
+node_init(strm_state* state)
+{
+  strm_init(state);
+  strm_misc_init(state);
 }
 
 static strm_state top_state = {0};
