@@ -878,8 +878,6 @@ exec_uniq(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   return STRM_OK;
 }
 
-void strm_stat_init(strm_state* state);
-
 void
 strm_iter_init(strm_state* state)
 {
@@ -905,5 +903,4 @@ strm_iter_init(strm_state* state)
   strm_var_def(strm_ns_array, "each", strm_cfunc_value(ary_each));
   strm_var_def(strm_ns_array, "map", strm_cfunc_value(ary_map));
   strm_var_def(strm_ns_array, "flatmap", strm_cfunc_value(ary_flatmap));
-  strm_stat_init(state);
 }

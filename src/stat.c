@@ -531,9 +531,6 @@ ary_correl(strm_stream* strm, int argc, strm_value* args, strm_value* ret)
   return STRM_OK;
 }
 
-void strm_rand_init(strm_state* state);
-void strm_sort_init(strm_state* state);
-
 void
 strm_stat_init(strm_state* state)
 {
@@ -553,7 +550,4 @@ strm_stat_init(strm_state* state)
   strm_var_def(strm_ns_array, "stdev", strm_cfunc_value(ary_stdev));
   strm_var_def(strm_ns_array, "variance", strm_cfunc_value(ary_var));
   strm_var_def(strm_ns_array, "correl", strm_cfunc_value(ary_correl));
-
-  strm_rand_init(state);
-  strm_sort_init(state);
 }
