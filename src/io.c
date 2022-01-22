@@ -7,6 +7,7 @@
 # include <sys/socket.h>
 #else
 # include <ws2tcpip.h>
+# include <fcntl.h>
 #endif
 #include <sys/stat.h>
 
@@ -348,7 +349,7 @@ strm_writeio(strm_io io)
 #ifdef _WIN32
     WSANETWORKEVENTS wev;
     if (WSAEnumNetworkEvents((SOCKET) io->fd, NULL, &wev) == 0) {
-      d->f = fdopen(_open_osfhandle(io->fd, 0), "w");
+      d->f = fdopen(_open_osfhandle(io->fd, _O_RDONLY), "w");
     } else
       d->f = fdopen(io->fd, "w");
 #else
